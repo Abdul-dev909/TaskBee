@@ -1,10 +1,12 @@
 import { useState, FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import AuthLayout from "@/components/AuthLayout";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface FormErrors {
   fullName?: string;
@@ -16,6 +18,7 @@ interface FormErrors {
 }
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -25,7 +28,7 @@ const Signup = () => {
     role: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [successMessage, setSuccessMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
     const newErrors: FormErrors = {};
@@ -66,14 +69,57 @@ const Signup = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setSuccessMessage("");
 
-    if (validateForm()) {
-      setSuccessMessage("Account created successfully! Welcome to Home Genie.");
-      console.log("Signup data:", formData);
-      // Here you would typically handle actual signup
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            name: formData.fullName,
+            phone: formData.phone,
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        const roleValue = formData.role === 'service-provider' ? 'service_provider' : 'homeowner';
+        
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: data.user.id,
+            role: roleValue
+          });
+
+        if (roleError) throw roleError;
+
+        toast({
+          title: "Account Created Successfully!",
+          description: "Welcome to Home Genie. You can now log in.",
+        });
+
+        navigate("/login");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Signup Failed",
+        description: error.message || "An error occurred during signup.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -210,20 +256,14 @@ const Signup = () => {
             )}
           </div>
 
-          {/* Success Message */}
-          {successMessage && (
-            <div className="success-message animate-fade-in">
-              {successMessage}
-            </div>
-          )}
-
           {/* Submit Button */}
           <Button 
             type="submit" 
             className="w-full btn-glow mt-6"
             size="lg"
+            disabled={isLoading}
           >
-            Create Account
+            {isLoading ? "Creating Account..." : "Create Account"}
           </Button>
         </form>
 

@@ -1,17 +1,49 @@
-import { useState, FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { useState, FormEvent, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import AuthLayout from "@/components/AuthLayout";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-  const [successMessage, setSuccessMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await redirectBasedOnRole(session.user.id);
+      }
+    };
+    checkSession();
+  }, []);
+
+  const redirectBasedOnRole = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching user role:', error);
+      return;
+    }
+
+    if (data?.role === 'homeowner') {
+      navigate('/homeowner-dashboard');
+    } else if (data?.role === 'service_provider') {
+      navigate('/provider-dashboard');
+    }
+  };
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -30,14 +62,37 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setSuccessMessage("");
 
-    if (validateForm()) {
-      setSuccessMessage("Login Successful! Welcome back.");
-      // Here you would typically handle actual login
-      console.log("Login attempt:", { email, rememberMe });
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        toast({
+          title: "Login Successful!",
+          description: "Welcome back to Home Genie.",
+        });
+
+        await redirectBasedOnRole(data.user.id);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Login Failed",
+        description: error.message || "Invalid email or password.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -113,20 +168,14 @@ const Login = () => {
             </Link>
           </div>
 
-          {/* Success Message */}
-          {successMessage && (
-            <div className="success-message animate-fade-in">
-              {successMessage}
-            </div>
-          )}
-
           {/* Submit Button */}
           <Button 
             type="submit" 
             className="w-full btn-glow"
             size="lg"
+            disabled={isLoading}
           >
-            Sign In
+            {isLoading ? "Signing In..." : "Sign In"}
           </Button>
         </form>
 
