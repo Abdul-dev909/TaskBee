@@ -2,6 +2,9 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import genieLamp from "@/assets/genie-lamp.png";
+import heroBg from "@/assets/hero-bg.jpg";
+import servicesBg from "@/assets/services-bg.jpg";
+import testimonialsBg from "@/assets/testimonials-bg.jpg";
 import { 
   Wrench, 
   Droplet, 
@@ -86,8 +89,16 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative px-4 py-20 md:py-32 bg-gradient-to-b from-background to-secondary/20">
-        <div className="max-w-7xl mx-auto text-center">
+      <section className="relative px-4 py-20 md:py-32 overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroBg})` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background/95"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto text-center relative z-10">
           <div className="flex items-center justify-center gap-4 mb-6 animate-fade-in">
             <img 
               src={genieLamp} 
@@ -125,8 +136,15 @@ const Index = () => {
       </section>
 
       {/* Service Categories */}
-      <section id="services" className="px-4 py-20 bg-background">
-        <div className="max-w-7xl mx-auto">
+      <section id="services" className="relative px-4 py-20 overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
+          style={{ backgroundImage: `url(${servicesBg})` }}
+        ></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-background/98 via-background/95 to-background/98"></div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
               Popular Services
@@ -254,8 +272,16 @@ const Index = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="px-4 py-20 bg-secondary/10">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative px-4 py-20 overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${testimonialsBg})` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-secondary/95 via-background/90 to-secondary/95"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
               What Our Customers Say
