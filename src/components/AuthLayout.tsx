@@ -3,12 +3,24 @@ import genieLamp from "@/assets/genie-lamp.png";
 
 interface AuthLayoutProps {
   children: ReactNode;
+  backgroundImage?: string;
 }
 
-const AuthLayout = ({ children }: AuthLayoutProps) => {
+const AuthLayout = ({ children, backgroundImage }: AuthLayoutProps) => {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md animate-fade-in">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
+      {/* Background Image with Overlay */}
+      {backgroundImage && (
+        <>
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${backgroundImage})` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/92 via-background/88 to-background/92" />
+        </>
+      )}
+      
+      <div className="w-full max-w-md animate-fade-in relative z-10">
         {/* Brand Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-2">

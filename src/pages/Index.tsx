@@ -90,9 +90,9 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="relative px-4 py-20 md:py-32 overflow-hidden">
-        {/* Background Image with Overlay */}
+        {/* Animated Background Image with Overlay */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat animate-slow-pan"
           style={{ backgroundImage: `url(${heroBg})` }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background/95"></div>

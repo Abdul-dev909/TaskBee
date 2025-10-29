@@ -124,4 +124,24 @@ All colors MUST be HSL.
   .error-text {
     @apply text-xs text-red-500 mt-1;
   }
+
+  /* Slow moving background animation */
+  .animate-slow-pan {
+    animation: slowPan 60s ease-in-out infinite;
+  }
+
+  @keyframes slowPan {
+    0%, 100% {
+      transform: scale(1.1) translate(0, 0);
+    }
+    25% {
+      transform: scale(1.15) translate(-2%, -1%);
+    }
+    50% {
+      transform: scale(1.1) translate(-1%, -2%);
+    }
+    75% {
+      transform: scale(1.12) translate(1%, -1%);
+    }
+  }
 }

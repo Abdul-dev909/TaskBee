@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Search, Wrench, Paintbrush, Home, Zap, Droplets, CheckCircle, Star, Quote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import genieLamp from "@/assets/genie-lamp.png";
+import dashboardBg from "@/assets/dashboard-bg.jpg";
 
 const HomeownerDashboard = () => {
   const navigate = useNavigate();
@@ -56,9 +57,18 @@ const HomeownerDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-border/40">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat opacity-5"
+        style={{ backgroundImage: `url(${dashboardBg})` }}
+      />
+      <div className="fixed inset-0 bg-gradient-to-b from-background/98 via-background/97 to-background/98" />
+      
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Navigation */}
+        <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-border/40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => scrollToSection("hero")}>
@@ -257,6 +267,7 @@ const HomeownerDashboard = () => {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 };

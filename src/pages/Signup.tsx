@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import AuthLayout from "@/components/AuthLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import signupBg from "@/assets/signup-bg.jpg";
 
 interface FormErrors {
   fullName?: string;
@@ -132,7 +133,7 @@ const Signup = () => {
   };
 
   return (
-    <AuthLayout>
+    <AuthLayout backgroundImage={signupBg}>
       <div className="space-y-6">
         <div className="text-center">
           <h2 className="text-2xl font-semibold text-foreground mb-2">

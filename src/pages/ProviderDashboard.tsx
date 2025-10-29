@@ -20,6 +20,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import genieLamp from "@/assets/genie-lamp.png";
+import dashboardBg from "@/assets/dashboard-bg.jpg";
 
 const ProviderDashboard = () => {
   const navigate = useNavigate();
@@ -47,9 +48,18 @@ const ProviderDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 glass-card border-b border-border/40">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat opacity-5"
+        style={{ backgroundImage: `url(${dashboardBg})` }}
+      />
+      <div className="fixed inset-0 bg-gradient-to-b from-background/98 via-background/97 to-background/98" />
+      
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="sticky top-0 z-50 glass-card border-b border-border/40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -303,6 +313,7 @@ const ProviderDashboard = () => {
           </TabsContent>
         </Tabs>
       </main>
+      </div>
     </div>
   );
 };

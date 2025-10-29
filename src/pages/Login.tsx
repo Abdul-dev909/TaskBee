@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import AuthLayout from "@/components/AuthLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import loginBg from "@/assets/login-bg.jpg";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -97,7 +98,7 @@ const Login = () => {
   };
 
   return (
-    <AuthLayout>
+    <AuthLayout backgroundImage={loginBg}>
       <div className="space-y-6">
         <div className="text-center">
           <h2 className="text-2xl font-semibold text-foreground mb-2">
