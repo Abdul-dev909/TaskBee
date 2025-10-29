@@ -78,6 +78,11 @@ const Index = () => {
               <button onClick={() => scrollToSection('why-choose-us')} className="text-foreground/80 hover:text-primary transition-colors">
                 Why Choose Us
               </button>
+              <Link to="/become-provider">
+                <Button variant="secondary" className="bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 text-primary hover:from-primary/30 hover:to-primary/20">
+                  Become a Provider
+                </Button>
+              </Link>
               <Link to="/login">
                 <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">
                   Login
@@ -129,9 +134,13 @@ const Index = () => {
             </div>
           </div>
 
-          <p className="text-sm text-muted-foreground">
-            Join thousands of homeowners finding trusted local help
-          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-muted-foreground">
+            <p>Join thousands of homeowners finding trusted local help</p>
+            <span className="hidden sm:inline">|</span>
+            <Link to="/become-provider" className="text-primary font-medium hover:underline">
+              Are you a service provider? Join us →
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -355,7 +364,7 @@ const Index = () => {
             <div>
               <h4 className="font-semibold text-foreground mb-4">For Professionals</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Become a Provider</a></li>
+                <li><Link to="/become-provider" className="text-muted-foreground hover:text-primary transition-colors">Become a Provider</Link></li>
                 <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Provider Resources</a></li>
                 <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Success Stories</a></li>
               </ul>

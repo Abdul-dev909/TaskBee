@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import BecomeProvider from "./pages/BecomeProvider";
+import ProviderSuccess from "./pages/ProviderSuccess";
 import HomeownerDashboard from "./pages/HomeownerDashboard";
 import ProviderDashboard from "./pages/ProviderDashboard";
 import NotFound from "./pages/NotFound";
@@ -22,6 +24,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/become-provider" element={<BecomeProvider />} />
+          <Route path="/provider-success" element={<ProviderSuccess />} />
           <Route path="/homeowner-dashboard" element={<HomeownerDashboard />} />
           <Route path="/provider-dashboard" element={<ProviderDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
