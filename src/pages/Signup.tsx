@@ -1,5 +1,6 @@
 import { useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -134,15 +135,25 @@ const Signup = () => {
 
   return (
     <AuthLayout backgroundImage={signupBg}>
-      <div className="space-y-6">
-        <div className="text-center">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="space-y-6"
+      >
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="text-center"
+        >
           <h2 className="text-2xl font-semibold text-foreground mb-2">
             Create Your Account
           </h2>
           <p className="text-sm text-muted-foreground">
             Join Home Genie and get started today
           </p>
-        </div>
+        </motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Full Name */}
@@ -280,7 +291,7 @@ const Signup = () => {
             </Link>
           </p>
         </div>
-      </div>
+      </motion.div>
     </AuthLayout>
   );
 };

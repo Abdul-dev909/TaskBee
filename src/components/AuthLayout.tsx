@@ -9,11 +9,11 @@ interface AuthLayoutProps {
 const AuthLayout = ({ children, backgroundImage }: AuthLayoutProps) => {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Background Image with Overlay */}
+      {/* Background Image with Overlay and Gentle Motion */}
       {backgroundImage && (
         <>
           <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat animate-slow-pan"
             style={{ backgroundImage: `url(${backgroundImage})` }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-background/92 via-background/88 to-background/92" />

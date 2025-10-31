@@ -1,5 +1,6 @@
 import { useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -149,6 +150,28 @@ const BecomeProvider = () => {
     document.getElementById('registration-form')?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const float3D = {
+    hidden: { opacity: 0, y: 40, rotateX: -15, z: -50 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      rotateX: 0, 
+      z: 0,
+      transition: { duration: 0.8 }
+    }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.1
+      }
+    }
+  };
+
   const benefits = [
     {
       icon: Briefcase,
@@ -183,7 +206,12 @@ const BecomeProvider = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background/95" />
         
         <div className="relative z-10 max-w-4xl mx-auto px-4 py-20 text-center">
-          <div className="flex items-center justify-center gap-3 mb-6">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="flex items-center justify-center gap-3 mb-6"
+          >
             <img 
               src={genieLamp} 
               alt="Genie Lamp" 
@@ -192,58 +220,105 @@ const BecomeProvider = () => {
             <h1 className="text-5xl md:text-6xl font-bold text-primary">
               Home Genie
             </h1>
-          </div>
+          </motion.div>
           
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-            Join Home Genie as a Trusted Service Provider
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Grow your business and reach local homeowners who need your skills
-          </p>
-          
-          <Button 
-            onClick={scrollToForm}
-            size="lg" 
-            className="btn-glow text-lg px-8 py-6"
+          <motion.h2 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-4xl md:text-5xl font-bold text-foreground mb-6"
           >
-            Get Started
-            <ArrowRight className="ml-2" />
-          </Button>
+            Join Home Genie as a Trusted Service Provider
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
+          >
+            Grow your business and reach local homeowners who need your skills
+          </motion.p>
+          
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            <Button 
+              onClick={scrollToForm}
+              size="lg" 
+              className="btn-glow text-lg px-8 py-6"
+            >
+              Get Started
+              <ArrowRight className="ml-2" />
+            </Button>
+          </motion.div>
         </div>
       </section>
 
       {/* Benefits Section */}
       <section className="py-20 px-4 bg-gradient-to-b from-background to-muted/20">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground">
+          <motion.h2 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
+          >
             Why Join Home Genie?
-          </h2>
+          </motion.h2>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+            style={{ perspective: "1000px" }}
+          >
             {benefits.map((benefit, index) => (
-              <div
+              <motion.div
                 key={index}
-                className="glass-card p-6 rounded-xl hover-scale transition-all duration-300 group"
+                variants={float3D}
+                whileHover={{ 
+                  scale: 1.05,
+                  rotateY: 5,
+                  z: 20,
+                  transition: { duration: 0.3 }
+                }}
+                className="glass-card p-6 rounded-xl transition-all duration-300 group"
+                style={{ transformStyle: "preserve-3d" }}
               >
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <motion.div 
+                  className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mb-4"
+                  whileHover={{ rotateZ: 360, scale: 1.1 }}
+                  transition={{ duration: 0.6 }}
+                >
                   <benefit.icon className="w-7 h-7 text-primary-foreground" />
-                </div>
+                </motion.div>
                 <h3 className="text-xl font-semibold mb-3 text-foreground">
                   {benefit.title}
                 </h3>
                 <p className="text-muted-foreground">
                   {benefit.description}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Registration Form Section */}
       <section id="registration-form" className="py-20 px-4">
         <div className="max-w-2xl mx-auto">
-          <div className="glass-card rounded-2xl p-8 md:p-10 shadow-lg">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="glass-card rounded-2xl p-8 md:p-10 shadow-lg"
+          >
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-foreground mb-2">
                 Create Your Provider Account
@@ -415,7 +490,7 @@ const BecomeProvider = () => {
                 </Link>
               </p>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
     </div>

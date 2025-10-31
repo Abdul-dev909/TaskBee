@@ -1,5 +1,6 @@
 import { useState, FormEvent, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -99,15 +100,25 @@ const Login = () => {
 
   return (
     <AuthLayout backgroundImage={loginBg}>
-      <div className="space-y-6">
-        <div className="text-center">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="space-y-6"
+      >
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="text-center"
+        >
           <h2 className="text-2xl font-semibold text-foreground mb-2">
             Welcome Back
           </h2>
           <p className="text-sm text-muted-foreground">
             Sign in to continue to your account
           </p>
-        </div>
+        </motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Email Field */}
@@ -192,7 +203,7 @@ const Login = () => {
             </Link>
           </p>
         </div>
-      </div>
+      </motion.div>
     </AuthLayout>
   );
 };

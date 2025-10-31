@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import genieLamp from "@/assets/genie-lamp.png";
@@ -24,6 +25,34 @@ const Index = () => {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     element?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Animation variants
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 60 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8 } }
+  };
+
+  const float3D = {
+    hidden: { opacity: 0, y: 40, rotateX: -15, z: -50 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      rotateX: 0, 
+      z: 0,
+      transition: { duration: 0.8 }
+    }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.12,
+        delayChildren: 0.1
+      }
+    }
   };
 
   const services = [
@@ -104,22 +133,42 @@ const Index = () => {
         </div>
         
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <div className="flex items-center justify-center gap-4 mb-6 animate-fade-in">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="flex items-center justify-center gap-4 mb-6"
+          >
             <img 
               src={genieLamp} 
               alt="Genie Lamp" 
               className="w-16 h-16 md:w-20 md:h-20 object-contain animate-glow"
             />
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-primary mb-6 animate-fade-in">
+          </motion.div>
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-4xl md:text-6xl font-bold text-primary mb-6"
+          >
             Find Trusted Local Experts<br />for Every Home Project
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto"
+          >
             Your trusted platform to find reliable local professionals for all your home service needs
-          </p>
+          </motion.p>
           
           {/* Search Bar */}
-          <div className="max-w-2xl mx-auto mb-8">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="max-w-2xl mx-auto mb-8"
+          >
             <div className="glass-card p-2 rounded-xl flex items-center gap-2">
               <Search className="w-5 h-5 text-muted-foreground ml-2" />
               <Input 
@@ -132,15 +181,20 @@ const Index = () => {
                 </Button>
               </Link>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-muted-foreground">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-muted-foreground"
+          >
             <p>Join thousands of homeowners finding trusted local help</p>
             <span className="hidden sm:inline">|</span>
             <Link to="/become-provider" className="text-primary font-medium hover:underline">
               Are you a service provider? Join us →
             </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -154,129 +208,179 @@ const Index = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-background/98 via-background/95 to-background/98"></div>
         
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-12">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            className="text-center mb-12"
+          >
             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
               Popular Services
             </h2>
             <p className="text-muted-foreground">
               Browse our most requested home services
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
+            style={{ perspective: "1000px" }}
+          >
             {services.map((service, index) => (
-              <div 
+              <motion.div 
                 key={index}
-                className="glass-card p-6 rounded-xl text-center hover:shadow-[0_12px_40px_hsla(var(--primary),0.15)] transition-all duration-300 cursor-pointer group"
+                variants={float3D}
+                whileHover={{ 
+                  scale: 1.05,
+                  rotateY: 5,
+                  z: 20,
+                  transition: { duration: 0.3 }
+                }}
+                className="glass-card p-6 rounded-xl text-center cursor-pointer group"
+                style={{ transformStyle: "preserve-3d" }}
               >
-                <service.icon className="w-12 h-12 mx-auto mb-4 text-primary group-hover:scale-110 transition-transform" />
+                <motion.div
+                  whileHover={{ rotateZ: 360 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <service.icon className="w-12 h-12 mx-auto mb-4 text-primary group-hover:scale-110 transition-transform" />
+                </motion.div>
                 <h3 className="font-semibold text-foreground mb-2">
                   {service.name}
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {service.description}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* How It Works */}
       <section id="how-it-works" className="px-4 py-20 bg-secondary/10">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            className="text-center mb-12"
+          >
             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
               How It Works
             </h2>
             <p className="text-muted-foreground">
               Getting help for your home has never been easier
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="glass-card w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-primary/10">
-                <span className="text-3xl font-bold text-primary">1</span>
-              </div>
-              <h3 className="text-xl font-semibold text-primary mb-3">
-                Post a Job
-              </h3>
-              <p className="text-muted-foreground">
-                Describe what you need done and when you need it
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="glass-card w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-primary/10">
-                <span className="text-3xl font-bold text-primary">2</span>
-              </div>
-              <h3 className="text-xl font-semibold text-primary mb-3">
-                Get Matched
-              </h3>
-              <p className="text-muted-foreground">
-                Verified local professionals respond with quotes
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="glass-card w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-primary/10">
-                <span className="text-3xl font-bold text-primary">3</span>
-              </div>
-              <h3 className="text-xl font-semibold text-primary mb-3">
-                Get It Done
-              </h3>
-              <p className="text-muted-foreground">
-                Choose your professional and get the job completed
-              </p>
-            </div>
-          </div>
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
+            {[
+              { step: "1", title: "Post a Job", description: "Describe what you need done and when you need it" },
+              { step: "2", title: "Get Matched", description: "Verified local professionals respond with quotes" },
+              { step: "3", title: "Get It Done", description: "Choose your professional and get the job completed" }
+            ].map((item, index) => (
+              <motion.div 
+                key={index}
+                variants={float3D}
+                className="text-center"
+              >
+                <motion.div 
+                  className="glass-card w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-primary/10"
+                  whileHover={{ 
+                    scale: 1.15,
+                    rotateY: 360,
+                    transition: { duration: 0.6 }
+                  }}
+                  style={{ transformStyle: "preserve-3d" }}
+                >
+                  <span className="text-3xl font-bold text-primary">{item.step}</span>
+                </motion.div>
+                <h3 className="text-xl font-semibold text-primary mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-muted-foreground">
+                  {item.description}
+                </p>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
       {/* Why Choose Us */}
       <section id="why-choose-us" className="px-4 py-20 bg-background">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            className="text-center mb-12"
+          >
             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
               Why Choose Home Genie
             </h2>
             <p className="text-muted-foreground">
               The smart way to find local home service professionals
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="glass-card p-8 rounded-xl">
-              <Shield className="w-12 h-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold text-primary mb-3">
-                Verified Professionals
-              </h3>
-              <p className="text-muted-foreground">
-                All service providers are thoroughly vetted and background-checked for your safety and peace of mind
-              </p>
-            </div>
-
-            <div className="glass-card p-8 rounded-xl">
-              <Users className="w-12 h-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold text-primary mb-3">
-                Local Community Focus
-              </h3>
-              <p className="text-muted-foreground">
-                Supporting your community by connecting you with trusted local professionals who care about quality
-              </p>
-            </div>
-
-            <div className="glass-card p-8 rounded-xl">
-              <CheckCircle2 className="w-12 h-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold text-primary mb-3">
-                Quality Guarantee
-              </h3>
-              <p className="text-muted-foreground">
-                Every job is backed by our satisfaction guarantee. Your happiness is our top priority
-              </p>
-            </div>
-          </div>
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            style={{ perspective: "1200px" }}
+          >
+            {[
+              { icon: Shield, title: "Verified Professionals", description: "All service providers are thoroughly vetted and background-checked for your safety and peace of mind" },
+              { icon: Users, title: "Local Community Focus", description: "Supporting your community by connecting you with trusted local professionals who care about quality" },
+              { icon: CheckCircle2, title: "Quality Guarantee", description: "Every job is backed by our satisfaction guarantee. Your happiness is our top priority" }
+            ].map((feature, index) => (
+              <motion.div 
+                key={index}
+                variants={float3D}
+                whileHover={{ 
+                  y: -10,
+                  rotateX: 5,
+                  z: 30,
+                  transition: { duration: 0.3 }
+                }}
+                className="glass-card p-8 rounded-xl"
+                style={{ transformStyle: "preserve-3d" }}
+              >
+                <motion.div
+                  whileHover={{ 
+                    scale: 1.2,
+                    rotateZ: 360,
+                    transition: { duration: 0.5 }
+                  }}
+                >
+                  <feature.icon className="w-12 h-12 text-primary mb-4" />
+                </motion.div>
+                <h3 className="text-xl font-semibold text-primary mb-3">
+                  {feature.title}
+                </h3>
+                <p className="text-muted-foreground">
+                  {feature.description}
+                </p>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
@@ -291,21 +395,50 @@ const Index = () => {
         </div>
         
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-12">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            className="text-center mb-12"
+          >
             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
               What Our Customers Say
             </h2>
             <p className="text-muted-foreground">
               Real experiences from real homeowners
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          >
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="glass-card p-6 rounded-xl">
+              <motion.div 
+                key={index} 
+                variants={float3D}
+                whileHover={{ 
+                  scale: 1.03,
+                  y: -5,
+                  transition: { duration: 0.3 }
+                }}
+                className="glass-card p-6 rounded-xl"
+                style={{ transformStyle: "preserve-3d" }}
+              >
                 <div className="flex gap-1 mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-primary text-primary" />
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, scale: 0 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.1, duration: 0.3 }}
+                    >
+                      <Star className="w-5 h-5 fill-primary text-primary" />
+                    </motion.div>
                   ))}
                 </div>
                 <p className="text-foreground/80 mb-4 italic">
@@ -315,9 +448,9 @@ const Index = () => {
                   <p className="font-semibold text-foreground">{testimonial.name}</p>
                   <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
