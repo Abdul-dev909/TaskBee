@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Wrench, Paintbrush, Home, Zap, Droplets, CheckCircle, Star, Quote } from "lucide-react";
@@ -30,6 +31,39 @@ const HomeownerDashboard = () => {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  // Animation variants for scroll-triggered animations
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 60 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8 } }
+  };
+
+  const fadeInScale = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.6 } }
+  };
+
+  const float3D = {
+    hidden: { opacity: 0, y: 40, rotateX: -15, z: -50 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      rotateX: 0, 
+      z: 0,
+      transition: { duration: 0.8 }
+    }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.1
+      }
     }
   };
 
@@ -97,15 +131,30 @@ const HomeownerDashboard = () => {
       {/* Hero Section */}
       <section id="hero" className="pt-32 pb-20 px-4">
         <div className="container mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in">
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="text-5xl md:text-6xl font-bold mb-6"
+          >
             Find Local Home Service
             <span className="text-primary block mt-2">Professionals</span>
-          </h1>
-          <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto animate-fade-in">
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+            className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto"
+          >
             Connect with trusted professionals for all your home repair and maintenance needs
-          </p>
+          </motion.p>
           
-          <div className="max-w-2xl mx-auto animate-fade-in">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+            className="max-w-2xl mx-auto"
+          >
             <div className="glass-card p-4 rounded-2xl shadow-lg">
               <div className="flex gap-3">
                 <div className="flex-1 relative">
@@ -122,101 +171,245 @@ const HomeownerDashboard = () => {
                 </Button>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Popular Services */}
       <section id="services" className="py-20 px-4">
         <div className="container mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4">Popular Services</h2>
-          <p className="text-center text-muted-foreground mb-12">Browse our most requested home services</p>
+          <motion.h2 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            className="text-4xl font-bold text-center mb-4"
+          >
+            Popular Services
+          </motion.h2>
+          <motion.p 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            className="text-center text-muted-foreground mb-12"
+          >
+            Browse our most requested home services
+          </motion.p>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6"
+            style={{ perspective: "1000px" }}
+          >
             {services.map((service, index) => (
-              <div
+              <motion.div
                 key={index}
-                className="glass-card p-6 rounded-xl hover-scale cursor-pointer group"
+                variants={float3D}
+                whileHover={{ 
+                  scale: 1.05, 
+                  rotateY: 5,
+                  rotateX: -5,
+                  z: 20,
+                  transition: { duration: 0.3 }
+                }}
+                className="glass-card p-6 rounded-xl cursor-pointer group"
+                style={{ transformStyle: "preserve-3d" }}
               >
-                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                <motion.div 
+                  className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors"
+                  whileHover={{ rotateZ: 360 }}
+                  transition={{ duration: 0.6 }}
+                >
                   <service.icon className="w-7 h-7 text-primary" />
-                </div>
+                </motion.div>
                 <h3 className="text-lg font-semibold mb-2">{service.title}</h3>
                 <p className="text-sm text-muted-foreground">{service.description}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* How It Works */}
       <section id="how-it-works" className="py-20 px-4 bg-muted/30">
         <div className="container mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4">How It Works</h2>
-          <p className="text-center text-muted-foreground mb-12">Get started in three simple steps</p>
+          <motion.h2 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            className="text-4xl font-bold text-center mb-4"
+          >
+            How It Works
+          </motion.h2>
+          <motion.p 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            className="text-center text-muted-foreground mb-12"
+          >
+            Get started in three simple steps
+          </motion.p>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto"
+          >
             {[
               { step: "1", title: "Search", description: "Tell us what service you need" },
               { step: "2", title: "Compare", description: "Review profiles and ratings" },
               { step: "3", title: "Book", description: "Connect with your chosen professional" },
             ].map((item, index) => (
-              <div key={index} className="text-center animate-fade-in">
-                <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+              <motion.div 
+                key={index} 
+                variants={float3D}
+                className="text-center"
+              >
+                <motion.div 
+                  className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-bold mx-auto mb-4"
+                  whileHover={{ 
+                    scale: 1.15, 
+                    rotateY: 360,
+                    transition: { duration: 0.6 }
+                  }}
+                  style={{ transformStyle: "preserve-3d" }}
+                >
                   {item.step}
-                </div>
+                </motion.div>
                 <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
                 <p className="text-muted-foreground">{item.description}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Why Choose Us */}
       <section className="py-20 px-4">
         <div className="container mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-12">Why Choose Home Genie</h2>
+          <motion.h2 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            className="text-4xl font-bold text-center mb-12"
+          >
+            Why Choose Home Genie
+          </motion.h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto"
+            style={{ perspective: "1200px" }}
+          >
             {[
               { icon: CheckCircle, title: "Verified Professionals", description: "All service providers are background checked" },
               { icon: Star, title: "Rated & Reviewed", description: "Real reviews from real customers" },
               { icon: Zap, title: "Quick Response", description: "Get responses within minutes" },
             ].map((feature, index) => (
-              <div key={index} className="glass-card p-8 rounded-xl text-center">
-                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <motion.div 
+                key={index} 
+                variants={float3D}
+                whileHover={{ 
+                  y: -10,
+                  rotateX: 5,
+                  rotateY: -5,
+                  z: 30,
+                  transition: { duration: 0.3 }
+                }}
+                className="glass-card p-8 rounded-xl text-center"
+                style={{ transformStyle: "preserve-3d" }}
+              >
+                <motion.div 
+                  className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4"
+                  whileHover={{ 
+                    scale: 1.2,
+                    rotateZ: 360,
+                    transition: { duration: 0.5 }
+                  }}
+                >
                   <feature.icon className="w-7 h-7 text-primary" />
-                </div>
+                </motion.div>
                 <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
                 <p className="text-muted-foreground">{feature.description}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Testimonials */}
       <section id="testimonials" className="py-20 px-4 bg-muted/30">
         <div className="container mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4">What Our Customers Say</h2>
-          <p className="text-center text-muted-foreground mb-12">Real experiences from real people</p>
+          <motion.h2 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            className="text-4xl font-bold text-center mb-4"
+          >
+            What Our Customers Say
+          </motion.h2>
+          <motion.p 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            className="text-center text-muted-foreground mb-12"
+          >
+            Real experiences from real people
+          </motion.p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto"
+          >
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="glass-card p-8 rounded-xl">
+              <motion.div 
+                key={index} 
+                variants={fadeInScale}
+                whileHover={{ 
+                  scale: 1.03,
+                  rotateY: 2,
+                  z: 10,
+                  transition: { duration: 0.3 }
+                }}
+                className="glass-card p-8 rounded-xl"
+                style={{ transformStyle: "preserve-3d" }}
+              >
                 <Quote className="w-10 h-10 text-primary/20 mb-4" />
                 <p className="text-lg mb-6">{testimonial.content}</p>
                 <div className="flex items-center gap-2 mb-2">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-primary text-primary" />
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, scale: 0 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.1, duration: 0.3 }}
+                    >
+                      <Star className="w-5 h-5 fill-primary text-primary" />
+                    </motion.div>
                   ))}
                 </div>
                 <p className="font-semibold">{testimonial.name}</p>
                 <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
