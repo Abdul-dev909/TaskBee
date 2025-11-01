@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import genieLamp from "@/assets/genie-lamp.png";
 import heroBg from "@/assets/hero-bg.jpg";
+import heroProviders from "@/assets/hero-service-providers.jpg";
 import servicesBg from "@/assets/services-bg.jpg";
 import testimonialsBg from "@/assets/testimonials-bg.jpg";
 import { 
@@ -136,15 +137,18 @@ const Index = () => {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-6 leading-tight"
+                className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight"
+                style={{ color: '#6B4423' }}
               >
-                Trusted, Local Service Providers for Every Odd Job
+                Trusted, Local Service{' '}
+                <span style={{ color: '#A0754E' }}>Providers</span> for Every Odd Job
               </motion.h1>
               <motion.p 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
-                className="text-lg md:text-xl text-muted-foreground mb-8"
+                className="text-lg md:text-xl mb-8"
+                style={{ color: '#8B6F47' }}
               >
                 From furniture assembly to garden help, find verified local service providers ready to help with any task.
               </motion.p>
@@ -202,7 +206,7 @@ const Index = () => {
             >
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <img 
-                  src={heroBg} 
+                  src={heroProviders} 
                   alt="Trusted local service providers" 
                   className="w-full h-auto object-cover"
                 />
