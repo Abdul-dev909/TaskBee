@@ -5,47 +5,128 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { 
   Briefcase, 
-  Plus, 
   Calendar, 
   DollarSign, 
-  MapPin, 
-  Clock,
+  MapPin,
   CheckCircle,
-  AlertCircle,
-  Settings
+  Settings,
+  Search,
+  Filter
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import genieLamp from "@/assets/genie-lamp.png";
 import dashboardBg from "@/assets/dashboard-bg.jpg";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface Job {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  budget: string | null;
+  city: string;
+  date_time: string | null;
+  status: string;
+  created_at: string;
+}
+
+interface JobRequest {
+  id: string;
+  job_id: string;
+  message: string;
+  status: string;
+  created_at: string;
+  jobs?: Job;
+}
 
 const ProviderDashboard = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("browse");
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [myApplications, setMyApplications] = useState<JobRequest[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [cityFilter, setCityFilter] = useState("");
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate("/login");
+      } else {
+        fetchJobs();
+        fetchMyApplications();
       }
     };
     checkAuth();
   }, [navigate]);
+
+  const fetchJobs = async () => {
+    const { data, error } = await supabase
+      .from("jobs" as any)
+      .select("*")
+      .eq("status", "open")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch jobs",
+        variant: "destructive",
+      });
+    } else {
+      setJobs((data as any) || []);
+    }
+  };
+
+  const fetchMyApplications = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const { data, error } = await supabase
+      .from("job_requests" as any)
+      .select(`
+        *,
+        jobs (*)
+      `)
+      .eq("provider_id", session.user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching applications:", error);
+    } else {
+      setMyApplications((data as any) || []);
+    }
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
   };
 
-  const mockJobs = [
-    { id: 1, title: "Kitchen Sink Repair", status: "pending", location: "Downtown", budget: "$150", date: "2025-01-15" },
-    { id: 2, title: "Bathroom Painting", status: "in-progress", location: "Suburb Area", budget: "$300", date: "2025-01-18" },
-    { id: 3, title: "Electrical Wiring", status: "completed", location: "North Side", budget: "$500", date: "2025-01-10" },
-  ];
+  const filteredJobs = jobs.filter(job => {
+    const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         job.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = categoryFilter === "all" || job.category === categoryFilter;
+    const matchesCity = !cityFilter || job.city.toLowerCase().includes(cityFilter.toLowerCase());
+    
+    return matchesSearch && matchesCategory && matchesCity;
+  });
+
+  const stats = {
+    activeApplications: myApplications.filter(a => a.status === "pending").length,
+    acceptedJobs: myApplications.filter(a => a.status === "accepted").length,
+    availableJobs: jobs.length,
+  };
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -60,259 +141,274 @@ const ProviderDashboard = () => {
       <div className="relative z-10">
         {/* Header */}
         <header className="sticky top-0 z-50 glass-card border-b border-border/40">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img src={genieLamp} alt="Genie Lamp" className="w-10 h-10 object-contain" />
-              <div>
-                <h1 className="text-2xl font-semibold text-primary">Home Genie</h1>
-                <p className="text-xs text-muted-foreground">Service Provider Dashboard</p>
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img src={genieLamp} alt="Genie Lamp" className="w-10 h-10 object-contain" />
+                <div>
+                  <h1 className="text-2xl font-semibold text-primary">Home Genie</h1>
+                  <p className="text-xs text-muted-foreground">Service Provider Dashboard</p>
+                </div>
               </div>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
-              <Button onClick={handleLogout} variant="outline" size="sm">
-                Logout
-              </Button>
+              
+              <div className="flex items-center gap-4">
+                <Button variant="outline" size="sm">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
+                </Button>
+                <Button onClick={handleLogout} variant="outline" size="sm">
+                  Logout
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8 animate-fade-in">
-          <h2 className="text-3xl font-bold mb-2">Welcome back, Provider!</h2>
-          <p className="text-muted-foreground">Manage your services and jobs from your dashboard</p>
-        </div>
+        {/* Main Content */}
+        <main className="container mx-auto px-4 py-8">
+          <div className="mb-8 animate-fade-in">
+            <h2 className="text-3xl font-bold mb-2">Welcome back, Provider!</h2>
+            <p className="text-muted-foreground">Find jobs and manage your applications</p>
+          </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 animate-fade-in">
-          <Card className="glass-card hover-scale">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Active Jobs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-3xl font-bold">5</div>
-                <Briefcase className="w-8 h-8 text-primary/50" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card hover-scale">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-3xl font-bold">24</div>
-                <CheckCircle className="w-8 h-8 text-green-500/50" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card hover-scale">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Earnings (Month)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-3xl font-bold">$2,450</div>
-                <DollarSign className="w-8 h-8 text-primary/50" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card hover-scale">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Rating</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-3xl font-bold">4.8</div>
-                <div className="text-2xl">⭐</div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="glass-card">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="jobs">My Jobs</TabsTrigger>
-            <TabsTrigger value="post-service">Post Service</TabsTrigger>
-          </TabsList>
-
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6 animate-fade-in">
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Your latest job updates and notifications</CardDescription>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
+            <Card className="glass-card hover-scale">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Available Jobs</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/30">
-                    <AlertCircle className="w-5 h-5 text-primary" />
-                    <div className="flex-1">
-                      <p className="font-medium">New job request received</p>
-                      <p className="text-sm text-muted-foreground">Kitchen Sink Repair - 2 hours ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/30">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                    <div className="flex-1">
-                      <p className="font-medium">Job completed</p>
-                      <p className="text-sm text-muted-foreground">Bathroom Painting - Yesterday</p>
-                    </div>
-                  </div>
+                <div className="flex items-center justify-between">
+                  <div className="text-3xl font-bold">{stats.availableJobs}</div>
+                  <Briefcase className="w-8 h-8 text-primary/50" />
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          {/* Jobs Tab */}
-          <TabsContent value="jobs" className="space-y-6 animate-fade-in">
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>Assigned Jobs</CardTitle>
-                <CardDescription>Manage and track your ongoing jobs</CardDescription>
+            <Card className="glass-card hover-scale">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Active Applications</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {mockJobs.map((job) => (
-                    <div key={job.id} className="p-4 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h3 className="font-semibold text-lg">{job.title}</h3>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <MapPin className="w-4 h-4" />
-                              {job.location}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-4 h-4" />
-                              {job.date}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <DollarSign className="w-4 h-4" />
-                              {job.budget}
-                            </span>
+                <div className="flex items-center justify-between">
+                  <div className="text-3xl font-bold">{stats.activeApplications}</div>
+                  <Calendar className="w-8 h-8 text-primary/50" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-card hover-scale">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Accepted Jobs</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="text-3xl font-bold">{stats.acceptedJobs}</div>
+                  <CheckCircle className="w-8 h-8 text-green-500/50" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="glass-card">
+              <TabsTrigger value="browse">Browse Jobs ({filteredJobs.length})</TabsTrigger>
+              <TabsTrigger value="applications">My Applications ({myApplications.length})</TabsTrigger>
+            </TabsList>
+
+            {/* Browse Jobs Tab */}
+            <TabsContent value="browse" className="space-y-6 animate-fade-in">
+              {/* Filters */}
+              <Card className="glass-card">
+                <CardHeader>
+                  <CardTitle>Search & Filter</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="search">Search</Label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          id="search"
+                          placeholder="Search jobs..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-10 input-elegant"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="category">Category</Label>
+                      <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                        <SelectTrigger className="input-elegant">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Categories</SelectItem>
+                          <SelectItem value="Plumbing">Plumbing</SelectItem>
+                          <SelectItem value="Electrical">Electrical</SelectItem>
+                          <SelectItem value="Painting">Painting</SelectItem>
+                          <SelectItem value="Cleaning">Cleaning</SelectItem>
+                          <SelectItem value="Carpentry">Carpentry</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="city">City</Label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          id="city"
+                          placeholder="Filter by city..."
+                          value={cityFilter}
+                          onChange={(e) => setCityFilter(e.target.value)}
+                          className="pl-10 input-elegant"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Jobs List */}
+              <Card className="glass-card">
+                <CardHeader>
+                  <CardTitle>Available Jobs</CardTitle>
+                  <CardDescription>Click on a job to view details and apply</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {filteredJobs.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground">No jobs available matching your filters</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {filteredJobs.map((job) => (
+                        <div 
+                          key={job.id} 
+                          className="p-4 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                          onClick={() => navigate(`/job/${job.id}`)}
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-lg mb-2">{job.title}</h3>
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                                <span className="flex items-center gap-1">
+                                  <Briefcase className="w-4 h-4" />
+                                  {job.category}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="w-4 h-4" />
+                                  {job.city}
+                                </span>
+                                {job.budget && (
+                                  <span className="flex items-center gap-1">
+                                    <DollarSign className="w-4 h-4" />
+                                    {job.budget}
+                                  </span>
+                                )}
+                                {job.date_time && (
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="w-4 h-4" />
+                                    {new Date(job.date_time).toLocaleDateString()}
+                                  </span>
+                                )}
+                                <span className="text-xs">
+                                  Posted {new Date(job.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{job.description}</p>
+                            </div>
                           </div>
+                          <Button size="sm" className="btn-glow" onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/job/${job.id}`);
+                          }}>
+                            View Details & Apply
+                          </Button>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          job.status === 'completed' ? 'bg-green-500/20 text-green-500' :
-                          job.status === 'in-progress' ? 'bg-primary/20 text-primary' :
-                          'bg-yellow-500/20 text-yellow-500'
-                        }`}>
-                          {job.status.replace('-', ' ')}
-                        </span>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline">View Details</Button>
-                        {job.status !== 'completed' && (
-                          <Button size="sm" className="btn-glow">Update Status</Button>
-                        )}
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          {/* Post Service Tab */}
-          <TabsContent value="post-service" className="animate-fade-in">
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle>Post New Service</CardTitle>
-                <CardDescription>List a new service you can provide to homeowners</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="service-title">Service Title</Label>
-                    <Input 
-                      id="service-title" 
-                      placeholder="e.g., Professional Plumbing Services"
-                      className="input-elegant"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
-                    <Input 
-                      id="category" 
-                      placeholder="e.g., Plumbing, Electrical, Painting"
-                      className="input-elegant"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea 
-                      id="description" 
-                      placeholder="Describe your service and expertise..."
-                      rows={4}
-                      className="input-elegant"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="price">Price Range</Label>
-                      <Input 
-                        id="price" 
-                        placeholder="e.g., $50 - $200"
-                        className="input-elegant"
-                      />
+            {/* My Applications Tab */}
+            <TabsContent value="applications" className="animate-fade-in">
+              <Card className="glass-card">
+                <CardHeader>
+                  <CardTitle>My Job Applications</CardTitle>
+                  <CardDescription>Track the status of your applications</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {myApplications.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground mb-4">You haven't applied to any jobs yet</p>
+                      <Button onClick={() => setActiveTab("browse")}>
+                        Browse Available Jobs
+                      </Button>
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="availability">Availability</Label>
-                      <Input 
-                        id="availability" 
-                        placeholder="e.g., Weekdays 9am-5pm"
-                        className="input-elegant"
-                      />
+                  ) : (
+                    <div className="space-y-4">
+                      {myApplications.map((application) => {
+                        const job = application.jobs as unknown as Job;
+                        if (!job) return null;
+                        
+                        return (
+                          <div key={application.id} className="p-4 rounded-lg border border-border bg-card">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-lg mb-2">{job.title}</h3>
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                                  <span className="flex items-center gap-1">
+                                    <Briefcase className="w-4 h-4" />
+                                    {job.category}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <MapPin className="w-4 h-4" />
+                                    {job.city}
+                                  </span>
+                                  {job.budget && (
+                                    <span className="flex items-center gap-1">
+                                      <DollarSign className="w-4 h-4" />
+                                      {job.budget}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-2">
+                                  Applied {new Date(application.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ml-4 ${
+                                application.status === 'accepted' ? 'bg-green-500/20 text-green-500' :
+                                application.status === 'rejected' ? 'bg-red-500/20 text-red-500' :
+                                'bg-yellow-500/20 text-yellow-500'
+                              }`}>
+                                {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
+                              </span>
+                            </div>
+                            <div className="p-3 rounded-lg bg-muted/30 text-sm">
+                              <p className="font-medium mb-1">Your Message:</p>
+                              <p className="text-muted-foreground">{application.message}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="location">Service Area</Label>
-                    <Input 
-                      id="location" 
-                      placeholder="e.g., Downtown, Suburbs"
-                      className="input-elegant"
-                    />
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    className="w-full btn-glow"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toast({
-                        title: "Service Posted!",
-                        description: "Your service has been listed successfully.",
-                      });
-                    }}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Post Service
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </main>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </main>
       </div>
     </div>
   );
