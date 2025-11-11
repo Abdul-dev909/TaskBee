@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      job_requests: {
+        Row: {
+          created_at: string
+          id: string
+          job_id: string
+          message: string
+          provider_id: string
+          status: Database["public"]["Enums"]["job_request_status"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_id: string
+          message: string
+          provider_id: string
+          status?: Database["public"]["Enums"]["job_request_status"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_id?: string
+          message?: string
+          provider_id?: string
+          status?: Database["public"]["Enums"]["job_request_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_requests_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          budget: string | null
+          category: string
+          city: string
+          created_at: string
+          date_time: string | null
+          description: string
+          id: string
+          posted_by: string
+          status: Database["public"]["Enums"]["job_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          budget?: string | null
+          category: string
+          city: string
+          created_at?: string
+          date_time?: string | null
+          description: string
+          id?: string
+          posted_by: string
+          status?: Database["public"]["Enums"]["job_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          budget?: string | null
+          category?: string
+          city?: string
+          created_at?: string
+          date_time?: string | null
+          description?: string
+          id?: string
+          posted_by?: string
+          status?: Database["public"]["Enums"]["job_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       provider_profiles: {
         Row: {
           city: string
@@ -80,9 +157,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_job_owner: {
+        Args: { _job_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "homeowner" | "service_provider"
+      job_request_status: "pending" | "accepted" | "rejected"
+      job_status: "open" | "assigned" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -211,6 +294,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["homeowner", "service_provider"],
+      job_request_status: ["pending", "accepted", "rejected"],
+      job_status: ["open", "assigned", "completed"],
     },
   },
 } as const

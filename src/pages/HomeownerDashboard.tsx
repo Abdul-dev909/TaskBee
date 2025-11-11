@@ -131,6 +131,43 @@ const HomeownerDashboard = () => {
       return;
     }
 
+    // Comprehensive input validation
+    if (formData.title.trim().length < 5 || formData.title.length > 100) {
+      toast({
+        title: "Validation Error",
+        description: "Job title must be between 5 and 100 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.description.trim().length < 20 || formData.description.length > 2000) {
+      toast({
+        title: "Validation Error",
+        description: "Description must be between 20 and 2000 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.city.trim().length < 2 || formData.city.length > 100) {
+      toast({
+        title: "Validation Error",
+        description: "City name must be between 2 and 100 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.budget && formData.budget.length > 50) {
+      toast({
+        title: "Validation Error",
+        description: "Budget must be under 50 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     const { data: { session } } = await supabase.auth.getSession();
@@ -138,6 +175,25 @@ const HomeownerDashboard = () => {
       navigate("/login");
       return;
     }
+
+    // Rate limiting check - max 10 jobs per 24 hours
+    const { count } = await supabase
+      .from('jobs')
+      .select('*', { count: 'exact', head: true })
+      .eq('posted_by', session.user.id)
+      .eq('status', 'open')
+      .gte('created_at', new Date(Date.now() - 24*60*60*1000).toISOString());
+
+    if (count && count >= 10) {
+      toast({
+        title: "Rate Limit Exceeded",
+        description: "Maximum 10 open jobs per 24 hours. Please try again later.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
 
     const jobData = {
       title: formData.title,
