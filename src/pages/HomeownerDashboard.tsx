@@ -74,6 +74,8 @@ const HomeownerDashboard = () => {
   const [viewingOffersJobTitle, setViewingOffersJobTitle] = useState<string>("");
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [providers, setProviders] = useState<any[]>([]);
+  const [showProvidersDialog, setShowProvidersDialog] = useState(false);
+  const [isLoadingProviders, setIsLoadingProviders] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -335,22 +337,28 @@ const HomeownerDashboard = () => {
   };
 
   const handleServiceClick = async (serviceTitle: string) => {
-    setSelectedService(serviceTitle);
-    
-    const { data, error } = await supabase
-      .from("provider_profiles" as any)
-      .select("*")
-      .eq("skill_category", serviceTitle);
+    try {
+      setIsLoadingProviders(true);
+      setSelectedService(serviceTitle);
+      
+      const { data, error } = await supabase
+        .from("provider_profiles" as any)
+        .select("*")
+        .ilike("skill_category", `%${serviceTitle}%`);
 
-    if (error) {
+      if (error) throw error;
+
+      setProviders(data || []);
+    } catch (error) {
+      console.error('Error fetching providers:', error);
       toast({
         title: "Error",
         description: "Failed to fetch service providers",
         variant: "destructive",
       });
       setProviders([]);
-    } else {
-      setProviders((data as any) || []);
+    } finally {
+      setIsLoadingProviders(false);
     }
   };
 
@@ -1047,7 +1055,11 @@ const HomeownerDashboard = () => {
           </AlertDialogHeader>
           
           <div className="space-y-4 py-4">
-            {providers.length === 0 ? (
+            {isLoadingProviders ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Loading providers...</p>
+              </div>
+            ) : providers.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">No service providers found for this category yet.</p>
               </div>

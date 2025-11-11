@@ -2,6 +2,12 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 import genieLamp from "@/assets/genie-lamp.png";
 import heroBg from "@/assets/hero-bg.jpg";
 import heroProviders from "@/assets/hero-service-providers.jpg";
@@ -19,13 +25,79 @@ import {
   Users,
   Shield,
   Star,
-  Search
+  Search,
+  Phone,
+  MapPin,
+  Mail
 } from "lucide-react";
 
 const Index = () => {
+  const { toast } = useToast();
+  const [providers, setProviders] = useState<any[]>([]);
+  const [showProvidersDialog, setShowProvidersDialog] = useState(false);
+  const [isLoadingProviders, setIsLoadingProviders] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     element?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleServiceClick = async (serviceCategory: string) => {
+    try {
+      setIsLoadingProviders(true);
+      const { data, error } = await supabase
+        .from('provider_profiles')
+        .select('*')
+        .ilike('skill_category', `%${serviceCategory}%`);
+
+      if (error) throw error;
+
+      setProviders(data || []);
+      setShowProvidersDialog(true);
+    } catch (error) {
+      console.error('Error fetching providers:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch service providers",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingProviders(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      toast({
+        title: "Enter a search term",
+        description: "Please enter a service or skill to search for",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsLoadingProviders(true);
+      const { data, error } = await supabase
+        .from('provider_profiles')
+        .select('*')
+        .or(`skill_category.ilike.%${searchQuery}%,bio.ilike.%${searchQuery}%,full_name.ilike.%${searchQuery}%`);
+
+      if (error) throw error;
+
+      setProviders(data || []);
+      setShowProvidersDialog(true);
+    } catch (error) {
+      console.error('Error searching providers:', error);
+      toast({
+        title: "Error",
+        description: "Failed to search service providers",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingProviders(false);
+    }
   };
 
   // Animation variants
@@ -165,12 +237,16 @@ const Index = () => {
                   <Input 
                     placeholder="What do you need help with?" 
                     className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   />
-                  <Link to="/signup">
-                    <Button className="bg-primary hover:bg-primary/90 text-white whitespace-nowrap px-6">
-                      Find Help Now
-                    </Button>
-                  </Link>
+                  <Button 
+                    onClick={handleSearch}
+                    className="bg-primary hover:bg-primary/90 text-white whitespace-nowrap px-6"
+                  >
+                    Find Help Now
+                  </Button>
                 </div>
               </motion.div>
 
@@ -182,16 +258,16 @@ const Index = () => {
                 className="flex flex-wrap items-center gap-3"
               >
                 <span className="text-sm text-muted-foreground font-medium">Popular:</span>
-                <Button variant="outline" className="rounded-full text-sm">
+                <Button variant="outline" className="rounded-full text-sm" onClick={() => handleServiceClick("Assembly")}>
                   Furniture Assembly
                 </Button>
-                <Button variant="outline" className="rounded-full text-sm">
+                <Button variant="outline" className="rounded-full text-sm" onClick={() => handleServiceClick("Cleaning")}>
                   Cleaning
                 </Button>
-                <Button variant="outline" className="rounded-full text-sm">
+                <Button variant="outline" className="rounded-full text-sm" onClick={() => handleServiceClick("Yard Work")}>
                   Garden Help
                 </Button>
-                <Button variant="outline" className="rounded-full text-sm">
+                <Button variant="outline" className="rounded-full text-sm" onClick={() => handleServiceClick("Handyman")}>
                   Minor Repairs
                 </Button>
               </motion.div>
@@ -259,6 +335,7 @@ const Index = () => {
                   z: 20,
                   transition: { duration: 0.3 }
                 }}
+                onClick={() => handleServiceClick(service.name)}
                 className="glass-card p-6 rounded-xl text-center cursor-pointer group"
                 style={{ transformStyle: "preserve-3d" }}
               >
@@ -472,71 +549,122 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="px-4 py-20 bg-primary/5">
+      {/* Call to Action */}
+      <section className="px-4 py-20 bg-primary/10">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-            Ready to Get Started?
-          </h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            Join thousands of homeowners who trust Home Genie for their home service needs
-          </p>
-          <Link to="/signup">
-            <Button size="lg" className="btn-glow text-lg px-8">
-              Get Started Today
-            </Button>
-          </Link>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-6">
+              Ready to Find Your Perfect Service Provider?
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8">
+              Join thousands of homeowners who trust Home Genie for all their home service needs
+            </p>
+            <Link to="/signup">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6">
+                Get Started Now
+              </Button>
+            </Link>
+          </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-card border-t border-border">
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <footer className="bg-secondary/20 px-4 py-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <img src={genieLamp} alt="Home Genie" className="w-8 h-8 object-contain" />
-                <span className="font-bold text-primary">Home Genie</span>
+                <span className="text-lg font-bold text-primary">Home Genie</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Your trusted platform for local home services
+                Connecting homeowners with trusted local service professionals.
               </p>
             </div>
-
             <div>
               <h4 className="font-semibold text-foreground mb-4">Company</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">About Us</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Careers</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Press</a></li>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">About Us</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">How It Works</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
               </ul>
             </div>
-
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">For Professionals</h4>
-              <ul className="space-y-2 text-sm">
-                <li><Link to="/become-provider" className="text-muted-foreground hover:text-primary transition-colors">Become a Provider</Link></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Provider Resources</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Success Stories</a></li>
-              </ul>
-            </div>
-
             <div>
               <h4 className="font-semibold text-foreground mb-4">Support</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Contact Us</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Help Center</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</a></li>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">Help Center</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Safety</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Contact Us</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-primary transition-colors">Privacy Policy</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Terms of Service</a></li>
               </ul>
             </div>
           </div>
-
-          <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2025 Home Genie. All rights reserved.</p>
+          <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
+            <p>&copy; 2024 Home Genie. All rights reserved.</p>
           </div>
         </div>
       </footer>
+
+      {/* Service Providers Dialog */}
+      <Dialog open={showProvidersDialog} onOpenChange={setShowProvidersDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Service Providers</DialogTitle>
+          </DialogHeader>
+          {isLoadingProviders ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-muted-foreground">Loading providers...</p>
+            </div>
+          ) : providers.length === 0 ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-muted-foreground">No providers found for this service</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              {providers.map((provider) => (
+                <Card key={provider.id}>
+                  <CardHeader>
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-16 w-16">
+                        <AvatarImage src={provider.profile_image_url || ''} alt={provider.full_name} />
+                        <AvatarFallback>{provider.full_name?.charAt(0) || 'P'}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <CardTitle className="text-lg">{provider.full_name}</CardTitle>
+                        <p className="text-sm text-muted-foreground">{provider.skill_category}</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {provider.bio && (
+                      <p className="text-sm text-muted-foreground">{provider.bio}</p>
+                    )}
+                    <div className="flex items-center gap-2 text-sm">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span>{provider.city}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <span>{provider.phone}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
