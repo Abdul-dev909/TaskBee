@@ -372,6 +372,13 @@ const HomeownerDashboard = () => {
     { icon: Droplets, title: "Cleaning", description: "Thorough cleaning services" },
   ];
 
+  // Filter services based on search query
+  const filteredServices = services.filter(service => 
+    searchQuery === "" || 
+    service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    service.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const testimonials = [
     {
       name: "Sarah Johnson",
@@ -494,15 +501,24 @@ const HomeownerDashboard = () => {
               Browse our most requested home services
             </motion.p>
             
-            <motion.div 
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={staggerContainer}
-              className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6"
-              style={{ perspective: "1000px" }}
-            >
-              {services.map((service, index) => (
+            {filteredServices.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="col-span-full text-center py-12"
+              >
+                <p className="text-muted-foreground">No services found matching "{searchQuery}"</p>
+              </motion.div>
+            ) : (
+              <motion.div 
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-100px" }}
+                variants={staggerContainer}
+                className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6"
+                style={{ perspective: "1000px" }}
+              >
+                {filteredServices.map((service, index) => (
                 <motion.div
                   key={index}
                   variants={float3D}
@@ -528,6 +544,7 @@ const HomeownerDashboard = () => {
                 </motion.div>
               ))}
             </motion.div>
+            )}
           </div>
         </section>
 
