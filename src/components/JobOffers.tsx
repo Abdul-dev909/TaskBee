@@ -48,28 +48,38 @@ export const JobOffers = ({ jobId, jobTitle, open, onClose, onOfferAccepted }: J
 
   const fetchOffers = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    
+    // Fetch job requests with provider details using a manual join
+    const { data: requestsData, error: requestsError } = await supabase
       .from("job_requests" as any)
-      .select(`
-        *,
-        provider_profiles (
-          full_name,
-          skill_category,
-          phone
-        )
-      `)
+      .select("*")
       .eq("job_id", jobId)
       .order("created_at", { ascending: false });
 
-    if (error) {
+    if (requestsError) {
       toast({
         title: "Error",
         description: "Failed to fetch offers",
         variant: "destructive",
       });
-    } else {
-      setOffers((data as any) || []);
+      setLoading(false);
+      return;
     }
+
+    // Fetch provider profiles for all providers
+    const providerIds = [...new Set(requestsData.map((r: any) => r.provider_id))];
+    const { data: profilesData } = await supabase
+      .from("provider_profiles" as any)
+      .select("user_id, full_name, skill_category, phone")
+      .in("user_id", providerIds);
+
+    // Merge the data
+    const offersWithProfiles = requestsData.map((request: any) => ({
+      ...request,
+      provider_profiles: profilesData?.find((p: any) => p.user_id === request.provider_id)
+    }));
+
+    setOffers(offersWithProfiles || []);
     setLoading(false);
   };
 
