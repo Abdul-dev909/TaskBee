@@ -8,7 +8,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Camera, Loader2, Lock } from "lucide-react";
+import { ArrowLeft, Camera, Loader2, Lock, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { motion } from "framer-motion";
 import genieLamp from "@/assets/genie-lamp.png";
 import dashboardBg from "@/assets/dashboard-bg.jpg";
@@ -41,6 +51,8 @@ const ProviderSettings = () => {
     confirmPassword: "",
   });
   const [changingPassword, setChangingPassword] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -237,6 +249,74 @@ const ProviderSettings = () => {
         await supabase.auth.signOut();
         navigate("/login");
       }, 2000);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    try {
+      // Delete profile picture from storage if exists
+      if (formData.profile_image_url) {
+        const oldPath = formData.profile_image_url.split("/").pop();
+        if (oldPath) {
+          await supabase.storage
+            .from("profile_pictures")
+            .remove([`${session.user.id}/${oldPath}`]);
+        }
+      }
+
+      // Delete job requests
+      await supabase
+        .from("job_requests" as any)
+        .delete()
+        .eq("provider_id", session.user.id);
+
+      // Delete provider profile
+      await supabase
+        .from("provider_profiles" as any)
+        .delete()
+        .eq("user_id", session.user.id);
+
+      // Delete user role
+      await supabase
+        .from("user_roles" as any)
+        .delete()
+        .eq("user_id", session.user.id);
+
+      // Delete auth user account
+      const { error: deleteError } = await supabase.auth.admin.deleteUser(
+        session.user.id
+      );
+
+      if (deleteError) {
+        toast({
+          title: "Error",
+          description: "Failed to delete account. Please contact support.",
+          variant: "destructive",
+        });
+        setDeletingAccount(false);
+        return;
+      }
+
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been permanently deleted.",
+      });
+
+      // Sign out and redirect to home
+      await supabase.auth.signOut();
+      navigate("/");
+    } catch (error) {
+      console.error("Delete account error:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while deleting your account.",
+        variant: "destructive",
+      });
+      setDeletingAccount(false);
     }
   };
 
@@ -454,8 +534,70 @@ const ProviderSettings = () => {
               </CardContent>
             </Card>
           </motion.div>
+
+          {/* Delete Account */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
+            <Card className="glass-card border-destructive/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-destructive">
+                  <Trash2 className="w-5 h-5" />
+                  Delete Account
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Permanently delete your account and all associated data. This action cannot be undone.
+                </p>
+                <Button
+                  onClick={() => setShowDeleteDialog(true)}
+                  disabled={deletingAccount}
+                  variant="destructive"
+                  className="w-full md:w-auto"
+                >
+                  {deletingAccount ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete My Account
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your account,
+              profile information, job applications, and remove all your data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingAccount}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={deletingAccount}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingAccount ? "Deleting..." : "Delete Account"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
