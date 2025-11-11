@@ -20,6 +20,7 @@ export type Database = {
           id: string
           job_id: string
           message: string
+          proposed_rate: number | null
           provider_id: string
           status: Database["public"]["Enums"]["job_request_status"]
         }
@@ -28,6 +29,7 @@ export type Database = {
           id?: string
           job_id: string
           message: string
+          proposed_rate?: number | null
           provider_id: string
           status?: Database["public"]["Enums"]["job_request_status"]
         }
@@ -36,6 +38,7 @@ export type Database = {
           id?: string
           job_id?: string
           message?: string
+          proposed_rate?: number | null
           provider_id?: string
           status?: Database["public"]["Enums"]["job_request_status"]
         }
@@ -51,6 +54,7 @@ export type Database = {
       }
       jobs: {
         Row: {
+          assigned_provider_id: string | null
           budget: string | null
           category: string
           city: string
@@ -64,6 +68,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assigned_provider_id?: string | null
           budget?: string | null
           category: string
           city: string
@@ -77,6 +82,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assigned_provider_id?: string | null
           budget?: string | null
           category?: string
           city?: string
@@ -169,7 +175,7 @@ export type Database = {
     Enums: {
       app_role: "homeowner" | "service_provider"
       job_request_status: "pending" | "accepted" | "rejected"
-      job_status: "open" | "assigned" | "completed"
+      job_status: "open" | "assigned" | "completed" | "in_progress"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -299,7 +305,7 @@ export const Constants = {
     Enums: {
       app_role: ["homeowner", "service_provider"],
       job_request_status: ["pending", "accepted", "rejected"],
-      job_status: ["open", "assigned", "completed"],
+      job_status: ["open", "assigned", "completed", "in_progress"],
     },
   },
 } as const

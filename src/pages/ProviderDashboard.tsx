@@ -43,9 +43,10 @@ interface JobRequest {
   id: string;
   job_id: string;
   message: string;
+  proposed_rate: number | null;
   status: string;
   created_at: string;
-  jobs?: Job;
+  jobs?: Job & { assigned_provider_id?: string };
 }
 
 const ProviderDashboard = () => {
@@ -214,7 +215,8 @@ const ProviderDashboard = () => {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="glass-card">
               <TabsTrigger value="browse">Browse Jobs ({filteredJobs.length})</TabsTrigger>
-              <TabsTrigger value="applications">My Applications ({myApplications.length})</TabsTrigger>
+              <TabsTrigger value="applications">My Offers ({myApplications.length})</TabsTrigger>
+              <TabsTrigger value="active">Active Jobs ({myApplications.filter(a => a.status === 'accepted').length})</TabsTrigger>
             </TabsList>
 
             {/* Browse Jobs Tab */}
@@ -340,18 +342,18 @@ const ProviderDashboard = () => {
               </Card>
             </TabsContent>
 
-            {/* My Applications Tab */}
+            {/* My Offers Tab */}
             <TabsContent value="applications" className="animate-fade-in">
               <Card className="glass-card">
                 <CardHeader>
-                  <CardTitle>My Job Applications</CardTitle>
-                  <CardDescription>Track the status of your applications</CardDescription>
+                  <CardTitle>My Offers</CardTitle>
+                  <CardDescription>Track the status of your job offers</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {myApplications.length === 0 ? (
                     <div className="text-center py-12">
                       <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground mb-4">You haven't applied to any jobs yet</p>
+                      <p className="text-muted-foreground mb-4">You haven't submitted any offers yet</p>
                       <Button onClick={() => setActiveTab("browse")}>
                         Browse Available Jobs
                       </Button>
@@ -363,7 +365,7 @@ const ProviderDashboard = () => {
                         if (!job) return null;
                         
                         return (
-                          <div key={application.id} className="p-4 rounded-lg border border-border bg-card">
+                          <div key={application.id} className="p-4 rounded-lg border border-border bg-card hover-scale transition-all">
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex-1">
                                 <h3 className="font-semibold text-lg mb-2">{job.title}</h3>
@@ -376,15 +378,15 @@ const ProviderDashboard = () => {
                                     <MapPin className="w-4 h-4" />
                                     {job.city}
                                   </span>
-                                  {job.budget && (
-                                    <span className="flex items-center gap-1">
+                                  {application.proposed_rate && (
+                                    <span className="flex items-center gap-1 text-primary font-semibold">
                                       <DollarSign className="w-4 h-4" />
-                                      {job.budget}
+                                      ${application.proposed_rate.toFixed(2)} (Your Offer)
                                     </span>
                                   )}
                                 </div>
                                 <p className="text-sm text-muted-foreground mt-2">
-                                  Applied {new Date(application.created_at).toLocaleDateString()}
+                                  Submitted {new Date(application.created_at).toLocaleDateString()}
                                 </p>
                               </div>
                               <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ml-4 ${
@@ -402,6 +404,77 @@ const ProviderDashboard = () => {
                           </div>
                         );
                       })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Active Jobs Tab */}
+            <TabsContent value="active" className="animate-fade-in">
+              <Card className="glass-card">
+                <CardHeader>
+                  <CardTitle>Active Jobs</CardTitle>
+                  <CardDescription>Manage your accepted jobs</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {myApplications.filter(a => a.status === 'accepted').length === 0 ? (
+                    <div className="text-center py-12">
+                      <CheckCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground mb-4">No active jobs yet</p>
+                      <Button onClick={() => setActiveTab("browse")}>
+                        Browse & Apply for Jobs
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {myApplications
+                        .filter(a => a.status === 'accepted')
+                        .map((application) => {
+                          const job = application.jobs as unknown as Job & { assigned_provider_id?: string };
+                          if (!job) return null;
+                          
+                          return (
+                            <div key={application.id} className="p-6 rounded-lg border-2 border-green-500/30 bg-gradient-to-br from-green-500/5 to-transparent hover-scale transition-all">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-xl mb-2">{job.title}</h3>
+                                  <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                                    <span className="flex items-center gap-1">
+                                      <Briefcase className="w-4 h-4" />
+                                      {job.category}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <MapPin className="w-4 h-4" />
+                                      {job.city}
+                                    </span>
+                                    <span className="flex items-center gap-1 text-green-600 dark:text-green-400 font-bold">
+                                      <DollarSign className="w-4 h-4" />
+                                      ${application.proposed_rate?.toFixed(2) || 'N/A'}
+                                    </span>
+                                  </div>
+                                </div>
+                                <span className="px-4 py-2 rounded-full text-sm font-medium bg-green-500/20 text-green-500 whitespace-nowrap ml-4">
+                                  Active
+                                </span>
+                              </div>
+                              <div className="space-y-3">
+                                <div className="p-3 rounded-lg bg-muted/30 text-sm">
+                                  <p className="font-medium mb-1">Job Description:</p>
+                                  <p className="text-muted-foreground">{job.description}</p>
+                                </div>
+                                {job.date_time && (
+                                  <div className="flex items-center gap-2 text-sm">
+                                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                                    <span className="text-muted-foreground">
+                                      Scheduled: {new Date(job.date_time).toLocaleString()}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                     </div>
                   )}
                 </CardContent>

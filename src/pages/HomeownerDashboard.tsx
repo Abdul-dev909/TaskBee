@@ -23,7 +23,8 @@ import {
   Calendar,
   DollarSign,
   Trash2,
-  Edit
+  Edit,
+  Eye
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -46,6 +47,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { JobOffers } from "@/components/JobOffers";
 
 interface Job {
   id: string;
@@ -67,6 +69,8 @@ const HomeownerDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [deleteJobId, setDeleteJobId] = useState<string | null>(null);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const [viewingOffersJobId, setViewingOffersJobId] = useState<string | null>(null);
+  const [viewingOffersJobTitle, setViewingOffersJobTitle] = useState<string>("");
   
   // Form state
   const [formData, setFormData] = useState({
@@ -796,25 +800,44 @@ const HomeownerDashboard = () => {
                               </span>
                             </div>
                             <div className="flex gap-2 flex-wrap">
-                              <Select value={job.status} onValueChange={(value) => handleUpdateStatus(job.id, value)}>
-                                <SelectTrigger className="w-[150px]">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="open">Open</SelectItem>
-                                  <SelectItem value="assigned">Assigned</SelectItem>
-                                  <SelectItem value="completed">Completed</SelectItem>
-                                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <Button size="sm" variant="outline" onClick={() => handleEditJob(job)}>
-                                <Edit className="w-4 h-4 mr-2" />
-                                Edit
-                              </Button>
-                              <Button size="sm" variant="outline" onClick={() => setDeleteJobId(job.id)}>
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Delete
-                              </Button>
+                              {job.status === 'open' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="default" 
+                                  className="btn-glow"
+                                  onClick={() => {
+                                    setViewingOffersJobId(job.id);
+                                    setViewingOffersJobTitle(job.title);
+                                  }}
+                                >
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  View Offers
+                                </Button>
+                              )}
+                              {job.status !== 'assigned' && (
+                                <Select value={job.status} onValueChange={(value) => handleUpdateStatus(job.id, value)}>
+                                  <SelectTrigger className="w-[150px]">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="open">Open</SelectItem>
+                                    <SelectItem value="completed">Completed</SelectItem>
+                                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              )}
+                              {job.status !== 'assigned' && (
+                                <Button size="sm" variant="outline" onClick={() => handleEditJob(job)}>
+                                  <Edit className="w-4 h-4 mr-2" />
+                                  Edit
+                                </Button>
+                              )}
+                              {job.status !== 'assigned' && (
+                                <Button size="sm" variant="outline" onClick={() => setDeleteJobId(job.id)}>
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Delete
+                                </Button>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -955,6 +978,18 @@ const HomeownerDashboard = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Job Offers Dialog */}
+      <JobOffers
+        jobId={viewingOffersJobId || ""}
+        jobTitle={viewingOffersJobTitle}
+        open={!!viewingOffersJobId}
+        onClose={() => setViewingOffersJobId(null)}
+        onOfferAccepted={() => {
+          fetchJobs();
+          setViewingOffersJobId(null);
+        }}
+      />
     </div>
   );
 };

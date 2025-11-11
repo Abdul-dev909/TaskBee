@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, MapPin, Calendar, DollarSign, Briefcase } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import genieLamp from "@/assets/genie-lamp.png";
@@ -28,6 +29,7 @@ const JobDetails = () => {
   const { jobId } = useParams();
   const [job, setJob] = useState<Job | null>(null);
   const [message, setMessage] = useState("");
+  const [proposedRate, setProposedRate] = useState("");
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
@@ -87,6 +89,15 @@ const JobDetails = () => {
       return;
     }
 
+    if (!proposedRate || parseFloat(proposedRate) <= 0) {
+      toast({
+        title: "Proposed Rate Required",
+        description: "Please provide a valid proposed rate",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setApplying(true);
 
     const { data: { session } } = await supabase.auth.getSession();
@@ -99,6 +110,7 @@ const JobDetails = () => {
       job_id: jobId,
       provider_id: session.user.id,
       message: message.trim(),
+      proposed_rate: parseFloat(proposedRate),
     } as any);
 
     if (error) {
@@ -109,11 +121,12 @@ const JobDetails = () => {
       });
     } else {
       toast({
-        title: "Application Submitted!",
-        description: "Your application has been sent to the homeowner",
+        title: "Offer Submitted!",
+        description: "Your offer has been sent to the homeowner",
       });
       setHasApplied(true);
       setMessage("");
+      setProposedRate("");
     }
 
     setApplying(false);
@@ -204,15 +217,28 @@ const JobDetails = () => {
 
                 {job.status === 'open' && !hasApplied && (
                   <div className="space-y-4 pt-6 border-t border-border">
-                    <h3 className="text-lg font-semibold">Apply for this Job</h3>
+                    <h3 className="text-lg font-semibold">Make Your Offer</h3>
                     <div className="space-y-2">
                       <Label htmlFor="message">Your Message</Label>
                       <Textarea
                         id="message"
                         placeholder="Introduce yourself and explain why you're a good fit for this job..."
-                        rows={6}
+                        rows={4}
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
+                        className="input-elegant"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="proposedRate">Your Proposed Rate ($)</Label>
+                      <Input
+                        id="proposedRate"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="Enter your rate (e.g., 50.00)"
+                        value={proposedRate}
+                        onChange={(e) => setProposedRate(e.target.value)}
                         className="input-elegant"
                       />
                     </div>
@@ -221,7 +247,7 @@ const JobDetails = () => {
                       disabled={applying}
                       className="w-full btn-glow"
                     >
-                      {applying ? "Submitting..." : "Submit Application"}
+                      {applying ? "Submitting..." : "Submit Offer"}
                     </Button>
                   </div>
                 )}
