@@ -179,7 +179,11 @@ const ProviderDashboard = () => {
               </div>
               
               <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate("/provider-settings")}
+                >
                   <Settings className="w-4 h-4 mr-2" />
                   Settings
                 </Button>

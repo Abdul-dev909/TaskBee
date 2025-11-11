@@ -99,31 +99,37 @@ export type Database = {
       }
       provider_profiles: {
         Row: {
+          bio: string | null
           city: string
           created_at: string
           full_name: string
           id: string
           phone: string
+          profile_image_url: string | null
           skill_category: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          bio?: string | null
           city: string
           created_at?: string
           full_name: string
           id?: string
           phone: string
+          profile_image_url?: string | null
           skill_category: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          bio?: string | null
           city?: string
           created_at?: string
           full_name?: string
           id?: string
           phone?: string
+          profile_image_url?: string | null
           skill_category?: string
           updated_at?: string
           user_id?: string

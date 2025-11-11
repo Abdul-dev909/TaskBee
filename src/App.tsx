@@ -10,6 +10,7 @@ import BecomeProvider from "./pages/BecomeProvider";
 import ProviderSuccess from "./pages/ProviderSuccess";
 import HomeownerDashboard from "./pages/HomeownerDashboard";
 import ProviderDashboard from "./pages/ProviderDashboard";
+import ProviderSettings from "./pages/ProviderSettings";
 import JobDetails from "./pages/JobDetails";
 import NotFound from "./pages/NotFound";
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/provider-success" element={<ProviderSuccess />} />
           <Route path="/homeowner-dashboard" element={<HomeownerDashboard />} />
           <Route path="/provider-dashboard" element={<ProviderDashboard />} />
+          <Route path="/provider-settings" element={<ProviderSettings />} />
           <Route path="/job/:jobId" element={<JobDetails />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

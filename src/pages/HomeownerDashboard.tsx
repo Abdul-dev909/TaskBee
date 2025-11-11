@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { 
   Search, 
   Wrench, 
@@ -1051,40 +1052,57 @@ const HomeownerDashboard = () => {
                 <p className="text-muted-foreground">No service providers found for this category yet.</p>
               </div>
             ) : (
-              providers.map((provider) => (
-                <Card key={provider.id} className="glass-card">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold mb-2">{provider.full_name}</h3>
-                        <div className="space-y-2 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Briefcase className="w-4 h-4" />
-                            <span>{provider.skill_category}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            <span>{provider.city}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">📞</span>
-                            <span>{provider.phone}</span>
+              providers.map((provider) => {
+                const initials = provider.full_name
+                  .split(" ")
+                  .map((n: string) => n[0])
+                  .join("")
+                  .toUpperCase();
+                
+                return (
+                  <Card key={provider.id} className="glass-card">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <Avatar className="w-16 h-16 border-2 border-primary/20">
+                          <AvatarImage src={provider.profile_image_url || undefined} />
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            {initials || "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold mb-2">{provider.full_name}</h3>
+                          <div className="space-y-2 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                              <Briefcase className="w-4 h-4" />
+                              <span>{provider.skill_category}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <MapPin className="w-4 h-4" />
+                              <span>{provider.city}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">📞</span>
+                              <span>{provider.phone}</span>
+                            </div>
+                            {provider.bio && (
+                              <p className="mt-2 text-sm">{provider.bio}</p>
+                            )}
                           </div>
                         </div>
+                        <Button 
+                          variant="default"
+                          className="btn-glow"
+                          onClick={() => {
+                            window.location.href = `tel:${provider.phone}`;
+                          }}
+                        >
+                          Contact
+                        </Button>
                       </div>
-                      <Button 
-                        variant="default"
-                        className="btn-glow"
-                        onClick={() => {
-                          window.location.href = `tel:${provider.phone}`;
-                        }}
-                      >
-                        Contact
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+                    </CardContent>
+                  </Card>
+                );
+              })
             )}
           </div>
           
