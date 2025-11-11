@@ -71,6 +71,8 @@ const HomeownerDashboard = () => {
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [viewingOffersJobId, setViewingOffersJobId] = useState<string | null>(null);
   const [viewingOffersJobTitle, setViewingOffersJobTitle] = useState<string>("");
+  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [providers, setProviders] = useState<any[]>([]);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -331,6 +333,26 @@ const HomeownerDashboard = () => {
     }
   };
 
+  const handleServiceClick = async (serviceTitle: string) => {
+    setSelectedService(serviceTitle);
+    
+    const { data, error } = await supabase
+      .from("provider_profiles" as any)
+      .select("*")
+      .eq("skill_category", serviceTitle);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch service providers",
+        variant: "destructive",
+      });
+      setProviders([]);
+    } else {
+      setProviders((data as any) || []);
+    }
+  };
+
   // Animation variants
   const fadeInUp = {
     hidden: { opacity: 0, y: 60 },
@@ -529,6 +551,7 @@ const HomeownerDashboard = () => {
                     z: 20,
                     transition: { duration: 0.3 }
                   }}
+                  onClick={() => handleServiceClick(service.title)}
                   className="glass-card p-6 rounded-xl cursor-pointer group"
                   style={{ transformStyle: "preserve-3d" }}
                 >
@@ -1011,6 +1034,65 @@ const HomeownerDashboard = () => {
           setViewingOffersJobId(null);
         }}
       />
+
+      {/* Service Providers Dialog */}
+      <AlertDialog open={!!selectedService} onOpenChange={() => setSelectedService(null)}>
+        <AlertDialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl">{selectedService} Service Providers</AlertDialogTitle>
+            <AlertDialogDescription>
+              Browse available service providers for {selectedService?.toLowerCase()} services
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {providers.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No service providers found for this category yet.</p>
+              </div>
+            ) : (
+              providers.map((provider) => (
+                <Card key={provider.id} className="glass-card">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold mb-2">{provider.full_name}</h3>
+                        <div className="space-y-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <Briefcase className="w-4 h-4" />
+                            <span>{provider.skill_category}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4" />
+                            <span>{provider.city}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">📞</span>
+                            <span>{provider.phone}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <Button 
+                        variant="default"
+                        className="btn-glow"
+                        onClick={() => {
+                          window.location.href = `tel:${provider.phone}`;
+                        }}
+                      >
+                        Contact
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel>Close</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
