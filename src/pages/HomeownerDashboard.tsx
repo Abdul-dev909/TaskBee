@@ -337,6 +337,18 @@ const HomeownerDashboard = () => {
   };
 
   const handleServiceClick = async (serviceTitle: string) => {
+    // Map display names to database skill categories
+    const categoryMap: { [key: string]: string } = {
+      'Plumbing': 'plumber',
+      'Electrical': 'electrician',
+      'Cleaning': 'cleaner',
+      'Painting': 'painter',
+      'Handyman': 'handyman',
+      'Carpentry': 'carpenter'
+    };
+
+    const dbCategory = categoryMap[serviceTitle] || serviceTitle.toLowerCase();
+
     try {
       setIsLoadingProviders(true);
       setSelectedService(serviceTitle);
@@ -344,7 +356,7 @@ const HomeownerDashboard = () => {
       const { data, error } = await supabase
         .from("provider_profiles" as any)
         .select("*")
-        .ilike("skill_category", `%${serviceTitle}%`);
+        .ilike("skill_category", `%${dbCategory}%`);
 
       if (error) throw error;
 

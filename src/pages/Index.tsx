@@ -44,12 +44,26 @@ const Index = () => {
   };
 
   const handleServiceClick = async (serviceCategory: string) => {
+    // Map display names to database skill categories
+    const categoryMap: { [key: string]: string } = {
+      'Plumbing': 'plumber',
+      'Electrical': 'electrician',
+      'Cleaning': 'cleaner',
+      'Painting': 'painter',
+      'Handyman': 'handyman',
+      'Moving': 'mover',
+      'Yard Work': 'gardener',
+      'Assembly': 'carpenter'
+    };
+
+    const dbCategory = categoryMap[serviceCategory] || serviceCategory.toLowerCase();
+
     try {
       setIsLoadingProviders(true);
       const { data, error } = await supabase
         .from('provider_profiles')
         .select('*')
-        .ilike('skill_category', `%${serviceCategory}%`);
+        .ilike('skill_category', `%${dbCategory}%`);
 
       if (error) throw error;
 
