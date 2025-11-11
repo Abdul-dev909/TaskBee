@@ -113,16 +113,38 @@ const ProviderDashboard = () => {
     }
   };
 
+  const handleUpdateJobStatus = async (jobId: string, newStatus: string) => {
+    const { error } = await supabase
+      .from("jobs" as any)
+      .update({ status: newStatus } as any)
+      .eq("id", jobId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update job status",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: `Job status updated to ${newStatus}`,
+      });
+      fetchMyApplications();
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
   };
 
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch = searchQuery === "" || 
+                         job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          job.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === "all" || job.category === categoryFilter;
-    const matchesCity = !cityFilter || job.city.toLowerCase().includes(cityFilter.toLowerCase());
+    const matchesCity = cityFilter === "" || job.city.toLowerCase().includes(cityFilter.toLowerCase());
     
     return matchesSearch && matchesCategory && matchesCity;
   });
@@ -458,9 +480,17 @@ const ProviderDashboard = () => {
                                     </span>
                                   </div>
                                 </div>
-                                <span className="px-4 py-2 rounded-full text-sm font-medium bg-green-500/20 text-green-500 whitespace-nowrap ml-4">
-                                  Active
-                                </span>
+                                <div className="flex flex-col items-end gap-2">
+                                  <span className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${
+                                    job.status === 'completed' ? 'bg-blue-500/20 text-blue-500' :
+                                    job.status === 'in_progress' ? 'bg-yellow-500/20 text-yellow-500' :
+                                    'bg-green-500/20 text-green-500'
+                                  }`}>
+                                    {job.status === 'in_progress' ? 'In Progress' :
+                                     job.status === 'completed' ? 'Completed' :
+                                     job.status === 'assigned' ? 'Assigned' : job.status}
+                                  </span>
+                                </div>
                               </div>
                               <div className="space-y-3">
                                 <div className="p-3 rounded-lg bg-muted/30 text-sm">
@@ -475,6 +505,26 @@ const ProviderDashboard = () => {
                                     </span>
                                   </div>
                                 )}
+                                
+                                {/* Status Update Controls */}
+                                <div className="pt-4 border-t border-border/50">
+                                  <Label className="text-sm font-medium mb-2 block">Update Job Status</Label>
+                                  <div className="flex gap-2">
+                                    <Select
+                                      value={job.status}
+                                      onValueChange={(value) => handleUpdateJobStatus(job.id, value)}
+                                    >
+                                      <SelectTrigger className="input-elegant">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="assigned">Assigned</SelectItem>
+                                        <SelectItem value="in_progress">In Progress</SelectItem>
+                                        <SelectItem value="completed">Completed</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           );
