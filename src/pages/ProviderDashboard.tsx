@@ -72,10 +72,14 @@ const ProviderDashboard = () => {
   }, [navigate]);
 
   const fetchJobs = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
     const { data, error } = await supabase
       .from("jobs" as any)
       .select("*")
       .eq("status", "open")
+      .neq("posted_by", session.user.id)
       .order("created_at", { ascending: false });
 
     if (error) {
