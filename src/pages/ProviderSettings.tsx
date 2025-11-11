@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Camera, Loader2, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import genieLamp from "@/assets/genie-lamp.png";
+import dashboardBg from "@/assets/dashboard-bg.jpg";
 
 interface ProviderProfile {
   full_name: string;
@@ -251,7 +252,7 @@ const ProviderSettings = () => {
       {/* Background */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${require("@/assets/dashboard-bg.jpg")})` }}
+        style={{ backgroundImage: `url(${dashboardBg})` }}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background/95" />
 
