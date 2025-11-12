@@ -136,6 +136,36 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_ratings: {
+        Row: {
+          created_at: string
+          homeowner_id: string
+          id: string
+          job_id: string
+          provider_id: string
+          rating: number
+          review: string | null
+        }
+        Insert: {
+          created_at?: string
+          homeowner_id: string
+          id?: string
+          job_id: string
+          provider_id: string
+          rating: number
+          review?: string | null
+        }
+        Update: {
+          created_at?: string
+          homeowner_id?: string
+          id?: string
+          job_id?: string
+          provider_id?: string
+          rating?: number
+          review?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null

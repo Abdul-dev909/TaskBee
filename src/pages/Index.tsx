@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,24 +26,57 @@ import {
   Shield,
   Star,
   Search,
-  Phone,
-  MapPin,
-  Mail
+  MapPin
 } from "lucide-react";
 
 const Index = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [providers, setProviders] = useState<any[]>([]);
   const [showProvidersDialog, setShowProvidersDialog] = useState(false);
   const [isLoadingProviders, setIsLoadingProviders] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [providerRatings, setProviderRatings] = useState<{ [key: string]: { avg: number; count: number } }>({});
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     element?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const fetchRatingsForProviders = async (providerIds: string[]) => {
+    try {
+      const { data, error } = await supabase
+        .from('provider_ratings')
+        .select('provider_id, rating');
+
+      if (error) throw error;
+
+      const ratingsMap: { [key: string]: { avg: number; count: number } } = {};
+      
+      providerIds.forEach(id => {
+        const providerRatingData = (data || []).filter(r => r.provider_id === id);
+        if (providerRatingData.length > 0) {
+          const avg = providerRatingData.reduce((sum, r) => sum + r.rating, 0) / providerRatingData.length;
+          ratingsMap[id] = { avg: Math.round(avg * 10) / 10, count: providerRatingData.length };
+        } else {
+          ratingsMap[id] = { avg: 0, count: 0 };
+        }
+      });
+
+      setProviderRatings(ratingsMap);
+    } catch (error: any) {
+      console.error('Error fetching ratings:', error);
+    }
+  };
+
   const handleServiceClick = async (serviceCategory: string) => {
+    // Check if user is logged in
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate('/login');
+      return;
+    }
+
     // Map display names to database skill categories
     const categoryMap: { [key: string]: string } = {
       'Plumbing': 'plumber',
@@ -67,7 +100,12 @@ const Index = () => {
 
       if (error) throw error;
 
-      setProviders(data || []);
+      const providersData = data || [];
+      setProviders(providersData);
+      
+      // Fetch ratings for each provider
+      await fetchRatingsForProviders(providersData.map(p => p.user_id));
+      
       setShowProvidersDialog(true);
     } catch (error) {
       console.error('Error fetching providers:', error);
@@ -82,6 +120,13 @@ const Index = () => {
   };
 
   const handleSearch = async () => {
+    // Check if user is logged in
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate('/login');
+      return;
+    }
+
     if (!searchQuery.trim()) {
       toast({
         title: "Enter a search term",
@@ -100,7 +145,12 @@ const Index = () => {
 
       if (error) throw error;
 
-      setProviders(data || []);
+      const providersData = data || [];
+      setProviders(providersData);
+      
+      // Fetch ratings for each provider
+      await fetchRatingsForProviders(providersData.map(p => p.user_id));
+      
       setShowProvidersDialog(true);
     } catch (error) {
       console.error('Error searching providers:', error);
@@ -646,35 +696,40 @@ const Index = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              {providers.map((provider) => (
-                <Card key={provider.id}>
-                  <CardHeader>
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-16 w-16">
-                        <AvatarImage src={provider.profile_image_url || ''} alt={provider.full_name} />
-                        <AvatarFallback>{provider.full_name?.charAt(0) || 'P'}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-lg">{provider.full_name}</CardTitle>
-                        <p className="text-sm text-muted-foreground">{provider.skill_category}</p>
+              {providers.map((provider) => {
+                const rating = providerRatings[provider.user_id] || { avg: 0, count: 0 };
+                return (
+                  <Card key={provider.id}>
+                    <CardHeader>
+                      <div className="flex items-center gap-4">
+                        <Avatar className="h-16 w-16">
+                          <AvatarImage src={provider.profile_image_url || ''} alt={provider.full_name} />
+                          <AvatarFallback>{provider.full_name?.charAt(0) || 'P'}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <CardTitle className="text-lg">{provider.full_name}</CardTitle>
+                          <p className="text-sm text-muted-foreground">{provider.skill_category}</p>
+                        </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {provider.bio && (
-                      <p className="text-sm text-muted-foreground">{provider.bio}</p>
-                    )}
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>{provider.city}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span>{provider.phone}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {provider.bio && (
+                        <p className="text-sm text-muted-foreground">{provider.bio}</p>
+                      )}
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span>{provider.city}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-medium">
+                          {rating.count > 0 ? `${rating.avg} (${rating.count} reviews)` : 'No reviews yet'}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </DialogContent>

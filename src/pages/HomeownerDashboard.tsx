@@ -76,6 +76,7 @@ const HomeownerDashboard = () => {
   const [providers, setProviders] = useState<any[]>([]);
   const [showProvidersDialog, setShowProvidersDialog] = useState(false);
   const [isLoadingProviders, setIsLoadingProviders] = useState(false);
+  const [providerRatings, setProviderRatings] = useState<{ [key: string]: { avg: number; count: number } }>({});
   
   // Form state
   const [formData, setFormData] = useState({
@@ -336,6 +337,32 @@ const HomeownerDashboard = () => {
     }
   };
 
+  const fetchRatingsForProviders = async (providerIds: string[]) => {
+    try {
+      const { data, error } = await supabase
+        .from('provider_ratings')
+        .select('provider_id, rating');
+
+      if (error) throw error;
+
+      const ratingsMap: { [key: string]: { avg: number; count: number } } = {};
+      
+      providerIds.forEach(id => {
+        const providerRatingData = (data || []).filter(r => r.provider_id === id);
+        if (providerRatingData.length > 0) {
+          const avg = providerRatingData.reduce((sum, r) => sum + r.rating, 0) / providerRatingData.length;
+          ratingsMap[id] = { avg: Math.round(avg * 10) / 10, count: providerRatingData.length };
+        } else {
+          ratingsMap[id] = { avg: 0, count: 0 };
+        }
+      });
+
+      setProviderRatings(ratingsMap);
+    } catch (error: any) {
+      console.error('Error fetching ratings:', error);
+    }
+  };
+
   const handleServiceClick = async (serviceTitle: string) => {
     // Map display names to database skill categories
     const categoryMap: { [key: string]: string } = {
@@ -360,7 +387,15 @@ const HomeownerDashboard = () => {
 
       if (error) throw error;
 
-      setProviders(data || []);
+      const providersData = (data || []) as any[];
+      setProviders(providersData);
+      
+      // Fetch ratings for each provider
+      if (providersData.length > 0) {
+        await fetchRatingsForProviders(providersData.map((p: any) => p.user_id));
+      }
+      
+      setShowProvidersDialog(true);
     } catch (error) {
       console.error('Error fetching providers:', error);
       toast({
@@ -1083,6 +1118,8 @@ const HomeownerDashboard = () => {
                   .join("")
                   .toUpperCase();
                 
+                const rating = providerRatings[provider.user_id] || { avg: 0, count: 0 };
+                
                 return (
                   <Card key={provider.id} className="glass-card">
                     <CardContent className="p-6">
@@ -1105,8 +1142,10 @@ const HomeownerDashboard = () => {
                               <span>{provider.city}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">📞</span>
-                              <span>{provider.phone}</span>
+                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                              <span className="font-medium">
+                                {rating.count > 0 ? `${rating.avg} (${rating.count} reviews)` : 'No reviews yet'}
+                              </span>
                             </div>
                             {provider.bio && (
                               <p className="mt-2 text-sm">{provider.bio}</p>
