@@ -237,34 +237,14 @@ const HomeownerSettings = () => {
     if (!session) return;
 
     try {
-      // Delete profile picture from storage if exists
-      if (formData.profile_image_url) {
-        const oldPath = formData.profile_image_url.split("/").pop();
-        if (oldPath) {
-          await supabase.storage
-            .from("profile_pictures")
-            .remove([`${session.user.id}/${oldPath}`]);
-        }
-      }
+      // Call Edge Function to delete account
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
-      // Delete all jobs posted by homeowner
-      await supabase
-        .from("jobs")
-        .delete()
-        .eq("posted_by", session.user.id);
-
-      // Delete user role
-      await supabase
-        .from("user_roles")
-        .delete()
-        .eq("user_id", session.user.id);
-
-      // Delete auth user account
-      const { error: deleteError } = await supabase.auth.admin.deleteUser(
-        session.user.id
-      );
-
-      if (deleteError) {
+      if (error) {
         toast({
           title: "Error",
           description: "Failed to delete account. Please contact support.",

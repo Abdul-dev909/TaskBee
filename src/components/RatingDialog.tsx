@@ -5,6 +5,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+const reviewSchema = z.object({
+  review: z.string().max(500, "Review must be less than 500 characters").trim(),
+  rating: z.number().min(1, "Rating must be at least 1").max(5, "Rating must be at most 5"),
+});
 
 interface RatingDialogProps {
   open: boolean;
@@ -29,6 +35,17 @@ export const RatingDialog = ({
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
+    // Validate input
+    const validation = reviewSchema.safeParse({ review, rating });
+    if (!validation.success) {
+      toast({
+        title: "Validation Error",
+        description: validation.error.issues[0].message,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (rating === 0) {
       toast({
         title: "Rating Required",
@@ -44,6 +61,12 @@ export const RatingDialog = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Sanitize review text (trim and remove excessive whitespace)
+      const sanitizedReview = review
+        .trim()
+        .replace(/\s+/g, ' ')
+        .slice(0, 500);
+
       const { error } = await supabase
         .from("provider_ratings")
         .insert({
@@ -51,7 +74,7 @@ export const RatingDialog = ({
           provider_id: providerId,
           job_id: jobId,
           rating,
-          review: review.trim() || null,
+          review: sanitizedReview || null,
         });
 
       if (error) throw error;

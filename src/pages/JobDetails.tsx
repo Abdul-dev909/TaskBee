@@ -10,6 +10,17 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import genieLamp from "@/assets/genie-lamp.png";
+import { z } from "zod";
+
+const jobOfferSchema = z.object({
+  message: z.string()
+    .min(10, "Message must be at least 10 characters")
+    .max(1000, "Message must be less than 1000 characters")
+    .trim(),
+  proposedRate: z.number()
+    .min(0.01, "Proposed rate must be greater than 0")
+    .max(100000, "Proposed rate seems unreasonably high"),
+});
 
 interface Job {
   id: string;
@@ -80,19 +91,16 @@ const JobDetails = () => {
   }, [jobId, navigate]);
 
   const handleApply = async () => {
-    if (!message.trim()) {
-      toast({
-        title: "Message Required",
-        description: "Please provide a message with your application",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Validate inputs with zod schema
+    const validation = jobOfferSchema.safeParse({
+      message: message.trim(),
+      proposedRate: parseFloat(proposedRate),
+    });
 
-    if (!proposedRate || parseFloat(proposedRate) <= 0) {
+    if (!validation.success) {
       toast({
-        title: "Proposed Rate Required",
-        description: "Please provide a valid proposed rate",
+        title: "Validation Error",
+        description: validation.error.issues[0].message,
         variant: "destructive",
       });
       return;
@@ -106,10 +114,16 @@ const JobDetails = () => {
       return;
     }
 
+    // Sanitize message (trim and limit whitespace)
+    const sanitizedMessage = message
+      .trim()
+      .replace(/\s+/g, ' ')
+      .slice(0, 1000);
+
     const { error } = await supabase.from("job_requests" as any).insert({
       job_id: jobId,
       provider_id: session.user.id,
-      message: message.trim(),
+      message: sanitizedMessage,
       proposed_rate: parseFloat(proposedRate),
     } as any);
 
@@ -227,7 +241,11 @@ const JobDetails = () => {
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         className="input-elegant"
+                        maxLength={1000}
                       />
+                      <p className="text-xs text-muted-foreground text-right">
+                        {message.length}/1000
+                      </p>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="proposedRate">Your Proposed Rate ($)</Label>
