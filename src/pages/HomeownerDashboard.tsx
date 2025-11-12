@@ -49,6 +49,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { JobOffers } from "@/components/JobOffers";
+import { RatingDialog } from "@/components/RatingDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Job {
   id: string;
@@ -60,6 +62,15 @@ interface Job {
   date_time: string | null;
   status: string;
   created_at: string;
+  assigned_provider_id?: string | null;
+}
+
+interface ProviderReview {
+  id: string;
+  rating: number;
+  review: string | null;
+  created_at: string;
+  homeowner_id: string;
 }
 
 const HomeownerDashboard = () => {
@@ -77,6 +88,9 @@ const HomeownerDashboard = () => {
   const [showProvidersDialog, setShowProvidersDialog] = useState(false);
   const [isLoadingProviders, setIsLoadingProviders] = useState(false);
   const [providerRatings, setProviderRatings] = useState<{ [key: string]: { avg: number; count: number } }>({});
+  const [providerReviews, setProviderReviews] = useState<{ [key: string]: ProviderReview[] }>({});
+  const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
+  const [selectedJobForRating, setSelectedJobForRating] = useState<{ jobId: string; providerId: string; providerName: string } | null>(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -938,6 +952,46 @@ const HomeownerDashboard = () => {
                                   Delete
                                 </Button>
                               )}
+                              {job.status === 'completed' && job.assigned_provider_id && (
+                                <Button 
+                                  size="sm" 
+                                  variant="default"
+                                  className="btn-glow"
+                                  onClick={async () => {
+                                    // Check if already rated
+                                    const { data: existingRating } = await supabase
+                                      .from("provider_ratings")
+                                      .select("id")
+                                      .eq("job_id", job.id)
+                                      .maybeSingle();
+                                    
+                                    if (existingRating) {
+                                      toast({
+                                        title: "Already Rated",
+                                        description: "You have already rated this provider",
+                                      });
+                                      return;
+                                    }
+
+                                    // Fetch provider name
+                                    const { data: provider } = await supabase
+                                      .from("provider_profiles")
+                                      .select("full_name")
+                                      .eq("user_id", job.assigned_provider_id)
+                                      .single();
+
+                                    setSelectedJobForRating({
+                                      jobId: job.id,
+                                      providerId: job.assigned_provider_id!,
+                                      providerName: provider?.full_name || "Provider"
+                                    });
+                                    setRatingDialogOpen(true);
+                                  }}
+                                >
+                                  <Star className="w-4 h-4 mr-2" />
+                                  Rate Provider
+                                </Button>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -1091,89 +1145,129 @@ const HomeownerDashboard = () => {
         }}
       />
 
+      {/* Rating Dialog */}
+      {selectedJobForRating && (
+        <RatingDialog
+          open={ratingDialogOpen}
+          onClose={() => {
+            setRatingDialogOpen(false);
+            setSelectedJobForRating(null);
+          }}
+          jobId={selectedJobForRating.jobId}
+          providerId={selectedJobForRating.providerId}
+          providerName={selectedJobForRating.providerName}
+          onRatingSubmitted={() => {
+            fetchJobs();
+          }}
+        />
+      )}
+
       {/* Service Providers Dialog */}
-      <AlertDialog open={!!selectedService} onOpenChange={() => setSelectedService(null)}>
-        <AlertDialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl">{selectedService} Service Providers</AlertDialogTitle>
-            <AlertDialogDescription>
+      <Dialog open={!!selectedService} onOpenChange={() => setSelectedService(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{selectedService} Service Providers</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <p className="text-muted-foreground mb-6">
               Browse available service providers for {selectedService?.toLowerCase()} services
-            </AlertDialogDescription>
-          </AlertDialogHeader>
+            </p>
           
-          <div className="space-y-4 py-4">
-            {isLoadingProviders ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Loading providers...</p>
-              </div>
-            ) : providers.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No service providers found for this category yet.</p>
-              </div>
-            ) : (
-              providers.map((provider) => {
-                const initials = provider.full_name
-                  .split(" ")
-                  .map((n: string) => n[0])
-                  .join("")
-                  .toUpperCase();
-                
+          {isLoadingProviders ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Loading providers...</p>
+            </div>
+          ) : providers.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No providers found for this service.</p>
+            </div>
+          ) : (
+            <div className="grid gap-6 mt-4">
+              {providers.map((provider) => {
                 const rating = providerRatings[provider.user_id] || { avg: 0, count: 0 };
-                
+                const reviews = providerReviews[provider.user_id] || [];
                 return (
                   <Card key={provider.id} className="glass-card">
-                    <CardContent className="p-6">
+                    <CardHeader>
                       <div className="flex items-start gap-4">
-                        <Avatar className="w-16 h-16 border-2 border-primary/20">
-                          <AvatarImage src={provider.profile_image_url || undefined} />
-                          <AvatarFallback className="bg-primary/10 text-primary">
-                            {initials || "?"}
-                          </AvatarFallback>
+                        <Avatar className="w-16 h-16">
+                          <AvatarImage src={provider.profile_image_url} alt={provider.full_name} />
+                          <AvatarFallback>{provider.full_name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold mb-2">{provider.full_name}</h3>
-                          <div className="space-y-2 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                              <Briefcase className="w-4 h-4" />
-                              <span>{provider.skill_category}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <MapPin className="w-4 h-4" />
-                              <span>{provider.city}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                              <span className="font-medium">
-                                {rating.count > 0 ? `${rating.avg} (${rating.count} reviews)` : 'No reviews yet'}
+                          <CardTitle className="text-xl">{provider.full_name}</CardTitle>
+                          <p className="text-sm text-muted-foreground">{provider.skill_category}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <div className="flex items-center gap-1">
+                              <Star className="w-4 h-4 fill-primary text-primary" />
+                              <span className="text-sm font-medium">
+                                {rating.avg > 0 ? rating.avg.toFixed(1) : "No ratings yet"}
                               </span>
                             </div>
-                            {provider.bio && (
-                              <p className="mt-2 text-sm">{provider.bio}</p>
+                            {rating.count > 0 && (
+                              <span className="text-xs text-muted-foreground">
+                                ({rating.count} {rating.count === 1 ? "review" : "reviews"})
+                              </span>
                             )}
                           </div>
                         </div>
-                        <Button 
-                          variant="default"
-                          className="btn-glow"
-                          onClick={() => {
-                            window.location.href = `tel:${provider.phone}`;
-                          }}
-                        >
-                          Contact
-                        </Button>
                       </div>
+                    </CardHeader>
+                    <CardContent>
+                      {provider.bio && (
+                        <p className="text-sm text-muted-foreground mb-4">{provider.bio}</p>
+                      )}
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4" />
+                          <span>{provider.city}</span>
+                        </div>
+                      </div>
+                      
+                      {/* Reviews Section */}
+                      {reviews.length > 0 && (
+                        <div className="border-t pt-4 mt-4">
+                          <h4 className="font-semibold mb-3">Recent Reviews</h4>
+                          <div className="space-y-3">
+                            {reviews.slice(0, 3).map((review) => (
+                              <div key={review.id} className="bg-muted/30 p-3 rounded-lg">
+                                <div className="flex items-center gap-1 mb-1">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star
+                                      key={i}
+                                      className={`w-3 h-3 ${
+                                        i < review.rating
+                                          ? "fill-primary text-primary"
+                                          : "text-muted-foreground"
+                                      }`}
+                                    />
+                                  ))}
+                                  <span className="text-xs text-muted-foreground ml-2">
+                                    {new Date(review.created_at).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                {review.review && (
+                                  <p className="text-sm text-foreground">{review.review}</p>
+                                )}
+                              </div>
+                            ))}
+                            {reviews.length > 3 && (
+                              <p className="text-xs text-muted-foreground text-center">
+                                +{reviews.length - 3} more {reviews.length - 3 === 1 ? "review" : "reviews"}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 );
-              })
-            )}
+              })}
+            </div>
+          )}
           </div>
-          
-          <AlertDialogFooter>
-            <AlertDialogCancel>Close</AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -37,6 +37,7 @@ const Index = () => {
   const [isLoadingProviders, setIsLoadingProviders] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [providerRatings, setProviderRatings] = useState<{ [key: string]: { avg: number; count: number } }>({});
+  const [providerReviews, setProviderReviews] = useState<{ [key: string]: any[] }>({});
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -44,28 +45,39 @@ const Index = () => {
   };
 
   const fetchRatingsForProviders = async (providerIds: string[]) => {
+    if (providerIds.length === 0) return;
+
     try {
       const { data, error } = await supabase
-        .from('provider_ratings')
-        .select('provider_id, rating');
+        .from("provider_ratings")
+        .select("provider_id, rating, review, created_at, id, homeowner_id")
+        .in("provider_id", providerIds)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
       const ratingsMap: { [key: string]: { avg: number; count: number } } = {};
+      const reviewsMap: { [key: string]: any[] } = {};
       
-      providerIds.forEach(id => {
-        const providerRatingData = (data || []).filter(r => r.provider_id === id);
-        if (providerRatingData.length > 0) {
-          const avg = providerRatingData.reduce((sum, r) => sum + r.rating, 0) / providerRatingData.length;
-          ratingsMap[id] = { avg: Math.round(avg * 10) / 10, count: providerRatingData.length };
+      providerIds.forEach(providerId => {
+        const providerRatingsData = data?.filter(r => r.provider_id === providerId) || [];
+        if (providerRatingsData.length > 0) {
+          const avg = providerRatingsData.reduce((sum, r) => sum + r.rating, 0) / providerRatingsData.length;
+          ratingsMap[providerId] = {
+            avg: Math.round(avg * 10) / 10,
+            count: providerRatingsData.length
+          };
+          reviewsMap[providerId] = providerRatingsData;
         } else {
-          ratingsMap[id] = { avg: 0, count: 0 };
+          ratingsMap[providerId] = { avg: 0, count: 0 };
+          reviewsMap[providerId] = [];
         }
       });
 
       setProviderRatings(ratingsMap);
+      setProviderReviews(reviewsMap);
     } catch (error: any) {
-      console.error('Error fetching ratings:', error);
+      console.error("Error fetching ratings:", error);
     }
   };
 
@@ -695,37 +707,83 @@ const Index = () => {
               <p className="text-muted-foreground">No providers found for this service</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div className="grid gap-6 mt-4">
               {providers.map((provider) => {
                 const rating = providerRatings[provider.user_id] || { avg: 0, count: 0 };
+                const reviews = providerReviews[provider.user_id] || [];
                 return (
-                  <Card key={provider.id}>
+                  <Card key={provider.id} className="glass-card">
                     <CardHeader>
-                      <div className="flex items-center gap-4">
-                        <Avatar className="h-16 w-16">
-                          <AvatarImage src={provider.profile_image_url || ''} alt={provider.full_name} />
-                          <AvatarFallback>{provider.full_name?.charAt(0) || 'P'}</AvatarFallback>
+                      <div className="flex items-start gap-4">
+                        <Avatar className="w-16 h-16">
+                          <AvatarImage src={provider.profile_image_url} alt={provider.full_name} />
+                          <AvatarFallback>{provider.full_name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                          <CardTitle className="text-lg">{provider.full_name}</CardTitle>
+                          <CardTitle className="text-xl">{provider.full_name}</CardTitle>
                           <p className="text-sm text-muted-foreground">{provider.skill_category}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <div className="flex items-center gap-1">
+                              <Star className="w-4 h-4 fill-primary text-primary" />
+                              <span className="text-sm font-medium">
+                                {rating.avg > 0 ? rating.avg.toFixed(1) : "No ratings yet"}
+                              </span>
+                            </div>
+                            {rating.count > 0 && (
+                              <span className="text-xs text-muted-foreground">
+                                ({rating.count} {rating.count === 1 ? "review" : "reviews"})
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-2">
+                    <CardContent>
                       {provider.bio && (
-                        <p className="text-sm text-muted-foreground">{provider.bio}</p>
+                        <p className="text-sm text-muted-foreground mb-4">{provider.bio}</p>
                       )}
-                      <div className="flex items-center gap-2 text-sm">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span>{provider.city}</span>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4" />
+                          <span>{provider.city}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-medium">
-                          {rating.count > 0 ? `${rating.avg} (${rating.count} reviews)` : 'No reviews yet'}
-                        </span>
-                      </div>
+                      
+                      {/* Reviews Section */}
+                      {reviews.length > 0 && (
+                        <div className="border-t pt-4 mt-4">
+                          <h4 className="font-semibold mb-3">Recent Reviews</h4>
+                          <div className="space-y-3">
+                            {reviews.slice(0, 3).map((review: any) => (
+                              <div key={review.id} className="bg-muted/30 p-3 rounded-lg">
+                                <div className="flex items-center gap-1 mb-1">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star
+                                      key={i}
+                                      className={`w-3 h-3 ${
+                                        i < review.rating
+                                          ? "fill-primary text-primary"
+                                          : "text-muted-foreground"
+                                      }`}
+                                    />
+                                  ))}
+                                  <span className="text-xs text-muted-foreground ml-2">
+                                    {new Date(review.created_at).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                {review.review && (
+                                  <p className="text-sm text-foreground">{review.review}</p>
+                                )}
+                              </div>
+                            ))}
+                            {reviews.length > 3 && (
+                              <p className="text-xs text-muted-foreground text-center">
+                                +{reviews.length - 3} more {reviews.length - 3 === 1 ? "review" : "reviews"}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 );
