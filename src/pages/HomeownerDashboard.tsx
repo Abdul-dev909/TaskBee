@@ -516,6 +516,9 @@ const HomeownerDashboard = () => {
                 <button onClick={() => scrollToSection("testimonials")} className="text-muted-foreground hover:text-primary transition-colors">
                   Testimonials
                 </button>
+                <Button onClick={() => navigate("/homeowner-settings")} variant="outline">
+                  Settings
+                </Button>
                 <Button onClick={handleLogout} variant="outline">
                   Logout
                 </Button>
