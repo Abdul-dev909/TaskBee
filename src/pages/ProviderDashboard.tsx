@@ -75,11 +75,44 @@ const ProviderDashboard = () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
+    // First, get the provider's skill category
+    const { data: profileData, error: profileError } = await supabase
+      .from("provider_profiles" as any)
+      .select("skill_category, city")
+      .eq("user_id", session.user.id)
+      .single();
+
+    if (profileError) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch your profile",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Map provider skill categories to job categories
+    const categoryMap: { [key: string]: string } = {
+      'plumber': 'Plumbing',
+      'electrician': 'Electrical',
+      'cleaner': 'Cleaning',
+      'painter': 'Painting',
+      'handyman': 'Handyman',
+      'mover': 'Moving',
+      'gardener': 'Yard Work',
+      'carpenter': 'Assembly'
+    };
+
+    const providerSkill = (profileData as any)?.skill_category?.toLowerCase() || '';
+    const jobCategory = categoryMap[providerSkill] || providerSkill;
+
+    // Fetch jobs matching the provider's category
     const { data, error } = await supabase
       .from("jobs" as any)
       .select("*")
       .eq("status", "open")
       .neq("posted_by", session.user.id)
+      .eq("category", jobCategory)
       .order("created_at", { ascending: false });
 
     if (error) {

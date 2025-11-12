@@ -150,10 +150,14 @@ const Index = () => {
 
     try {
       setIsLoadingProviders(true);
-      const { data, error } = await supabase
-        .from('provider_profiles')
-        .select('*')
-        .or(`skill_category.ilike.%${searchQuery}%,bio.ilike.%${searchQuery}%,full_name.ilike.%${searchQuery}%`);
+      
+      // Build dynamic query based on search input
+      let query = supabase.from('provider_profiles').select('*');
+      
+      // Search across multiple fields
+      query = query.or(`skill_category.ilike.%${searchQuery.trim()}%,bio.ilike.%${searchQuery.trim()}%,full_name.ilike.%${searchQuery.trim()}%,city.ilike.%${searchQuery.trim()}%`);
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -703,8 +707,9 @@ const Index = () => {
               <p className="text-muted-foreground">Loading providers...</p>
             </div>
           ) : providers.length === 0 ? (
-            <div className="flex items-center justify-center py-8">
-              <p className="text-muted-foreground">No providers found for this service</p>
+            <div className="flex flex-col items-center justify-center py-12">
+              <p className="text-lg font-medium text-primary/80 mb-2">No Results Found</p>
+              <p className="text-sm text-muted-foreground">Try adjusting your search or browse our service categories</p>
             </div>
           ) : (
             <div className="grid gap-6 mt-4">
