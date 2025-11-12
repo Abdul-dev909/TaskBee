@@ -166,6 +166,33 @@ export type Database = {
         }
         Relationships: []
       }
+      service_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -203,13 +230,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_job_owner: {
         Args: { _job_id: string; _user_id: string }
         Returns: boolean
       }
     }
     Enums: {
-      app_role: "homeowner" | "service_provider"
+      app_role: "homeowner" | "service_provider" | "admin"
       job_request_status: "pending" | "accepted" | "rejected"
       job_status: "open" | "assigned" | "completed" | "in_progress"
     }
@@ -339,7 +367,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["homeowner", "service_provider"],
+      app_role: ["homeowner", "service_provider", "admin"],
       job_request_status: ["pending", "accepted", "rejected"],
       job_status: ["open", "assigned", "completed", "in_progress"],
     },

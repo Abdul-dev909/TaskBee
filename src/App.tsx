@@ -13,6 +13,10 @@ import ProviderDashboard from "./pages/ProviderDashboard";
 import ProviderSettings from "./pages/ProviderSettings";
 import HomeownerSettings from "./pages/HomeownerSettings";
 import JobDetails from "./pages/JobDetails";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
+import AdminJobs from "./pages/AdminJobs";
+import AdminCategories from "./pages/AdminCategories";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +38,10 @@ const App = () => (
           <Route path="/provider-settings" element={<ProviderSettings />} />
           <Route path="/homeowner-settings" element={<HomeownerSettings />} />
           <Route path="/job/:jobId" element={<JobDetails />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/jobs" element={<AdminJobs />} />
+          <Route path="/admin/categories" element={<AdminCategories />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
