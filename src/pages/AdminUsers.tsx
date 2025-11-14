@@ -31,15 +31,10 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     setLoading(true);
 
-    // Get all user roles with profiles (left join to handle missing profiles)
+    // Get all user roles
     const { data: rolesData, error: rolesError } = await supabase
       .from("user_roles")
-      .select(`
-        user_id, 
-        role, 
-        created_at,
-        profiles(email)
-      `);
+      .select("user_id, role, created_at");
 
     if (rolesError) {
       toast({
@@ -51,6 +46,11 @@ const AdminUsers = () => {
       return;
     }
 
+    // Get all profiles
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("id, email");
+
     // Get provider profiles for additional info
     const { data: providerProfiles } = await supabase
       .from("provider_profiles")
@@ -58,15 +58,16 @@ const AdminUsers = () => {
 
     // Combine data
     const combinedUsers = rolesData.map((roleData: any) => {
-      const profile = providerProfiles?.find((p: any) => p.user_id === roleData.user_id);
+      const profile = profilesData?.find((p: any) => p.id === roleData.user_id);
+      const providerProfile = providerProfiles?.find((p: any) => p.user_id === roleData.user_id);
       
       return {
         id: roleData.user_id,
-        email: roleData.profiles?.email || "N/A",
+        email: profile?.email || "N/A",
         role: roleData.role,
         created_at: roleData.created_at,
-        full_name: profile?.full_name,
-        city: profile?.city,
+        full_name: providerProfile?.full_name,
+        city: providerProfile?.city,
       };
     });
 
