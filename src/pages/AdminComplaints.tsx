@@ -46,9 +46,9 @@ const AdminComplaints = () => {
       .from('complaints')
       .select(`
         *,
-        profiles!created_by(email),
-        provider_profiles!provider_id(full_name),
-        jobs(title)
+        profiles!complaints_created_by_fkey(email),
+        provider_profiles!complaints_provider_id_fkey(full_name),
+        jobs!complaints_job_id_fkey(title)
       `)
       .order('created_at', { ascending: false });
 
