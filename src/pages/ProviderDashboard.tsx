@@ -13,7 +13,8 @@ import {
   CheckCircle,
   Settings,
   Search,
-  Filter
+  Filter,
+  AlertCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -212,6 +213,14 @@ const ProviderDashboard = () => {
               </div>
               
               <div className="flex items-center gap-4">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate("/provider/complaints")}
+                >
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  View Complaints
+                </Button>
                 <Button 
                   variant="outline" 
                   size="sm"

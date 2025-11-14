@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, UserCog } from "lucide-react";
+import { Trash2, UserCog, Ban, CheckCircle } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -17,6 +17,8 @@ interface User {
   created_at: string;
   full_name?: string;
   city?: string;
+  is_blocked?: boolean;
+  block_reason?: string;
 }
 
 const AdminUsers = () => {
@@ -49,7 +51,7 @@ const AdminUsers = () => {
     // Get all profiles
     const { data: profilesData } = await supabase
       .from("profiles")
-      .select("id, email");
+      .select("id, email, is_blocked, block_reason");
 
     // Get provider profiles for additional info
     const { data: providerProfiles } = await supabase
@@ -68,6 +70,8 @@ const AdminUsers = () => {
         created_at: roleData.created_at,
         full_name: providerProfile?.full_name,
         city: providerProfile?.city,
+        is_blocked: profile?.is_blocked || false,
+        block_reason: profile?.block_reason,
       };
     });
 
@@ -123,6 +127,32 @@ const AdminUsers = () => {
     fetchUsers();
   };
 
+  const handleBlockUser = async (userId: string, shouldBlock: boolean) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ 
+        is_blocked: shouldBlock,
+        block_reason: shouldBlock ? "Blocked by administrator" : null
+      })
+      .eq("id", userId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: `Failed to ${shouldBlock ? 'block' : 'unblock'} user`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: `User ${shouldBlock ? 'blocked' : 'unblocked'} successfully`,
+    });
+
+    fetchUsers();
+  };
+
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case "admin":
@@ -162,6 +192,7 @@ const AdminUsers = () => {
                       <TableHead>Email</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>City</TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead>Signup Date</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -194,9 +225,33 @@ const AdminUsers = () => {
                         </TableCell>
                         <TableCell>{user.city || "N/A"}</TableCell>
                         <TableCell>
+                          {user.is_blocked ? (
+                            <Badge variant="destructive">Blocked</Badge>
+                          ) : (
+                            <Badge variant="outline">Active</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           {new Date(user.created_at).toLocaleDateString()}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right space-x-2">
+                          <Button
+                            variant={user.is_blocked ? "outline" : "destructive"}
+                            size="sm"
+                            onClick={() => handleBlockUser(user.id, !user.is_blocked)}
+                          >
+                            {user.is_blocked ? (
+                              <>
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                Unblock
+                              </>
+                            ) : (
+                              <>
+                                <Ban className="w-4 h-4 mr-1" />
+                                Block
+                              </>
+                            )}
+                          </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button variant="destructive" size="sm">

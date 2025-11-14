@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Users, Briefcase, Grid, LayoutDashboard, LogOut } from "lucide-react";
+import { Users, Briefcase, Grid, LayoutDashboard, LogOut, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import genieLamp from "@/assets/genie-lamp.png";
 
@@ -61,6 +61,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { icon: Users, label: "Manage Users", path: "/admin/users" },
     { icon: Briefcase, label: "Manage Jobs", path: "/admin/jobs" },
     { icon: Grid, label: "Manage Categories", path: "/admin/categories" },
+    { icon: AlertCircle, label: "Manage Complaints", path: "/admin/complaints" },
   ];
 
   if (loading) {

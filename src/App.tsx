@@ -17,6 +17,9 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
 import AdminJobs from "./pages/AdminJobs";
 import AdminCategories from "./pages/AdminCategories";
+import AdminComplaints from "./pages/AdminComplaints";
+import FileComplaint from "./pages/FileComplaint";
+import ProviderComplaints from "./pages/ProviderComplaints";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +45,9 @@ const App = () => (
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/jobs" element={<AdminJobs />} />
           <Route path="/admin/categories" element={<AdminCategories />} />
+          <Route path="/admin/complaints" element={<AdminComplaints />} />
+          <Route path="/complaints/new" element={<FileComplaint />} />
+          <Route path="/provider/complaints" element={<ProviderComplaints />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

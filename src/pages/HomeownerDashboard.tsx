@@ -25,7 +25,8 @@ import {
   DollarSign,
   Trash2,
   Edit,
-  Eye
+  Eye,
+  AlertCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -516,6 +517,10 @@ const HomeownerDashboard = () => {
                 <button onClick={() => scrollToSection("testimonials")} className="text-muted-foreground hover:text-primary transition-colors">
                   Testimonials
                 </button>
+                <Button onClick={() => navigate("/complaints/new")} variant="outline">
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  File Complaint
+                </Button>
                 <Button onClick={() => navigate("/homeowner-settings")} variant="outline">
                   Settings
                 </Button>
