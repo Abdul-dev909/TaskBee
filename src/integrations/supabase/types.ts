@@ -155,22 +155,28 @@ export type Database = {
           block_reason: string | null
           created_at: string
           email: string
+          full_name: string | null
           id: string
           is_blocked: boolean
+          phone: string | null
         }
         Insert: {
           block_reason?: string | null
           created_at?: string
           email: string
+          full_name?: string | null
           id: string
           is_blocked?: boolean
+          phone?: string | null
         }
         Update: {
           block_reason?: string | null
           created_at?: string
           email?: string
+          full_name?: string | null
           id?: string
           is_blocked?: boolean
+          phone?: string | null
         }
         Relationships: []
       }

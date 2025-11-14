@@ -51,7 +51,7 @@ const AdminUsers = () => {
     // Get all profiles
     const { data: profilesData } = await supabase
       .from("profiles")
-      .select("id, email, is_blocked, block_reason");
+      .select("id, email, full_name, phone, is_blocked, block_reason");
 
     // Get provider profiles for additional info
     const { data: providerProfiles } = await supabase
@@ -68,7 +68,7 @@ const AdminUsers = () => {
         email: profile?.email || "N/A",
         role: roleData.role,
         created_at: roleData.created_at,
-        full_name: providerProfile?.full_name,
+        full_name: profile?.full_name || providerProfile?.full_name,
         city: providerProfile?.city,
         is_blocked: profile?.is_blocked || false,
         block_reason: profile?.block_reason,
