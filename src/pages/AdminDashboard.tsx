@@ -4,6 +4,7 @@ import AdminLayout from "@/components/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Briefcase, CheckCircle, Clock, FileText, MessageSquare } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
+import { AdminAnnouncements } from "@/components/AdminAnnouncements";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -129,6 +130,9 @@ const AdminDashboard = () => {
             );
           })}
         </div>
+
+        {/* Admin Announcements */}
+        <AdminAnnouncements />
       </div>
     </AdminLayout>
   );
