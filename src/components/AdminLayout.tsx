@@ -16,6 +16,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
   const { toast } = useToast();
   const [adminName, setAdminName] = useState("");
+  const [adminId, setAdminId] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
