@@ -31,14 +31,14 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     setLoading(true);
 
-    // Get all user roles with profiles
+    // Get all user roles with profiles (left join to handle missing profiles)
     const { data: rolesData, error: rolesError } = await supabase
       .from("user_roles")
       .select(`
         user_id, 
         role, 
         created_at,
-        profiles!inner(email)
+        profiles(email)
       `);
 
     if (rolesError) {
