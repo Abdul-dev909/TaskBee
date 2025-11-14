@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import genieLamp from "@/assets/home-genie-logo.png";
 import { z } from "zod";
 import { createNotification } from "@/hooks/useNotifications";
+import { checkRateLimit } from "@/hooks/useRateLimit";
 
 const jobOfferSchema = z.object({
   message: z.string()
@@ -92,6 +93,17 @@ const JobDetails = () => {
   }, [jobId, navigate]);
 
   const handleApply = async () => {
+    // Check rate limit first
+    const rateLimitCheck = await checkRateLimit('job_application');
+    if (!rateLimitCheck.allowed) {
+      toast({
+        title: "Rate Limit Exceeded",
+        description: rateLimitCheck.message || "You've made too many applications. Please try again later.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Validate inputs with zod schema
     const validation = jobOfferSchema.safeParse({
       message: message.trim(),
@@ -121,12 +133,12 @@ const JobDetails = () => {
       .replace(/\s+/g, ' ')
       .slice(0, 1000);
 
-    const { error } = await supabase.from("job_requests" as any).insert({
+    const { data: insertedRequest, error } = await supabase.from("job_requests").insert({
       job_id: jobId,
       provider_id: session.user.id,
       message: sanitizedMessage,
       proposed_rate: parseFloat(proposedRate),
-    } as any);
+    }).select().single();
 
     if (error) {
       toast({
@@ -135,12 +147,19 @@ const JobDetails = () => {
         variant: "destructive",
       });
     } else {
+      // Fetch job details to ensure we have the homeowner ID
+      const { data: jobData } = await supabase
+        .from("jobs")
+        .select("posted_by, title")
+        .eq("id", jobId)
+        .single();
+
       // Create notification for homeowner
-      if (job?.posted_by) {
+      if (jobData?.posted_by) {
         await createNotification(
-          job.posted_by,
-          "New Offer Received",
-          `You received a new offer for "${job.title}" with a proposed rate of $${proposedRate}`,
+          jobData.posted_by,
+          "New Offer Received! 🎉",
+          `You received a new offer for "${jobData.title}" with a proposed rate of $${proposedRate}`,
           "job_offer",
           jobId
         );

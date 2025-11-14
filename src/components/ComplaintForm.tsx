@@ -8,6 +8,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { checkRateLimit } from "@/hooks/useRateLimit";
+import { z } from "zod";
+
+const complaintSchema = z.object({
+  type: z.string().min(1, "Complaint type is required"),
+  description: z.string()
+    .min(10, "Description must be at least 10 characters")
+    .max(2000, "Description must be less than 2000 characters")
+    .trim(),
+  providerId: z.string().min(1, "Provider is required"),
+});
 
 interface ComplaintFormProps {
   preselectedJobId?: string;
@@ -88,16 +99,16 @@ export const ComplaintForm = ({ preselectedJobId, preselectedProviderId, onSucce
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.type || !formData.description || !formData.providerId) {
+    // Validate form data with schema
+    const validation = complaintSchema.safeParse(formData);
+    if (!validation.success) {
       toast({
-        title: "Error",
-        description: "Please fill in all required fields including provider name",
+        title: "Validation Error",
+        description: validation.error.issues[0].message,
         variant: "destructive",
       });
       return;
     }
-
-    setLoading(true);
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -106,9 +117,21 @@ export const ComplaintForm = ({ preselectedJobId, preselectedProviderId, onSucce
         description: "You must be logged in to file a complaint",
         variant: "destructive",
       });
-      setLoading(false);
       return;
     }
+
+    // Check rate limit
+    const rateLimitCheck = await checkRateLimit('complaint_submission');
+    if (!rateLimitCheck.allowed) {
+      toast({
+        title: "Rate Limit Exceeded",
+        description: rateLimitCheck.message || "You've submitted too many complaints. Please try again later.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
 
     const { error } = await supabase
       .from('complaints')
@@ -117,7 +140,7 @@ export const ComplaintForm = ({ preselectedJobId, preselectedProviderId, onSucce
         job_id: formData.jobId || null,
         provider_id: formData.providerId || null,
         type: formData.type,
-        description: formData.description,
+        description: formData.description.trim(),
         status: 'Pending',
       });
 
