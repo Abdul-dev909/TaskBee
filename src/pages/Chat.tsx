@@ -104,6 +104,25 @@ export default function Chat() {
     fetchChatData();
   }, [jobId, navigate]);
 
+  const handleBackClick = async () => {
+    if (!currentUser || !jobDetails) return;
+
+    // Check user's role to navigate to correct dashboard
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", currentUser.id)
+      .single();
+
+    if (roleData?.role === "service_provider") {
+      navigate("/provider-dashboard");
+    } else if (roleData?.role === "homeowner") {
+      navigate("/homeowner-dashboard");
+    } else {
+      navigate("/");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -119,7 +138,7 @@ export default function Chat() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={handleBackClick}
             className="mb-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
