@@ -69,9 +69,10 @@ const ProviderSettings = () => {
       .from("provider_profiles" as any)
       .select("*")
       .eq("user_id", session.user.id)
-      .single();
+      .maybeSingle();
 
     if (error) {
+      console.error('Error fetching profile:', error);
       toast({
         title: "Error",
         description: "Failed to fetch profile",
@@ -86,6 +87,7 @@ const ProviderSettings = () => {
         bio: (data as any).bio || "",
         profile_image_url: (data as any).profile_image_url || null,
       });
+      setImagePreview((data as any).profile_image_url || null);
     }
   };
 
