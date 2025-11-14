@@ -542,9 +542,9 @@ const HomeownerDashboard = () => {
               <div className="flex items-center gap-3 cursor-pointer group" onClick={() => scrollToSection("hero")}>
                 <div className="relative">
                   <img src={genieLamp} alt="Home Genie" className="w-12 h-12 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-lg" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                  <div className="absolute inset-0 bg-primary/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
                 </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-primary via-purple-500 to-accent bg-clip-text text-transparent">Home Genie</span>
+                <span className="text-2xl font-bold text-primary">Home Genie</span>
               </div>
               
               <div className="hidden md:flex items-center gap-8">
