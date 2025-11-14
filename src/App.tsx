@@ -20,6 +20,7 @@ import AdminCategories from "./pages/AdminCategories";
 import AdminComplaints from "./pages/AdminComplaints";
 import FileComplaint from "./pages/FileComplaint";
 import ProviderComplaints from "./pages/ProviderComplaints";
+import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/admin/complaints" element={<AdminComplaints />} />
           <Route path="/complaints/new" element={<FileComplaint />} />
           <Route path="/provider/complaints" element={<ProviderComplaints />} />
+          <Route path="/chat" element={<Chat />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -14,12 +14,15 @@ import {
   Settings,
   Search,
   Filter,
-  AlertCircle
+  AlertCircle,
+  MessageSquare,
+  LogOut
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import genieLamp from "@/assets/genie-lamp.png";
 import dashboardBg from "@/assets/dashboard-bg.jpg";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const checkIfBlocked = async (navigate: any) => {
   const { data: { session } } = await supabase.auth.getSession();
@@ -73,6 +76,7 @@ interface JobRequest {
 
 const ProviderDashboard = () => {
   const navigate = useNavigate();
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
   const [activeTab, setActiveTab] = useState("browse");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [myApplications, setMyApplications] = useState<JobRequest[]>([]);
@@ -86,6 +90,7 @@ const ProviderDashboard = () => {
       if (!session) {
         navigate("/login");
       } else {
+        setCurrentUserId(session.user.id);
         await checkIfBlocked(navigate);
         fetchJobs();
         fetchMyApplications();
@@ -245,6 +250,7 @@ const ProviderDashboard = () => {
                   <AlertCircle className="w-4 h-4 mr-2" />
                   View Complaints
                 </Button>
+                <NotificationBell userId={currentUserId} />
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -254,6 +260,7 @@ const ProviderDashboard = () => {
                   Settings
                 </Button>
                 <Button onClick={handleLogout} variant="outline" size="sm">
+                  <LogOut className="w-4 h-4 mr-2" />
                   Logout
                 </Button>
               </div>

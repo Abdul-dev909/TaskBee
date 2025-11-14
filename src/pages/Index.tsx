@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { NotificationBell } from "@/components/NotificationBell";
 import genieLamp from "@/assets/genie-lamp.png";
 import heroBg from "@/assets/hero-bg.jpg";
 import heroProviders from "@/assets/hero-service-providers.jpg";
@@ -32,12 +33,21 @@ import {
 const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
   const [providers, setProviders] = useState<any[]>([]);
   const [showProvidersDialog, setShowProvidersDialog] = useState(false);
   const [isLoadingProviders, setIsLoadingProviders] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [providerRatings, setProviderRatings] = useState<{ [key: string]: { avg: number; count: number } }>({});
   const [providerReviews, setProviderReviews] = useState<{ [key: string]: any[] }>({});
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) setCurrentUserId(session.user.id);
+    };
+    checkUser();
+  }, []);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);

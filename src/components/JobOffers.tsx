@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DollarSign, User, MessageSquare, CheckCircle, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { createNotification } from "@/hooks/useNotifications";
 import {
   Dialog,
   DialogContent,
@@ -86,6 +87,9 @@ export const JobOffers = ({ jobId, jobTitle, open, onClose, onOfferAccepted }: J
   const handleAcceptOffer = async (offerId: string) => {
     setAccepting(offerId);
 
+    const offer = offers.find(o => o.id === offerId);
+    if (!offer) return;
+
     const { error } = await supabase
       .from("job_requests" as any)
       .update({ status: "accepted" } as any)
@@ -102,6 +106,16 @@ export const JobOffers = ({ jobId, jobTitle, open, onClose, onOfferAccepted }: J
         title: "Offer Accepted!",
         description: "The provider has been notified and the job is now assigned",
       });
+      
+      // Create notification for provider
+      await createNotification(
+        offer.provider_id,
+        "Offer Accepted! 🎉",
+        `Your offer for "${jobTitle}" has been accepted! The homeowner will contact you soon.`,
+        "offer",
+        jobId
+      );
+      
       fetchOffers();
       onOfferAccepted();
     }
