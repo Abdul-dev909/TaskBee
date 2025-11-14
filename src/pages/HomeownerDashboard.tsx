@@ -26,12 +26,15 @@ import {
   Trash2,
   Edit,
   Eye,
-  AlertCircle
+  AlertCircle,
+  MessageSquare,
+  LogOut
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import genieLamp from "@/assets/genie-lamp.png";
 import dashboardBg from "@/assets/dashboard-bg.jpg";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const checkIfBlocked = async (navigate: any) => {
   const { data: { session } } = await supabase.auth.getSession();
@@ -97,8 +100,16 @@ interface ProviderReview {
 
 const HomeownerDashboard = () => {
   const navigate = useNavigate();
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
   
   useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setCurrentUserId(session.user.id);
+      }
+    };
+    getCurrentUser();
     checkIfBlocked(navigate);
   }, [navigate]);
   
@@ -547,10 +558,12 @@ const HomeownerDashboard = () => {
                   <AlertCircle className="w-4 h-4 mr-2" />
                   File Complaint
                 </Button>
+                <NotificationBell userId={currentUserId} />
                 <Button onClick={() => navigate("/homeowner-settings")} variant="outline">
                   Settings
                 </Button>
                 <Button onClick={handleLogout} variant="outline">
+                  <LogOut className="w-4 h-4 mr-2" />
                   Logout
                 </Button>
               </div>
@@ -984,6 +997,17 @@ const HomeownerDashboard = () => {
                                 <Button size="sm" variant="outline" onClick={() => setDeleteJobId(job.id)}>
                                   <Trash2 className="w-4 h-4 mr-2" />
                                   Delete
+                                </Button>
+                              )}
+                              {job.assigned_provider_id && (
+                                <Button 
+                                  size="sm" 
+                                  variant="default"
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                  onClick={() => navigate(`/chat?job=${job.id}`)}
+                                >
+                                  <MessageSquare className="w-4 h-4 mr-2" />
+                                  Chat with Provider
                                 </Button>
                               )}
                               {job.status === 'completed' && job.assigned_provider_id && (

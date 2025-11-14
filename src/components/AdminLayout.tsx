@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Briefcase, Grid, LayoutDashboard, LogOut, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import genieLamp from "@/assets/genie-lamp.png";
+import { NotificationBell } from "@/components/NotificationBell";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -45,9 +46,10 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       navigate("/");
       return;
     }
-
+    
     // Get admin email
     setAdminName(session.user.email || "Admin");
+    setAdminId(session.user.id);
     setLoading(false);
   };
 
