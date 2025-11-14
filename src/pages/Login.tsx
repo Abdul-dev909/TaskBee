@@ -29,6 +29,23 @@ const Login = () => {
   }, []);
 
   const redirectBasedOnRole = async (userId: string) => {
+    // Check if user is blocked
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('is_blocked')
+      .eq('id', userId)
+      .single();
+
+    if (profileData?.is_blocked) {
+      await supabase.auth.signOut();
+      toast({
+        title: "Account Blocked",
+        description: "Your account has been blocked by Home Genie Administration. Please contact support.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { data, error } = await supabase
       .from('user_roles')
       .select('role')

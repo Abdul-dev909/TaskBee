@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      complaints: {
+        Row: {
+          admin_notes: string | null
+          assigned_admin: string | null
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          image_url: string | null
+          job_id: string | null
+          provider_id: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          assigned_admin?: string | null
+          created_at?: string
+          created_by: string
+          description: string
+          id?: string
+          image_url?: string | null
+          job_id?: string | null
+          provider_id?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          assigned_admin?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          job_id?: string | null
+          provider_id?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaints_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_requests: {
         Row: {
           created_at: string
@@ -99,19 +152,25 @@ export type Database = {
       }
       profiles: {
         Row: {
+          block_reason: string | null
           created_at: string
           email: string
           id: string
+          is_blocked: boolean
         }
         Insert: {
+          block_reason?: string | null
           created_at?: string
           email: string
           id: string
+          is_blocked?: boolean
         }
         Update: {
+          block_reason?: string | null
           created_at?: string
           email?: string
           id?: string
+          is_blocked?: boolean
         }
         Relationships: []
       }
