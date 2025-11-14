@@ -40,7 +40,9 @@ const Login = () => {
       return;
     }
 
-    if (data?.role === 'homeowner') {
+    if (data?.role === 'admin') {
+      navigate('/admin/dashboard');
+    } else if (data?.role === 'homeowner') {
       navigate('/homeowner-dashboard');
     } else if (data?.role === 'service_provider') {
       navigate('/provider-dashboard');
