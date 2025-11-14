@@ -90,6 +90,10 @@ const AdminComplaints = () => {
 
   const updateComplaintStatus = async (complaintId: string, newStatus: string) => {
     setUpdatingStatus(true);
+    
+    // Get complaint details to notify the user
+    const complaint = complaints.find(c => c.id === complaintId);
+    
     const { error } = await supabase
       .from('complaints')
       .update({ 
@@ -107,6 +111,19 @@ const AdminComplaints = () => {
         variant: "destructive",
       });
     } else {
+      // Send notification if status is resolved
+      if (newStatus === 'Resolved' && complaint) {
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: complaint.created_by,
+            title: 'Complaint Resolved',
+            body: `Your complaint has been resolved. Admin notes: ${adminNotes || 'No additional notes'}`,
+            type: 'complaint',
+            related_id: complaintId,
+          });
+      }
+      
       toast({
         title: "Success",
         description: "Complaint status updated successfully",
