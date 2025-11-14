@@ -30,34 +30,38 @@ const ProviderComplaints = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data, error } = await supabase
+    // Fetch complaints
+    const { data: complaintsData, error: complaintsError } = await supabase
       .from('complaints')
-      .select(`
-        id,
-        type,
-        description,
-        status,
-        job_id,
-        created_at,
-        jobs(title)
-      `)
+      .select('*')
       .eq('provider_id', user.id)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching complaints:', error);
+    if (complaintsError) {
+      console.error('Error fetching complaints:', complaintsError);
       toast({
         title: "Error",
         description: "Failed to load complaints",
         variant: "destructive",
       });
-    } else {
-      const formattedComplaints = (data || []).map((complaint: any) => ({
-        ...complaint,
-        job_title: complaint.jobs?.title || 'N/A',
-      }));
-      setComplaints(formattedComplaints);
+      setLoading(false);
+      return;
     }
+
+    // Fetch job titles for complaints
+    const jobIds = [...new Set(complaintsData?.map(c => c.job_id).filter(Boolean) || [])];
+    const jobsResult = jobIds.length > 0 
+      ? await supabase.from('jobs').select('id, title').in('id', jobIds)
+      : { data: [] };
+
+    const jobsMap = new Map<string, string>(jobsResult.data?.map(j => [j.id, j.title] as [string, string]) || []);
+
+    const formattedComplaints = (complaintsData || []).map((complaint: any) => ({
+      ...complaint,
+      job_title: jobsMap.get(complaint.job_id) || 'N/A',
+    }));
+
+    setComplaints(formattedComplaints);
     setLoading(false);
   };
 

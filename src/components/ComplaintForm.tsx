@@ -30,6 +30,7 @@ export const ComplaintForm = ({ preselectedJobId, preselectedProviderId, onSucce
 
   useEffect(() => {
     fetchUserJobs();
+    fetchAllProviders();
     if (preselectedJobId) {
       fetchJobProvider(preselectedJobId);
     }
@@ -53,12 +54,26 @@ export const ComplaintForm = ({ preselectedJobId, preselectedProviderId, onSucce
     setJobs(data || []);
   };
 
+  const fetchAllProviders = async () => {
+    const { data, error } = await supabase
+      .from('provider_profiles')
+      .select('user_id, full_name')
+      .order('full_name', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching providers:', error);
+      return;
+    }
+
+    setProviders(data || []);
+  };
+
   const fetchJobProvider = async (jobId: string) => {
     const { data, error } = await supabase
       .from('jobs')
       .select('assigned_provider_id')
       .eq('id', jobId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching job provider:', error);
@@ -67,34 +82,16 @@ export const ComplaintForm = ({ preselectedJobId, preselectedProviderId, onSucce
 
     if (data?.assigned_provider_id) {
       setFormData(prev => ({ ...prev, providerId: data.assigned_provider_id }));
-      fetchProviderDetails(data.assigned_provider_id);
-    }
-  };
-
-  const fetchProviderDetails = async (providerId: string) => {
-    const { data, error } = await supabase
-      .from('provider_profiles')
-      .select('user_id, full_name')
-      .eq('user_id', providerId)
-      .single();
-
-    if (error) {
-      console.error('Error fetching provider:', error);
-      return;
-    }
-
-    if (data) {
-      setProviders([data]);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.type || !formData.description) {
+    if (!formData.type || !formData.description || !formData.providerId) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields",
+        description: "Please fill in all required fields including provider name",
         variant: "destructive",
       });
       return;
@@ -190,6 +187,26 @@ export const ComplaintForm = ({ preselectedJobId, preselectedProviderId, onSucce
                 {jobs.map((job) => (
                   <SelectItem key={job.id} value={job.id}>
                     {job.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="providerId">Provider Name *</Label>
+            <Select
+              value={formData.providerId}
+              onValueChange={(value) => setFormData({ ...formData, providerId: value })}
+              disabled={!!preselectedProviderId}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select provider" />
+              </SelectTrigger>
+              <SelectContent>
+                {providers.map((provider) => (
+                  <SelectItem key={provider.user_id} value={provider.user_id}>
+                    {provider.full_name}
                   </SelectItem>
                 ))}
               </SelectContent>
