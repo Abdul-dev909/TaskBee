@@ -584,23 +584,35 @@ const ProviderDashboard = () => {
                                 )}
                                 
                                 {/* Status Update Controls */}
-                                <div className="pt-4 border-t border-border/50">
-                                  <Label className="text-sm font-medium mb-2 block">Update Job Status</Label>
-                                  <div className="flex gap-2">
-                                    <Select
-                                      value={job.status}
-                                      onValueChange={(value) => handleUpdateJobStatus(job.id, value)}
-                                    >
-                                      <SelectTrigger className="input-elegant">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="assigned">Assigned</SelectItem>
-                                        <SelectItem value="in_progress">In Progress</SelectItem>
-                                        <SelectItem value="completed">Completed</SelectItem>
-                                      </SelectContent>
-                                    </Select>
+                                <div className="pt-4 border-t border-border/50 space-y-3">
+                                  <div>
+                                    <Label className="text-sm font-medium mb-2 block">Update Job Status</Label>
+                                    <div className="flex gap-2">
+                                      <Select
+                                        value={job.status}
+                                        onValueChange={(value) => handleUpdateJobStatus(job.id, value)}
+                                      >
+                                        <SelectTrigger className="input-elegant">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="assigned">Assigned</SelectItem>
+                                          <SelectItem value="in_progress">In Progress</SelectItem>
+                                          <SelectItem value="completed">Completed</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
                                   </div>
+                                  
+                                  {/* Chat Button */}
+                                  <Button 
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => navigate(`/chat?job=${job.id}`)}
+                                  >
+                                    <MessageSquare className="w-4 h-4 mr-2" />
+                                    Chat with Client
+                                  </Button>
                                 </div>
                               </div>
                             </div>
