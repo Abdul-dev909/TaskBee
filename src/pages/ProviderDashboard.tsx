@@ -198,7 +198,9 @@ const ProviderDashboard = () => {
   const filteredJobs = jobs.filter(job => {
     const matchesSearch = searchQuery === "" || 
                          job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         job.description.toLowerCase().includes(searchQuery.toLowerCase());
+                         job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         job.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         job.city.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === "all" || job.category === categoryFilter;
     const matchesCity = cityFilter === "" || job.city.toLowerCase().includes(cityFilter.toLowerCase());
     
