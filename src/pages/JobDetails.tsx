@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import genieLamp from "@/assets/genie-lamp.png";
 import { z } from "zod";
+import { createNotification } from "@/hooks/useNotifications";
 
 const jobOfferSchema = z.object({
   message: z.string()
@@ -134,6 +135,17 @@ const JobDetails = () => {
         variant: "destructive",
       });
     } else {
+      // Create notification for homeowner
+      if (job?.posted_by) {
+        await createNotification(
+          job.posted_by,
+          "New Offer Received",
+          `You received a new offer for "${job.title}" with a proposed rate of $${proposedRate}`,
+          "job_offer",
+          jobId
+        );
+      }
+
       toast({
         title: "Offer Submitted!",
         description: "Your offer has been sent to the homeowner",

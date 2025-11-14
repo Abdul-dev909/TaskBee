@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { createNotification } from "@/hooks/useNotifications";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -175,6 +176,13 @@ const ProviderDashboard = () => {
   };
 
   const handleUpdateJobStatus = async (jobId: string, newStatus: string) => {
+    // Get job details first to send notification
+    const { data: job } = await supabase
+      .from("jobs")
+      .select("posted_by, title")
+      .eq("id", jobId)
+      .single();
+
     const { error } = await supabase
       .from("jobs" as any)
       .update({ status: newStatus } as any)
@@ -187,6 +195,18 @@ const ProviderDashboard = () => {
         variant: "destructive",
       });
     } else {
+      // Send notification to homeowner for in_progress or completed status
+      if (job?.posted_by && (newStatus === "in_progress" || newStatus === "completed")) {
+        const statusText = newStatus === "in_progress" ? "In Progress" : "Completed";
+        await createNotification(
+          job.posted_by,
+          `Job Status Updated: ${statusText}`,
+          `Your job "${job.title}" has been marked as ${statusText}`,
+          "job_status_update",
+          jobId
+        );
+      }
+
       toast({
         title: "Success",
         description: `Job status updated to ${newStatus}`,
