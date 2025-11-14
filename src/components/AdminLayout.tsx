@@ -81,8 +81,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       <aside className="w-64 bg-card border-r border-border flex flex-col">
         {/* Brand Header */}
         <div className="p-6 border-b border-border">
-          <Link to="/" className="flex items-center gap-3">
-            <img src={genieLamp} alt="Genie Lamp" className="w-10 h-10 object-contain" />
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="relative">
+              <img src={genieLamp} alt="Home Genie" className="w-14 h-14 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-2xl rounded-2xl bg-gradient-to-br from-background to-accent/10 p-2 border-2 border-primary/20 group-hover:border-primary/40" />
+              <div className="absolute inset-0 bg-primary/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-2xl" />
+            </div>
             <div>
               <h1 className="text-xl font-semibold text-primary">Home Genie</h1>
               <p className="text-xs text-muted-foreground">Admin Panel</p>

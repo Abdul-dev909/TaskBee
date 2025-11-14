@@ -541,7 +541,7 @@ const HomeownerDashboard = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 cursor-pointer group" onClick={() => scrollToSection("hero")}>
                 <div className="relative">
-                  <img src={genieLamp} alt="Home Genie" className="w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-2xl rounded-2xl bg-gradient-to-br from-background to-accent/10 p-2" />
+                  <img src={genieLamp} alt="Home Genie" className="w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-2xl rounded-2xl bg-gradient-to-br from-background to-accent/10 p-2 border-2 border-primary/20 group-hover:border-primary/40" />
                   <div className="absolute inset-0 bg-primary/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-2xl" />
                 </div>
                 <span className="text-2xl font-bold text-primary">Home Genie</span>
@@ -1137,8 +1137,11 @@ const HomeownerDashboard = () => {
           <div className="container mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <img src={genieLamp} alt="Genie Lamp" className="w-8 h-8 object-contain" />
+                <div className="flex items-center gap-2 mb-4 group">
+                  <div className="relative inline-block">
+                    <img src={genieLamp} alt="Home Genie" className="w-10 h-10 object-contain transition-transform duration-300 group-hover:scale-110 rounded-xl bg-gradient-to-br from-background to-accent/10 p-1.5 border border-primary/20 group-hover:border-primary/40" />
+                    <div className="absolute inset-0 bg-primary/10 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-xl" />
+                  </div>
                   <span className="text-xl font-semibold text-primary">Home Genie</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
