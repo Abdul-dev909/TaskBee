@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { createNotification } from './useNotifications';
+import { checkRateLimit } from './useRateLimit';
+import { toast } from './use-toast';
 
 export interface Message {
   id: string;
@@ -112,13 +114,35 @@ export const useMessages = (jobId: string | undefined, userId: string | undefine
   ) => {
     if (!jobId || !userId || !messageText.trim()) return;
 
+    // Check rate limit
+    const rateLimitCheck = await checkRateLimit('message_send');
+    if (!rateLimitCheck.allowed) {
+      toast({
+        title: "Rate Limit Exceeded",
+        description: rateLimitCheck.message || "You're sending messages too quickly. Please wait a moment.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate message length
+    const trimmedMessage = messageText.trim();
+    if (trimmedMessage.length > 2000) {
+      toast({
+        title: "Message Too Long",
+        description: "Messages must be 2000 characters or less.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { error } = await supabase
       .from('messages')
       .insert({
         job_id: jobId,
         sender_id: userId,
         receiver_id: receiverId,
-        message_text: messageText.trim(),
+        message_text: trimmedMessage,
       });
 
     if (!error) {
