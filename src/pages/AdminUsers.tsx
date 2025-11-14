@@ -31,28 +31,20 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     setLoading(true);
 
-    // Get all user roles
+    // Get all user roles with profiles
     const { data: rolesData, error: rolesError } = await supabase
       .from("user_roles")
-      .select("user_id, role, created_at");
+      .select(`
+        user_id, 
+        role, 
+        created_at,
+        profiles!inner(email)
+      `);
 
     if (rolesError) {
       toast({
         title: "Error",
         description: "Failed to fetch users",
-        variant: "destructive",
-      });
-      setLoading(false);
-      return;
-    }
-
-    // Get user emails from auth
-    const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers();
-
-    if (authError) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch user details",
         variant: "destructive",
       });
       setLoading(false);
@@ -66,12 +58,11 @@ const AdminUsers = () => {
 
     // Combine data
     const combinedUsers = rolesData.map((roleData: any) => {
-      const authUser = authUsers?.find((u: any) => u.id === roleData.user_id);
       const profile = providerProfiles?.find((p: any) => p.user_id === roleData.user_id);
       
       return {
         id: roleData.user_id,
-        email: authUser?.email || "N/A",
+        email: roleData.profiles?.email || "N/A",
         role: roleData.role,
         created_at: roleData.created_at,
         full_name: profile?.full_name,
