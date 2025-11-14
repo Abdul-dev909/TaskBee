@@ -32,6 +32,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import genieLamp from "@/assets/genie-lamp.png";
 import dashboardBg from "@/assets/dashboard-bg.jpg";
+
+const checkIfBlocked = async (navigate: any) => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return;
+
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('is_blocked')
+    .eq('id', session.user.id)
+    .single();
+
+  if (profileData?.is_blocked) {
+    await supabase.auth.signOut();
+    toast({
+      title: "Account Blocked",
+      description: "Your account has been blocked. Please contact support.",
+      variant: "destructive",
+    });
+    navigate('/');
+  }
+};
 import {
   Select,
   SelectContent,
@@ -76,6 +97,11 @@ interface ProviderReview {
 
 const HomeownerDashboard = () => {
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    checkIfBlocked(navigate);
+  }, [navigate]);
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
   const [jobs, setJobs] = useState<Job[]>([]);

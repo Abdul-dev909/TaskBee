@@ -23,6 +23,27 @@ import { motion } from "framer-motion";
 import genieLamp from "@/assets/genie-lamp.png";
 import dashboardBg from "@/assets/dashboard-bg.jpg";
 
+const checkIfBlocked = async (navigate: any) => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return;
+
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('is_blocked')
+    .eq('id', session.user.id)
+    .single();
+
+  if (profileData?.is_blocked) {
+    await supabase.auth.signOut();
+    toast({
+      title: "Account Blocked",
+      description: "Your account has been blocked. Please contact support.",
+      variant: "destructive",
+    });
+    navigate('/');
+  }
+};
+
 interface ProviderProfile {
   full_name: string;
   phone: string;
@@ -55,8 +76,12 @@ const ProviderSettings = () => {
   const [deletingAccount, setDeletingAccount] = useState(false);
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    const init = async () => {
+      await checkIfBlocked(navigate);
+      fetchProfile();
+    };
+    init();
+  }, [navigate]);
 
   const fetchProfile = async () => {
     const { data: { session } } = await supabase.auth.getSession();
