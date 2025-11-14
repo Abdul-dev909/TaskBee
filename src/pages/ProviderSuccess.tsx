@@ -53,11 +53,14 @@ const ProviderSuccess = () => {
             transition={{ duration: 0.8, delay: 0.5 }}
             className="flex items-center justify-center gap-3 mb-6"
           >
-            <img 
-              src={genieLamp} 
-              alt="Genie Lamp" 
-              className="w-12 h-12 object-contain"
-            />
+            <div className="relative group inline-block">
+              <img 
+                src={genieLamp} 
+                alt="Home Genie" 
+                className="w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-2xl rounded-2xl bg-gradient-to-br from-background to-accent/10 p-2 border-2 border-primary/20 group-hover:border-primary/40"
+              />
+              <div className="absolute inset-0 bg-primary/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-2xl" />
+            </div>
             <p className="text-2xl font-semibold text-primary">
               You're Now a Service Provider
             </p>

@@ -256,8 +256,11 @@ const Index = () => {
       <nav className="glass-card sticky top-0 z-50 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <img src={genieLamp} alt="Home Genie" className="w-10 h-10 object-contain" />
+            <div className="flex items-center gap-3 group">
+              <div className="relative">
+                <img src={genieLamp} alt="Home Genie" className="w-14 h-14 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-2xl rounded-2xl bg-gradient-to-br from-background to-accent/10 p-2 border-2 border-primary/20 group-hover:border-primary/40" />
+                <div className="absolute inset-0 bg-primary/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-2xl" />
+              </div>
               <span className="text-xl font-bold text-primary">Home Genie</span>
             </div>
             <div className="hidden md:flex items-center gap-6">
@@ -668,8 +671,11 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <img src={genieLamp} alt="Home Genie" className="w-8 h-8 object-contain" />
+              <div className="flex items-center gap-2 mb-4 group">
+                <div className="relative inline-block">
+                  <img src={genieLamp} alt="Home Genie" className="w-10 h-10 object-contain transition-transform duration-300 group-hover:scale-110 rounded-xl bg-gradient-to-br from-background to-accent/10 p-1.5 border border-primary/20 group-hover:border-primary/40" />
+                  <div className="absolute inset-0 bg-primary/10 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-xl" />
+                </div>
                 <span className="text-lg font-bold text-primary">Home Genie</span>
               </div>
               <p className="text-sm text-muted-foreground">
