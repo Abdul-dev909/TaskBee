@@ -42,32 +42,49 @@ const AdminComplaints = () => {
 
   const fetchComplaints = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    
+    // Fetch complaints
+    const { data: complaintsData, error: complaintsError } = await supabase
       .from('complaints')
-      .select(`
-        *,
-        profiles!complaints_created_by_fkey(email),
-        provider_profiles!complaints_provider_id_fkey(full_name),
-        jobs!complaints_job_id_fkey(title)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching complaints:', error);
+    if (complaintsError) {
+      console.error('Error fetching complaints:', complaintsError);
       toast({
         title: "Error",
         description: "Failed to load complaints",
         variant: "destructive",
       });
-    } else {
-      const formattedComplaints = (data || []).map((complaint: any) => ({
-        ...complaint,
-        homeowner_email: complaint.profiles?.email,
-        provider_name: complaint.provider_profiles?.full_name || 'N/A',
-        job_title: complaint.jobs?.title || 'N/A',
-      }));
-      setComplaints(formattedComplaints);
+      setLoading(false);
+      return;
     }
+
+    // Fetch related data
+    const userIds = [...new Set(complaintsData?.map(c => c.created_by).filter(Boolean) || [])];
+    const providerIds = [...new Set(complaintsData?.map(c => c.provider_id).filter(Boolean) || [])];
+    const jobIds = [...new Set(complaintsData?.map(c => c.job_id).filter(Boolean) || [])];
+
+    const [profilesResult, providersResult, jobsResult] = await Promise.all([
+      userIds.length > 0 ? supabase.from('profiles').select('id, email').in('id', userIds) : Promise.resolve({ data: [] }),
+      providerIds.length > 0 ? supabase.from('provider_profiles').select('user_id, full_name').in('user_id', providerIds) : Promise.resolve({ data: [] }),
+      jobIds.length > 0 ? supabase.from('jobs').select('id, title').in('id', jobIds) : Promise.resolve({ data: [] })
+    ]);
+
+    // Create lookup maps
+    const profilesMap = new Map<string, string>(profilesResult.data?.map(p => [p.id, p.email] as [string, string]) || []);
+    const providersMap = new Map<string, string>(providersResult.data?.map(p => [p.user_id, p.full_name] as [string, string]) || []);
+    const jobsMap = new Map<string, string>(jobsResult.data?.map(j => [j.id, j.title] as [string, string]) || []);
+
+    // Combine data
+    const formattedComplaints = (complaintsData || []).map((complaint: any) => ({
+      ...complaint,
+      homeowner_email: profilesMap.get(complaint.created_by) || 'Unknown',
+      provider_name: providersMap.get(complaint.provider_id) || 'N/A',
+      job_title: jobsMap.get(complaint.job_id) || 'N/A',
+    }));
+
+    setComplaints(formattedComplaints);
     setLoading(false);
   };
 
