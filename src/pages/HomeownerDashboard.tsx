@@ -554,18 +554,21 @@ const HomeownerDashboard = () => {
                 <button onClick={() => scrollToSection("testimonials")} className="text-muted-foreground hover:text-primary transition-colors">
                   Testimonials
                 </button>
-                <Button onClick={() => navigate("/complaints/new")} variant="outline">
-                  <AlertCircle className="w-4 h-4 mr-2" />
-                  File Complaint
-                </Button>
-                <NotificationBell userId={currentUserId} />
-                <Button onClick={() => navigate("/homeowner-settings")} variant="outline">
-                  Settings
-                </Button>
-                <Button onClick={handleLogout} variant="outline">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button onClick={() => navigate("/complaints/new")} variant="outline">
+                    <AlertCircle className="w-4 h-4 mr-2" />
+                    File Complaint
+                  </Button>
+                  <div className="h-8 w-px bg-border/50" />
+                  <NotificationBell userId={currentUserId} />
+                  <Button onClick={() => navigate("/homeowner-settings")} variant="outline">
+                    Settings
+                  </Button>
+                  <Button onClick={handleLogout} variant="outline">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
