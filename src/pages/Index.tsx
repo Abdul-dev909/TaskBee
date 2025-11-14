@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { NotificationBell } from "@/components/NotificationBell";
-import genieLamp from "@/assets/genie-lamp.png";
+import genieLamp from "@/assets/home-genie-logo.png";
 import heroBg from "@/assets/hero-bg.jpg";
 import heroProviders from "@/assets/hero-service-providers.jpg";
 import servicesBg from "@/assets/services-bg.jpg";
