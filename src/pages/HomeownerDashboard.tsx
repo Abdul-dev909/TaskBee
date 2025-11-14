@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import genieLamp from "@/assets/genie-lamp.png";
+import genieLamp from "@/assets/home-genie-logo.png";
 import dashboardBg from "@/assets/dashboard-bg.jpg";
 import { NotificationBell } from "@/components/NotificationBell";
 
@@ -539,9 +539,12 @@ const HomeownerDashboard = () => {
         <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-border/40">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 cursor-pointer" onClick={() => scrollToSection("hero")}>
-                <img src={genieLamp} alt="Genie Lamp" className="w-10 h-10 object-contain" />
-                <span className="text-2xl font-semibold text-primary">Home Genie</span>
+              <div className="flex items-center gap-3 cursor-pointer group" onClick={() => scrollToSection("hero")}>
+                <div className="relative">
+                  <img src={genieLamp} alt="Home Genie" className="w-12 h-12 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-lg" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+                </div>
+                <span className="text-2xl font-bold bg-gradient-to-r from-primary via-purple-500 to-accent bg-clip-text text-transparent">Home Genie</span>
               </div>
               
               <div className="hidden md:flex items-center gap-8">

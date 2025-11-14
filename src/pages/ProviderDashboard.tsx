@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import genieLamp from "@/assets/genie-lamp.png";
+import genieLamp from "@/assets/home-genie-logo.png";
 import dashboardBg from "@/assets/dashboard-bg.jpg";
 import { NotificationBell } from "@/components/NotificationBell";
 

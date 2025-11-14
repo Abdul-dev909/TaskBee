@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Briefcase, Clock, DollarSign, Star, ArrowRight } from "lucide-react";
-import genieLamp from "@/assets/genie-lamp.png";
+import genieLamp from "@/assets/home-genie-logo.png";
 import providerHeroBg from "@/assets/provider-hero-bg.jpg";
 
 interface FormErrors {

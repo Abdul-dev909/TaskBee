@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Users, Briefcase, Grid, LayoutDashboard, LogOut, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import genieLamp from "@/assets/genie-lamp.png";
+import genieLamp from "@/assets/home-genie-logo.png";
 import { NotificationBell } from "@/components/NotificationBell";
 
 interface AdminLayoutProps {

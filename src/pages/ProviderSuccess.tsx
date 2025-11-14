@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Sparkles } from "lucide-react";
-import genieLamp from "@/assets/genie-lamp.png";
+import genieLamp from "@/assets/home-genie-logo.png";
 
 const ProviderSuccess = () => {
   return (

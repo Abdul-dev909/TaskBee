@@ -9,7 +9,7 @@ import { ArrowLeft, MapPin, Calendar, DollarSign, Briefcase } from "lucide-react
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import genieLamp from "@/assets/genie-lamp.png";
+import genieLamp from "@/assets/home-genie-logo.png";
 import { z } from "zod";
 import { createNotification } from "@/hooks/useNotifications";
 

@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import genieLamp from "@/assets/genie-lamp.png";
+import genieLamp from "@/assets/home-genie-logo.png";
 
 interface AuthLayoutProps {
   children: ReactNode;
