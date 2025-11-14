@@ -23,10 +23,11 @@ export const ChatInterface = ({
   otherUserName,
   jobTitle,
 }: ChatInterfaceProps) => {
-  const { messages, loading, sendMessage } = useMessages(jobId, currentUserId);
+  const { messages, loading, sendMessage, isOtherUserTyping, setTypingStatus } = useMessages(jobId, currentUserId);
   const [newMessage, setNewMessage] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -39,8 +40,26 @@ export const ChatInterface = ({
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
 
-    await sendMessage(otherUserId, newMessage, "User");
+    await sendMessage(otherUserId, newMessage, otherUserName);
     setNewMessage("");
+    setTypingStatus(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    
+    // Set typing status
+    setTypingStatus(true);
+    
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    // Set new timeout to stop typing status after 2 seconds
+    typingTimeoutRef.current = setTimeout(() => {
+      setTypingStatus(false);
+    }, 2000);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -114,20 +133,44 @@ export const ChatInterface = ({
                       }`}
                     >
                       <p className="text-sm break-words">{message.message_text}</p>
-                      <p
-                        className={`text-xs mt-1 ${
-                          isSender ? "text-primary-foreground/70" : "text-muted-foreground"
-                        }`}
-                      >
-                        {formatDistanceToNow(new Date(message.created_at), {
-                          addSuffix: true,
-                        })}
-                      </p>
+                      <div className="flex items-center justify-between gap-2 mt-1">
+                        <p
+                          className={`text-xs ${
+                            isSender ? "text-primary-foreground/70" : "text-muted-foreground"
+                          }`}
+                        >
+                          {formatDistanceToNow(new Date(message.created_at), {
+                            addSuffix: true,
+                          })}
+                        </p>
+                        {isSender && message.is_read && (
+                          <span className="text-xs text-primary-foreground/70 flex items-center gap-1">
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
+                              <path d="M19.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0" opacity="0.5"/>
+                            </svg>
+                            Seen
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
               })}
               <div ref={messagesEndRef} />
+              
+              {/* Typing Indicator */}
+              {isOtherUserTyping && (
+                <div className="flex justify-start animate-fade-in">
+                  <div className="max-w-[70%] rounded-lg p-3 bg-card/80 border border-border/50 shadow-md backdrop-blur-sm">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -138,7 +181,7 @@ export const ChatInterface = ({
         <div className="flex gap-2">
           <Input
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             placeholder="Type a message..."
             className="flex-1"

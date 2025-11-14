@@ -15,6 +15,7 @@ export interface Message {
 export const useMessages = (jobId: string | undefined, userId: string | undefined) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOtherUserTyping, setIsOtherUserTyping] = useState(false);
 
   useEffect(() => {
     if (!jobId || !userId) {
@@ -49,7 +50,7 @@ export const useMessages = (jobId: string | undefined, userId: string | undefine
 
     fetchMessages();
 
-    // Subscribe to real-time messages
+    // Subscribe to real-time messages and typing status
     const channel = supabase
       .channel(`messages-${jobId}`)
       .on(
@@ -74,6 +75,29 @@ export const useMessages = (jobId: string | undefined, userId: string | undefine
           }
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `job_id=eq.${jobId}`,
+        },
+        (payload) => {
+          const updatedMessage = payload.new as Message;
+          setMessages(prev => 
+            prev.map(msg => msg.id === updatedMessage.id ? updatedMessage : msg)
+          );
+        }
+      )
+      .on('presence', { event: 'sync' }, () => {
+        const presenceState = channel.presenceState();
+        const otherUserPresence = Object.values(presenceState).find(
+          (presence: any) => presence[0]?.user_id !== userId
+        );
+        const typingStatus = otherUserPresence?.[0] as any;
+        setIsOtherUserTyping(typingStatus?.typing || false);
+      })
       .subscribe();
 
     return () => {
@@ -111,9 +135,18 @@ export const useMessages = (jobId: string | undefined, userId: string | undefine
     }
   };
 
+  const setTypingStatus = async (isTyping: boolean) => {
+    if (!jobId || !userId) return;
+    
+    const channel = supabase.channel(`messages-${jobId}`);
+    await channel.track({ user_id: userId, typing: isTyping });
+  };
+
   return {
     messages,
     loading,
     sendMessage,
+    isOtherUserTyping,
+    setTypingStatus,
   };
 };
