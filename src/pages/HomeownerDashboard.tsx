@@ -853,7 +853,7 @@ const HomeownerDashboard = () => {
                           <Label htmlFor="budget">Budget (Optional)</Label>
                           <Input
                             id="budget"
-                            placeholder="e.g., $100 - $200"
+                            placeholder="e.g., Rs. 100 - Rs. 200"
                             value={formData.budget}
                             onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
                             className="input-elegant"

@@ -176,7 +176,7 @@ export const JobOffers = ({ jobId, jobTitle, open, onClose, onOfferAccepted }: J
                           {offer.proposed_rate && (
                             <div className="flex items-center gap-1 text-xl font-bold text-primary">
                               <DollarSign className="w-5 h-5" />
-                              {offer.proposed_rate.toFixed(2)}
+                              Rs. {offer.proposed_rate.toFixed(2)}
                             </div>
                           )}
                           <span className={`px-3 py-1 rounded-full text-xs font-medium ${

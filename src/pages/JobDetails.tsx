@@ -159,7 +159,7 @@ const JobDetails = () => {
         await createNotification(
           jobData.posted_by,
           "New Offer Received! 🎉",
-          `You received a new offer for "${jobData.title}" with a proposed rate of $${proposedRate}`,
+          `You received a new offer for "${jobData.title}" with a proposed rate of Rs. ${proposedRate}`,
           "job_offer",
           jobId
         );

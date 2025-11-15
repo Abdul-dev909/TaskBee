@@ -516,7 +516,7 @@ const ProviderDashboard = () => {
                                   {application.proposed_rate && (
                                     <span className="flex items-center gap-1 text-primary font-semibold">
                                       <DollarSign className="w-4 h-4" />
-                                      ${application.proposed_rate.toFixed(2)} (Your Offer)
+                                      Rs. {application.proposed_rate.toFixed(2)} (Your Offer)
                                     </span>
                                   )}
                                 </div>
@@ -585,7 +585,7 @@ const ProviderDashboard = () => {
                                     </span>
                                     <span className="flex items-center gap-1 text-green-600 dark:text-green-400 font-bold">
                                       <DollarSign className="w-4 h-4" />
-                                      ${application.proposed_rate?.toFixed(2) || 'N/A'}
+                                      Rs. {application.proposed_rate?.toFixed(2) || 'N/A'}
                                     </span>
                                   </div>
                                 </div>
