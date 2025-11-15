@@ -1017,44 +1017,72 @@ const HomeownerDashboard = () => {
                                 </Button>
                               )}
                               {job.status === 'completed' && job.assigned_provider_id && (
-                                <Button 
-                                  size="sm" 
-                                  variant="default"
-                                  className="btn-glow"
-                                  onClick={async () => {
-                                    // Check if already rated
-                                    const { data: existingRating } = await supabase
-                                      .from("provider_ratings")
-                                      .select("id")
-                                      .eq("job_id", job.id)
-                                      .maybeSingle();
-                                    
-                                    if (existingRating) {
-                                      toast({
-                                        title: "Already Rated",
-                                        description: "You have already rated this provider",
+                                <>
+                                  <Button 
+                                    size="sm" 
+                                    variant="default"
+                                    className="btn-glow"
+                                    onClick={async () => {
+                                      // Check if already paid
+                                      const { data: existingPayment } = await supabase
+                                        .from("payments")
+                                        .select("id")
+                                        .eq("job_id", job.id)
+                                        .maybeSingle();
+                                      
+                                      if (existingPayment) {
+                                        toast({
+                                          title: "Already Paid",
+                                          description: "This job has already been paid for",
+                                        });
+                                        return;
+                                      }
+
+                                      navigate(`/payment?jobId=${job.id}`);
+                                    }}
+                                  >
+                                    <DollarSign className="w-4 h-4 mr-2" />
+                                    Make Payment
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="default"
+                                    className="btn-glow"
+                                    onClick={async () => {
+                                      // Check if already rated
+                                      const { data: existingRating } = await supabase
+                                        .from("provider_ratings")
+                                        .select("id")
+                                        .eq("job_id", job.id)
+                                        .maybeSingle();
+                                      
+                                      if (existingRating) {
+                                        toast({
+                                          title: "Already Rated",
+                                          description: "You have already rated this provider",
+                                        });
+                                        return;
+                                      }
+
+                                      // Fetch provider name
+                                      const { data: provider } = await supabase
+                                        .from("provider_profiles")
+                                        .select("full_name")
+                                        .eq("user_id", job.assigned_provider_id)
+                                        .single();
+
+                                      setSelectedJobForRating({
+                                        jobId: job.id,
+                                        providerId: job.assigned_provider_id!,
+                                        providerName: provider?.full_name || "Provider"
                                       });
-                                      return;
-                                    }
-
-                                    // Fetch provider name
-                                    const { data: provider } = await supabase
-                                      .from("provider_profiles")
-                                      .select("full_name")
-                                      .eq("user_id", job.assigned_provider_id)
-                                      .single();
-
-                                    setSelectedJobForRating({
-                                      jobId: job.id,
-                                      providerId: job.assigned_provider_id!,
-                                      providerName: provider?.full_name || "Provider"
-                                    });
-                                    setRatingDialogOpen(true);
-                                  }}
-                                >
-                                  <Star className="w-4 h-4 mr-2" />
-                                  Rate Provider
-                                </Button>
+                                      setRatingDialogOpen(true);
+                                    }}
+                                  >
+                                    <Star className="w-4 h-4 mr-2" />
+                                    Rate Provider
+                                  </Button>
+                                </>
                               )}
                             </div>
                           </div>

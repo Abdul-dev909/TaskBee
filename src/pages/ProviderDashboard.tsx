@@ -17,7 +17,8 @@ import {
   Filter,
   AlertCircle,
   MessageSquare,
-  LogOut
+  LogOut,
+  Wallet
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -265,6 +266,14 @@ const ProviderDashboard = () => {
               </div>
               
               <div className="flex items-center gap-4">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate("/provider/wallet")}
+                >
+                  <Wallet className="w-4 h-4 mr-2" />
+                  My Wallet
+                </Button>
                 <Button 
                   variant="outline" 
                   size="sm"
