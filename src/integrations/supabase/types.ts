@@ -221,6 +221,50 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          created_at: string
+          homeowner_id: string
+          id: string
+          job_id: string
+          offered_rate: number
+          platform_fee: number
+          provider_id: string
+          status: string
+          total_amount: number
+        }
+        Insert: {
+          created_at?: string
+          homeowner_id: string
+          id?: string
+          job_id: string
+          offered_rate: number
+          platform_fee?: number
+          provider_id: string
+          status?: string
+          total_amount: number
+        }
+        Update: {
+          created_at?: string
+          homeowner_id?: string
+          id?: string
+          job_id?: string
+          offered_rate?: number
+          platform_fee?: number
+          provider_id?: string
+          status?: string
+          total_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           block_reason: string | null
@@ -317,6 +361,62 @@ export type Database = {
           provider_id?: string
           rating?: number
           review?: string | null
+        }
+        Relationships: []
+      }
+      provider_transactions: {
+        Row: {
+          commission: number
+          created_at: string
+          gross_amount: number
+          id: string
+          job_id: string
+          net_amount: number
+          provider_id: string
+        }
+        Insert: {
+          commission: number
+          created_at?: string
+          gross_amount: number
+          id?: string
+          job_id: string
+          net_amount: number
+          provider_id: string
+        }
+        Update: {
+          commission?: number
+          created_at?: string
+          gross_amount?: number
+          id?: string
+          job_id?: string
+          net_amount?: number
+          provider_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_transactions_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_wallet: {
+        Row: {
+          balance: number
+          provider_id: string
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          provider_id: string
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          provider_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
