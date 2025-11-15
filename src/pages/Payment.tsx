@@ -195,6 +195,28 @@ const Payment = () => {
           net_amount: netAmount
         });
 
+      // Create notification for homeowner
+      await supabase
+        .from("notifications")
+        .insert({
+          user_id: session.user.id,
+          title: "Payment Successful ✅",
+          body: `Your payment of Rs. ${totalAmount} for "${jobDetails.title}" has been processed successfully.`,
+          type: "payment",
+          related_id: jobId
+        });
+
+      // Create notification for provider
+      await supabase
+        .from("notifications")
+        .insert({
+          user_id: jobDetails.assigned_provider_id,
+          title: "Payment Received 💰",
+          body: `You received Rs. ${netAmount} (after 8% commission) for completing "${jobDetails.title}". Amount added to your wallet.`,
+          type: "payment",
+          related_id: jobId
+        });
+
       setSuccess(true);
       toast.success("Payment successful!");
     } catch (error: any) {
