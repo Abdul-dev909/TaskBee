@@ -127,8 +127,8 @@ const Payment = () => {
 
     setProcessing(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error("Not authenticated");
 
       const totalAmount = offeredRate + platformFee;
 
@@ -137,7 +137,7 @@ const Payment = () => {
         .from("payments")
         .insert({
           job_id: jobId,
-          homeowner_id: user.id,
+          homeowner_id: session.user.id,
           provider_id: jobDetails.assigned_provider_id,
           offered_rate: offeredRate,
           platform_fee: platformFee,
