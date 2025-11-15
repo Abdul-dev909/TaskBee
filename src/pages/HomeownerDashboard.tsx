@@ -28,7 +28,8 @@ import {
   Eye,
   AlertCircle,
   MessageSquare,
-  LogOut
+  LogOut,
+  Receipt
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -561,6 +562,10 @@ const HomeownerDashboard = () => {
                   <Button onClick={() => navigate("/complaints/new")} variant="outline">
                     <AlertCircle className="w-4 h-4 mr-2" />
                     File Complaint
+                  </Button>
+                  <Button onClick={() => navigate("/payment-history")} variant="outline">
+                    <Receipt className="w-4 h-4 mr-2" />
+                    Payment History
                   </Button>
                   <div className="h-8 w-px bg-border/50" />
                   <NotificationBell userId={currentUserId} />
