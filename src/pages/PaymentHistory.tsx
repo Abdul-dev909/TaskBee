@@ -3,20 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Download, ArrowLeft, Receipt } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import genieLamp from "@/assets/home-genie-logo.png";
-
 interface Payment {
   id: string;
   job_id: string;
@@ -34,15 +26,17 @@ interface Payment {
     full_name: string;
   };
 }
-
 const PaymentHistory = () => {
   const navigate = useNavigate();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       if (!session) {
         navigate('/login');
         return;
@@ -51,48 +45,40 @@ const PaymentHistory = () => {
     };
     checkAuth();
   }, [navigate]);
-
   const fetchPayments = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("payments")
-        .select(`
+      const {
+        data,
+        error
+      } = await supabase.from("payments").select(`
           *,
           jobs:job_id (title)
-        `)
-        .eq("homeowner_id", userId)
-        .order("created_at", { ascending: false });
-
+        `).eq("homeowner_id", userId).order("created_at", {
+        ascending: false
+      });
       if (error) throw error;
 
       // Fetch provider names separately
-      const paymentsWithProviders = await Promise.all(
-        (data || []).map(async (payment) => {
-          const { data: providerData } = await supabase
-            .from("profiles")
-            .select("full_name")
-            .eq("id", payment.provider_id)
-            .single();
-
-          return {
-            ...payment,
-            profiles: providerData,
-          };
-        })
-      );
-
+      const paymentsWithProviders = await Promise.all((data || []).map(async payment => {
+        const {
+          data: providerData
+        } = await supabase.from("profiles").select("full_name").eq("id", payment.provider_id).single();
+        return {
+          ...payment,
+          profiles: providerData
+        };
+      }));
       setPayments(paymentsWithProviders as any);
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const downloadReceipt = (payment: Payment) => {
     const receiptContent = `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -127,8 +113,9 @@ Status: ${payment.status}
          Thank you for using Home Genie!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     `.trim();
-
-    const blob = new Blob([receiptContent], { type: 'text/plain' });
+    const blob = new Blob([receiptContent], {
+      type: 'text/plain'
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -137,25 +124,18 @@ Status: ${payment.status}
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-
     toast({
       title: "Receipt Downloaded",
-      description: "Your payment receipt has been downloaded successfully.",
+      description: "Your payment receipt has been downloaded successfully."
     });
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/homeowner-dashboard')}
-              >
+              <Button variant="ghost" size="sm" onClick={() => navigate('/homeowner-dashboard')}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Dashboard
               </Button>
@@ -170,11 +150,15 @@ Status: ${payment.status}
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} transition={{
+        duration: 0.5
+      }}>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -183,16 +167,11 @@ Status: ${payment.status}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="text-center py-8 text-muted-foreground">
+              {loading ? <div className="text-center py-8 text-muted-foreground">
                   Loading payment history...
-                </div>
-              ) : payments.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                </div> : payments.length === 0 ? <div className="text-center py-8 text-muted-foreground">
                   No payments found.
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
+                </div> : <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -207,8 +186,7 @@ Status: ${payment.status}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {payments.map((payment) => (
-                        <TableRow key={payment.id}>
+                      {payments.map(payment => <TableRow key={payment.id}>
                           <TableCell className="font-medium">
                             {new Date(payment.created_at).toLocaleDateString()}
                           </TableCell>
@@ -225,42 +203,29 @@ Status: ${payment.status}
                           </TableCell>
                           <TableCell className="text-center">
                             <div className="flex items-center justify-center gap-2">
-                              <Badge 
-                                variant="default" 
-                                className="bg-green-500 hover:bg-green-600 text-white font-bold"
-                              >
+                              <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white font-bold">
                                 {payment.status}
                               </Badge>
                               <div className="relative">
                                 <div className="absolute -inset-1 bg-green-500/20 rounded-full blur-sm"></div>
-                                <div className="relative bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full rotate-[-12deg] shadow-lg">
-                                  PAID
-                                </div>
+                                
                               </div>
                             </div>
                           </TableCell>
                           <TableCell className="text-center">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => downloadReceipt(payment)}
-                            >
+                            <Button variant="outline" size="sm" onClick={() => downloadReceipt(payment)}>
                               <Download className="h-4 w-4 mr-2" />
                               Download
                             </Button>
                           </TableCell>
-                        </TableRow>
-                      ))}
+                        </TableRow>)}
                     </TableBody>
                   </Table>
-                </div>
-              )}
+                </div>}
             </CardContent>
           </Card>
         </motion.div>
       </main>
-    </div>
-  );
+    </div>;
 };
-
 export default PaymentHistory;
