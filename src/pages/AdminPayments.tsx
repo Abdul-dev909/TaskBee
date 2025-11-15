@@ -50,18 +50,31 @@ const AdminPayments = () => {
     try {
       const { data, error } = await supabase
         .from("payments")
-        .select(`
-          *,
-          jobs(title),
-          homeowner_profile:profiles!payments_homeowner_id_fkey(full_name, email),
-          provider_profile:provider_profiles!payments_provider_id_fkey(full_name)
-        `)
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      setPayments(data || []);
-      setFilteredPayments(data || []);
+      // Fetch related data separately
+      const paymentsWithDetails = await Promise.all(
+        (data || []).map(async (payment) => {
+          const [jobData, homeownerData, providerData] = await Promise.all([
+            supabase.from("jobs").select("title").eq("id", payment.job_id).single(),
+            supabase.from("profiles").select("full_name, email").eq("id", payment.homeowner_id).single(),
+            supabase.from("provider_profiles").select("full_name").eq("user_id", payment.provider_id).maybeSingle(),
+          ]);
+
+          return {
+            ...payment,
+            jobs: jobData.data,
+            homeowner_profile: homeownerData.data,
+            provider_profile: providerData.data,
+          };
+        })
+      );
+
+      setPayments(paymentsWithDetails);
+      setFilteredPayments(paymentsWithDetails);
     } catch (error: any) {
       console.error("Error fetching payments:", error);
       toast.error("Failed to load payments");
