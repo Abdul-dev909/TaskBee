@@ -21,48 +21,73 @@ const AdminDashboard = () => {
   }, []);
 
   const fetchStats = async () => {
-    // Count homeowners
-    const { count: homeownersCount } = await supabase
-      .from("user_roles")
-      .select("*", { count: "exact", head: true })
-      .eq("role", "homeowner");
+    try {
+      // Count homeowners
+      const { count: homeownersCount, error: homeownersError } = await supabase
+        .from("user_roles")
+        .select("*", { count: "exact", head: true })
+        .eq("role", "homeowner");
 
-    // Count service providers
-    const { count: providersCount } = await supabase
-      .from("user_roles")
-      .select("*", { count: "exact", head: true })
-      .eq("role", "service_provider");
+      if (homeownersError) console.error("Homeowners count error:", homeownersError);
 
-    // Count total jobs
-    const { count: totalJobsCount } = await supabase
-      .from("jobs")
-      .select("*", { count: "exact", head: true });
+      // Count service providers
+      const { count: providersCount, error: providersError } = await supabase
+        .from("user_roles")
+        .select("*", { count: "exact", head: true })
+        .eq("role", "service_provider");
 
-    // Count active (open) jobs
-    const { count: activeJobsCount } = await supabase
-      .from("jobs")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "open");
+      if (providersError) console.error("Providers count error:", providersError);
 
-    // Count completed jobs
-    const { count: completedJobsCount } = await supabase
-      .from("jobs")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "completed");
+      // Count total jobs
+      const { count: totalJobsCount, error: totalJobsError } = await supabase
+        .from("jobs")
+        .select("*", { count: "exact", head: true });
 
-    // Count total job offers
-    const { count: offersCount } = await supabase
-      .from("job_requests")
-      .select("*", { count: "exact", head: true });
+      if (totalJobsError) console.error("Total jobs count error:", totalJobsError);
 
-    setStats({
-      totalHomeowners: homeownersCount || 0,
-      totalProviders: providersCount || 0,
-      totalJobs: totalJobsCount || 0,
-      activeJobs: activeJobsCount || 0,
-      completedJobs: completedJobsCount || 0,
-      totalOffers: offersCount || 0,
-    });
+      // Count active (open) jobs
+      const { count: activeJobsCount, error: activeJobsError } = await supabase
+        .from("jobs")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "open");
+
+      if (activeJobsError) console.error("Active jobs count error:", activeJobsError);
+
+      // Count completed jobs
+      const { count: completedJobsCount, error: completedJobsError } = await supabase
+        .from("jobs")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "completed");
+
+      if (completedJobsError) console.error("Completed jobs count error:", completedJobsError);
+
+      // Count total job offers (requests)
+      const { count: offersCount, error: offersError } = await supabase
+        .from("job_requests")
+        .select("*", { count: "exact", head: true });
+
+      if (offersError) console.error("Job offers count error:", offersError);
+
+      console.log("Stats fetched:", {
+        homeownersCount,
+        providersCount,
+        totalJobsCount,
+        activeJobsCount,
+        completedJobsCount,
+        offersCount
+      });
+
+      setStats({
+        totalHomeowners: homeownersCount || 0,
+        totalProviders: providersCount || 0,
+        totalJobs: totalJobsCount || 0,
+        activeJobs: activeJobsCount || 0,
+        completedJobs: completedJobsCount || 0,
+        totalOffers: offersCount || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    }
   };
 
   const statCards = [
