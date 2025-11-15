@@ -23,6 +23,7 @@ import FileComplaint from "./pages/FileComplaint";
 import ProviderComplaints from "./pages/ProviderComplaints";
 import Chat from "./pages/Chat";
 import Payment from "./pages/Payment";
+import PaymentHistory from "./pages/PaymentHistory";
 import ProviderWallet from "./pages/ProviderWallet";
 import NotFound from "./pages/NotFound";
 
@@ -56,6 +57,7 @@ const App = () => (
           <Route path="/provider/wallet" element={<ProviderWallet />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/payment" element={<Payment />} />
+          <Route path="/payment-history" element={<PaymentHistory />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
