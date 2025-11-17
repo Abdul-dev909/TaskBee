@@ -737,7 +737,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-secondary/20 px-4 py-12">
+      <footer className="bg-secondary/20 dark:footer-dark px-4 py-12 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>

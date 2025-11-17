@@ -79,7 +79,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   return (
     <div className="min-h-screen flex bg-background">
       {/* Sidebar */}
-      <aside className="w-64 bg-card border-r border-border flex flex-col">
+      <aside className="w-64 glass-card border-r border-border/50 flex flex-col">
         {/* Brand Header */}
         <div className="p-6 border-b border-border">
           <Link to="/" className="flex items-center gap-3 group">
