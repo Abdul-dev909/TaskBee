@@ -27,7 +27,9 @@ import {
   Shield,
   Star,
   Search,
-  MapPin
+  MapPin,
+  Menu,
+  X
 } from "lucide-react";
 
 const Index = () => {
@@ -40,6 +42,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [providerRatings, setProviderRatings] = useState<{ [key: string]: { avg: number; count: number } }>({});
   const [providerReviews, setProviderReviews] = useState<{ [key: string]: any[] }>({});
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -263,6 +266,8 @@ const Index = () => {
               </div>
               <span className="text-xl font-bold text-primary">Home Genie</span>
             </div>
+            
+            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-6">
               <button onClick={() => scrollToSection('services')} className="text-foreground/80 hover:text-primary transition-colors">
                 Services
@@ -284,7 +289,54 @@ const Index = () => {
                 </Button>
               </Link>
             </div>
+
+            {/* Mobile Menu Button */}
+            <button 
+              className="md:hidden p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden py-4 space-y-3 border-t border-border"
+            >
+              <button 
+                onClick={() => { scrollToSection('services'); setMobileMenuOpen(false); }} 
+                className="block w-full text-left px-4 py-2 text-foreground/80 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+              >
+                Services
+              </button>
+              <button 
+                onClick={() => { scrollToSection('how-it-works'); setMobileMenuOpen(false); }} 
+                className="block w-full text-left px-4 py-2 text-foreground/80 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+              >
+                How It Works
+              </button>
+              <button 
+                onClick={() => { scrollToSection('why-choose-us'); setMobileMenuOpen(false); }} 
+                className="block w-full text-left px-4 py-2 text-foreground/80 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+              >
+                Why Choose Us
+              </button>
+              <Link to="/become-provider" className="block px-4">
+                <Button variant="secondary" className="w-full bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 text-primary">
+                  Become a Provider
+                </Button>
+              </Link>
+              <Link to="/login" className="block px-4">
+                <Button variant="outline" className="w-full border-primary text-primary">
+                  Login
+                </Button>
+              </Link>
+            </motion.div>
+          )}
         </div>
       </nav>
 
