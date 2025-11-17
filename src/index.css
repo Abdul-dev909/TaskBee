@@ -50,26 +50,26 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 25 20% 12%;
-    --foreground: 45 52% 95%;
+    --background: 25 15% 8%; /* Deeper rich dark brown */
+    --foreground: 45 60% 92%; /* Warmer cream text */
 
-    --card: 25 20% 15%;
-    --card-foreground: 45 52% 95%;
+    --card: 25 25% 14%; /* Richer card background */
+    --card-foreground: 45 55% 90%;
 
-    --popover: 25 20% 15%;
-    --popover-foreground: 45 52% 95%;
+    --popover: 25 25% 12%;
+    --popover-foreground: 45 55% 90%;
 
-    --primary: 36 40% 70%;
-    --primary-foreground: 25 35% 25%;
+    --primary: 28 75% 58%; /* Vibrant warm sienna/copper */
+    --primary-foreground: 0 0% 100%; /* Pure white for contrast */
 
-    --secondary: 25 30% 25%;
-    --secondary-foreground: 45 52% 95%;
+    --secondary: 25 35% 22%; /* Warmer secondary */
+    --secondary-foreground: 45 55% 88%;
 
-    --muted: 25 30% 25%;
-    --muted-foreground: 36 20% 65%;
+    --muted: 25 20% 18%; /* Softer muted tone */
+    --muted-foreground: 36 25% 65%;
 
-    --accent: 25 40% 30%;
-    --accent-foreground: 45 52% 95%;
+    --accent: 30 55% 45%; /* Rich bronze accent */
+    --accent-foreground: 45 60% 95%;
 
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
@@ -77,14 +77,14 @@ All colors MUST be HSL.
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
 
-    --border: 25 30% 25%;
-    --input: 25 30% 25%;
-    --ring: 36 40% 70%;
+    --border: 25 25% 22%; /* More visible borders */
+    --input: 25 30% 16%; /* Slightly lighter input background */
+    --ring: 28 75% 58%; /* Match vibrant primary */
 
-    --glass-bg: 25 20% 15% / 0.7;
-    --shadow-soft: 0 8px 32px hsla(0, 0%, 0%, 0.3);
-    --shadow-hover: 0 12px 40px hsla(0, 0%, 0%, 0.4);
-    --glow-primary: 0 0 20px hsla(36, 40%, 70%, 0.3);
+    --glass-bg: 25 25% 14% / 0.8; /* Enhanced glass effect */
+    --shadow-soft: 0 8px 32px hsla(0, 0%, 0%, 0.5);
+    --shadow-hover: 0 12px 40px hsla(28, 75%, 58%, 0.2);
+    --glow-primary: 0 0 30px hsla(28, 75%, 58%, 0.4); /* Stronger glow */
   }
 }
 
