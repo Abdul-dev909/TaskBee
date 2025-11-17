@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -29,12 +30,15 @@ import {
   Search,
   MapPin,
   Menu,
-  X
+  X,
+  Sun,
+  Moon
 } from "lucide-react";
 
 const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
   const [providers, setProviders] = useState<any[]>([]);
   const [showProvidersDialog, setShowProvidersDialog] = useState(false);
@@ -278,6 +282,13 @@ const Index = () => {
               <button onClick={() => scrollToSection('why-choose-us')} className="text-foreground/80 hover:text-primary transition-colors">
                 Why Choose Us
               </button>
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                aria-label="Toggle theme"
+              >
+                {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
               <Link to="/become-provider">
                 <Button variant="secondary" className="bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 text-primary hover:from-primary/30 hover:to-primary/20">
                   Become a Provider
@@ -324,6 +335,13 @@ const Index = () => {
                 className="block w-full text-left px-4 py-2 text-foreground/80 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
               >
                 Why Choose Us
+              </button>
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="flex items-center gap-2 w-full text-left px-4 py-2 text-foreground/80 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+              >
+                {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+                <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
               </button>
               <Link to="/become-provider" className="block px-4">
                 <Button variant="secondary" className="w-full bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 text-primary">
