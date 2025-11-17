@@ -1166,7 +1166,7 @@ const HomeownerDashboard = () => {
         </section>
 
         {/* Footer */}
-        <footer className="py-12 px-4 border-t border-border">
+        <footer className="dark:footer-dark py-12 px-4 border-t border-border transition-colors duration-300">
           <div className="container mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               <div>

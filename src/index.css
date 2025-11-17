@@ -105,10 +105,31 @@ All colors MUST be HSL.
     box-shadow: var(--shadow-soft);
   }
 
+  .dark .glass-card {
+    @apply bg-card/40 backdrop-blur-xl border border-border/50;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  }
+
+  .glass-nav {
+    @apply bg-background/80 backdrop-blur-lg border-b border-border/30;
+  }
+
+  .dark .glass-nav {
+    @apply bg-card/30 backdrop-blur-2xl border-b border-border/40;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  }
+
   .input-elegant {
     @apply transition-all duration-300;
     @apply focus:ring-2 focus:ring-primary/30 focus:border-primary;
     @apply focus:shadow-lg;
+  }
+
+  .dark .input-elegant {
+    @apply bg-input/60 backdrop-blur-md border-border/50;
+    @apply focus:bg-input/80 focus:border-primary/70;
   }
 
   .btn-glow {
@@ -116,13 +137,32 @@ All colors MUST be HSL.
     @apply hover:shadow-[0_0_20px_hsla(var(--primary),0.3)];
   }
 
+  .dark .btn-glow {
+    @apply hover:shadow-[0_0_30px_hsla(var(--primary),0.5)];
+  }
+
   .success-message {
     @apply text-sm font-medium px-4 py-3 rounded-lg;
     @apply bg-green-50 text-green-700 border border-green-200;
   }
 
+  .dark .success-message {
+    @apply bg-green-950/40 text-green-400 border-green-800/50;
+  }
+
   .error-text {
     @apply text-xs text-red-500 mt-1;
+  }
+
+  .dark .error-text {
+    @apply text-red-400;
+  }
+
+  /* Enhanced footer styling for dark mode */
+  .footer-dark {
+    @apply bg-card/20 backdrop-blur-xl border-t border-border/40;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.03) inset;
   }
 
   /* Slow moving background animation */
