@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Users, Briefcase, Grid, LayoutDashboard, LogOut, AlertCircle, DollarSign, Sun, Moon } from "lucide-react";
+import { Users, Briefcase, Grid, LayoutDashboard, LogOut, AlertCircle, DollarSign, Sun, Moon, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "next-themes";
 import genieLamp from "@/assets/home-genie-logo.png";
@@ -66,6 +66,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { icon: Users, label: "Manage Users", path: "/admin/users" },
     { icon: Briefcase, label: "Manage Jobs", path: "/admin/jobs" },
     { icon: Grid, label: "Manage Categories", path: "/admin/categories" },
+    { icon: Shield, label: "KYC Verification", path: "/admin/kyc-verification" },
     { icon: AlertCircle, label: "Manage Complaints", path: "/admin/complaints" },
     { icon: DollarSign, label: "Payments", path: "/admin/payments" },
   ];

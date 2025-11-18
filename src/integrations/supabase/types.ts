@@ -295,6 +295,60 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_kyc: {
+        Row: {
+          address: string | null
+          cnic_back_url: string
+          cnic_front_url: string
+          cnic_number: string
+          created_at: string
+          full_name: string
+          id: string
+          phone: string
+          provider_id: string
+          rejection_reason: string | null
+          selfie_url: string
+          status: string
+          submitted_at: string
+          updated_at: string
+          verified_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          cnic_back_url: string
+          cnic_front_url: string
+          cnic_number: string
+          created_at?: string
+          full_name: string
+          id?: string
+          phone: string
+          provider_id: string
+          rejection_reason?: string | null
+          selfie_url: string
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          cnic_back_url?: string
+          cnic_front_url?: string
+          cnic_number?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string
+          provider_id?: string
+          rejection_reason?: string | null
+          selfie_url?: string
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       provider_profiles: {
         Row: {
           bio: string | null
@@ -302,6 +356,7 @@ export type Database = {
           created_at: string
           full_name: string
           id: string
+          is_verified: boolean
           phone: string
           profile_image_url: string | null
           skill_category: string
@@ -314,6 +369,7 @@ export type Database = {
           created_at?: string
           full_name: string
           id?: string
+          is_verified?: boolean
           phone: string
           profile_image_url?: string | null
           skill_category: string
@@ -326,6 +382,7 @@ export type Database = {
           created_at?: string
           full_name?: string
           id?: string
+          is_verified?: boolean
           phone?: string
           profile_image_url?: string | null
           skill_category?: string

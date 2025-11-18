@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Briefcase, CheckCircle, Clock, FileText, MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, Briefcase, CheckCircle, Clock, FileText, MessageSquare, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { NotificationBell } from "@/components/NotificationBell";
 import { AdminAnnouncements } from "@/components/AdminAnnouncements";
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalHomeowners: 0,
     totalProviders: 0,
@@ -14,6 +17,10 @@ const AdminDashboard = () => {
     activeJobs: 0,
     completedJobs: 0,
     totalOffers: 0,
+    pendingKyc: 0,
+    verifiedProviders: 0,
+    unverifiedProviders: 0,
+    rejectedKyc: 0,
   });
 
   useEffect(() => {
@@ -68,14 +75,37 @@ const AdminDashboard = () => {
 
       if (offersError) console.error("Job offers count error:", offersError);
 
-      console.log("Stats fetched:", {
-        homeownersCount,
-        providersCount,
-        totalJobsCount,
-        activeJobsCount,
-        completedJobsCount,
-        offersCount
-      });
+      // Count pending KYC verifications
+      const { count: pendingKycCount, error: pendingKycError } = await supabase
+        .from("provider_kyc")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending");
+
+      if (pendingKycError) console.error("Pending KYC count error:", pendingKycError);
+
+      // Count verified providers
+      const { count: verifiedCount, error: verifiedError } = await supabase
+        .from("provider_kyc")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "verified");
+
+      if (verifiedError) console.error("Verified count error:", verifiedError);
+
+      // Count unverified providers
+      const { count: unverifiedCount, error: unverifiedError } = await supabase
+        .from("provider_kyc")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "unverified");
+
+      if (unverifiedError) console.error("Unverified count error:", unverifiedError);
+
+      // Count rejected KYC
+      const { count: rejectedCount, error: rejectedError } = await supabase
+        .from("provider_kyc")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "rejected");
+
+      if (rejectedError) console.error("Rejected KYC count error:", rejectedError);
 
       setStats({
         totalHomeowners: homeownersCount || 0,
@@ -84,6 +114,10 @@ const AdminDashboard = () => {
         activeJobs: activeJobsCount || 0,
         completedJobs: completedJobsCount || 0,
         totalOffers: offersCount || 0,
+        pendingKyc: pendingKycCount || 0,
+        verifiedProviders: verifiedCount || 0,
+        unverifiedProviders: unverifiedCount || 0,
+        rejectedKyc: rejectedCount || 0,
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -129,6 +163,34 @@ const AdminDashboard = () => {
     },
   ];
 
+  const kycCards = [
+    {
+      title: "Pending Verifications",
+      value: stats.pendingKyc,
+      icon: Clock,
+      color: "text-yellow-600",
+      clickable: true,
+    },
+    {
+      title: "Verified Providers",
+      value: stats.verifiedProviders,
+      icon: CheckCircle,
+      color: "text-green-600",
+    },
+    {
+      title: "Unverified Providers",
+      value: stats.unverifiedProviders,
+      icon: Shield,
+      color: "text-gray-600",
+    },
+    {
+      title: "Rejected KYC",
+      value: stats.rejectedKyc,
+      icon: FileText,
+      color: "text-red-600",
+    },
+  ];
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -137,26 +199,59 @@ const AdminDashboard = () => {
           <p className="text-muted-foreground">Monitor key platform metrics and activity</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {statCards.map((stat) => {
-            const Icon = stat.icon;
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {statCards.map((card, index) => {
+            const Icon = card.icon;
             return (
-              <Card key={stat.title} className="glass-card">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <Card key={index} className="glass-card">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {stat.title}
+                    {card.title}
                   </CardTitle>
-                  <Icon className={`w-5 h-5 ${stat.color}`} />
+                  <Icon className={`h-5 w-5 ${card.color}`} />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-foreground">{stat.value}</div>
+                  <div className={`text-2xl font-bold ${card.color}`}>{card.value}</div>
                 </CardContent>
               </Card>
             );
           })}
         </div>
 
-        {/* Admin Announcements */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <Shield className="h-6 w-6 text-primary" />
+              KYC Verification Status
+            </h2>
+            <Button onClick={() => navigate('/admin/kyc-verification')}>
+              View All Verifications
+            </Button>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {kycCards.map((card, index) => {
+              const Icon = card.icon;
+              return (
+                <Card 
+                  key={index} 
+                  className={`glass-card ${card.clickable ? 'cursor-pointer hover:shadow-lg transition-shadow' : ''}`}
+                  onClick={() => card.clickable && navigate('/admin/kyc-verification')}
+                >
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      {card.title}
+                    </CardTitle>
+                    <Icon className={`h-5 w-5 ${card.color}`} />
+                  </CardHeader>
+                  <CardContent>
+                    <div className={`text-2xl font-bold ${card.color}`}>{card.value}</div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
         <AdminAnnouncements />
       </div>
     </AdminLayout>
