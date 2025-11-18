@@ -1,13 +1,15 @@
 import { useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Briefcase, Clock, DollarSign, Star, ArrowRight } from "lucide-react";
+import { Briefcase, Clock, DollarSign, Star, ArrowRight, Sun, Moon } from "lucide-react";
+import { Button as ShadcnButton } from "@/components/ui/button";
 import genieLamp from "@/assets/home-genie-logo.png";
 import providerHeroBg from "@/assets/provider-hero-bg.jpg";
 
@@ -22,6 +24,7 @@ interface FormErrors {
 }
 
 const BecomeProvider = () => {
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: "",
@@ -205,6 +208,18 @@ const BecomeProvider = () => {
 
   return (
     <div className="min-h-screen">
+      {/* Dark Mode Toggle */}
+      <div className="absolute top-4 right-4 z-50">
+        <ShadcnButton
+          variant="outline"
+          size="icon"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="rounded-full glass-card"
+        >
+          {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </ShadcnButton>
+      </div>
+      
       {/* Hero Section */}
       <section className="relative min-h-[600px] flex items-center justify-center overflow-hidden">
         <div 

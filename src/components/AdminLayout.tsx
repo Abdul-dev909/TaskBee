@@ -2,8 +2,9 @@ import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Users, Briefcase, Grid, LayoutDashboard, LogOut, AlertCircle, DollarSign } from "lucide-react";
+import { Users, Briefcase, Grid, LayoutDashboard, LogOut, AlertCircle, DollarSign, Sun, Moon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "next-themes";
 import genieLamp from "@/assets/home-genie-logo.png";
 import { NotificationBell } from "@/components/NotificationBell";
 
@@ -12,6 +13,7 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -119,19 +121,29 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         </nav>
 
         {/* Admin Info & Logout */}
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border space-y-3">
           <div className="glass-card p-4 rounded-lg">
             <p className="text-sm font-medium text-foreground mb-1">Logged in as</p>
             <p className="text-xs text-muted-foreground mb-3 truncate">{adminName}</p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="w-full"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="flex-1"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="rounded-full"
+              >
+                {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </Button>
+            </div>
           </div>
         </div>
       </aside>
