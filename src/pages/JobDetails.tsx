@@ -13,6 +13,7 @@ import genieLamp from "@/assets/home-genie-logo.png";
 import { z } from "zod";
 import { createNotification } from "@/hooks/useNotifications";
 import { checkRateLimit } from "@/hooks/useRateLimit";
+import { requireKycVerification } from "@/utils/kycValidation";
 
 const jobOfferSchema = z.object({
   message: z.string()
@@ -93,7 +94,19 @@ const JobDetails = () => {
   }, [jobId, navigate]);
 
   const handleApply = async () => {
-    // Check rate limit first
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate("/login");
+      return;
+    }
+
+    // Check KYC verification first
+    const isVerified = await requireKycVerification(session.user.id);
+    if (!isVerified) {
+      return;
+    }
+
+    // Check rate limit
     const rateLimitCheck = await checkRateLimit('job_application');
     if (!rateLimitCheck.allowed) {
       toast({
@@ -120,12 +133,6 @@ const JobDetails = () => {
     }
 
     setApplying(true);
-
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/login");
-      return;
-    }
 
     // Sanitize message (trim and limit whitespace)
     const sanitizedMessage = message
