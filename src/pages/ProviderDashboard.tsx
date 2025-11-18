@@ -109,6 +109,50 @@ const ProviderDashboard = () => {
     checkAuth();
   }, [navigate]);
 
+  // Real-time KYC status monitoring
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const channel = supabase
+      .channel('kyc-status-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'provider_kyc',
+          filter: `provider_id=eq.${currentUserId}`,
+        },
+        (payload) => {
+          const newStatus = payload.new.status;
+          const oldStatus = payload.old.status;
+
+          // Only show toast if status actually changed
+          if (newStatus !== oldStatus) {
+            if (newStatus === 'verified') {
+              toast({
+                title: "KYC Approved! ✅",
+                description: "Your account has been successfully verified! You can now accept jobs and receive payments.",
+                className: "bg-green-50 dark:bg-green-950 border-green-500",
+              });
+            } else if (newStatus === 'rejected') {
+              const reason = payload.new.rejection_reason || "Please check your documents and try again.";
+              toast({
+                title: "KYC Rejected",
+                description: `Your verification was rejected. Reason: ${reason}`,
+                variant: "destructive",
+              });
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId]);
+
   const fetchJobs = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
