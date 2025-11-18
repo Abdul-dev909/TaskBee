@@ -19,12 +19,14 @@ import AdminJobs from "./pages/AdminJobs";
 import AdminCategories from "./pages/AdminCategories";
 import AdminComplaints from "./pages/AdminComplaints";
 import AdminPayments from "./pages/AdminPayments";
+import AdminKycVerification from "./pages/AdminKycVerification";
 import FileComplaint from "./pages/FileComplaint";
 import ProviderComplaints from "./pages/ProviderComplaints";
 import Chat from "./pages/Chat";
 import Payment from "./pages/Payment";
 import PaymentHistory from "./pages/PaymentHistory";
 import ProviderWallet from "./pages/ProviderWallet";
+import ProviderVerify from "./pages/ProviderVerify";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,9 +54,11 @@ const App = () => (
           <Route path="/admin/categories" element={<AdminCategories />} />
           <Route path="/admin/complaints" element={<AdminComplaints />} />
           <Route path="/admin/payments" element={<AdminPayments />} />
+          <Route path="/admin/kyc-verification" element={<AdminKycVerification />} />
           <Route path="/complaints/new" element={<FileComplaint />} />
           <Route path="/provider/complaints" element={<ProviderComplaints />} />
           <Route path="/provider/wallet" element={<ProviderWallet />} />
+          <Route path="/provider/verify" element={<ProviderVerify />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/payment" element={<Payment />} />
           <Route path="/payment-history" element={<PaymentHistory />} />

@@ -30,6 +30,7 @@ import { toast } from "@/hooks/use-toast";
 import genieLamp from "@/assets/home-genie-logo.png";
 import dashboardBg from "@/assets/dashboard-bg.jpg";
 import { NotificationBell } from "@/components/NotificationBell";
+import { KycStatusBadge, checkKycVerification } from "@/components/KycStatusBadge";
 
 const checkIfBlocked = async (navigate: any) => {
   const { data: { session } } = await supabase.auth.getSession();
@@ -365,6 +366,13 @@ const ProviderDashboard = () => {
             <h2 className="text-3xl font-bold mb-2">Welcome back, Provider!</h2>
             <p className="text-muted-foreground">Find jobs and manage your applications</p>
           </div>
+
+          {/* KYC Status Badge */}
+          {currentUserId && (
+            <div className="mb-8 animate-fade-in">
+              <KycStatusBadge providerId={currentUserId} />
+            </div>
+          )}
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
