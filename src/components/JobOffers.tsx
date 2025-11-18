@@ -6,6 +6,7 @@ import { DollarSign, User, MessageSquare, CheckCircle, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { createNotification } from "@/hooks/useNotifications";
+import { checkKycVerification } from "@/components/KycStatusBadge";
 import {
   Dialog,
   DialogContent,
@@ -89,6 +90,18 @@ export const JobOffers = ({ jobId, jobTitle, open, onClose, onOfferAccepted }: J
 
     const offer = offers.find(o => o.id === offerId);
     if (!offer) return;
+
+    // Check if provider is KYC verified before accepting
+    const isVerified = await checkKycVerification(offer.provider_id);
+    if (!isVerified) {
+      toast({
+        title: "Provider Not Verified",
+        description: "This provider hasn't completed KYC verification yet. Only verified providers can accept jobs.",
+        variant: "destructive",
+      });
+      setAccepting(null);
+      return;
+    }
 
     const { error } = await supabase
       .from("job_requests" as any)
