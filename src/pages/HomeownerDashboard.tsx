@@ -79,13 +79,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { JobOffers } from "@/components/JobOffers";
 import { RatingDialog } from "@/components/RatingDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -612,81 +605,49 @@ const HomeownerDashboard = () => {
                 >
                   {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                 </Button>
-                <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                  <SheetTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                    >
-                      <Menu className="h-5 w-5" />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="right" className="w-80 glass-card">
-                    <SheetHeader className="border-b border-border pb-4">
-                      <SheetTitle className="flex items-center gap-2">
-                        <img src={genieLamp} alt="Home Genie" className="w-8 h-8 object-contain" />
-                        <span className="text-primary">Menu</span>
-                      </SheetTitle>
-                    </SheetHeader>
-                    <div className="flex flex-col gap-3 mt-6">
-                      <button 
-                        onClick={() => { scrollToSection("services"); setMobileMenuOpen(false); }} 
-                        className="text-left px-4 py-3 text-foreground hover:text-primary hover:bg-accent rounded-lg transition-all duration-200"
-                      >
-                        Services
-                      </button>
-                      <button 
-                        onClick={() => { scrollToSection("my-dashboard"); setMobileMenuOpen(false); }} 
-                        className="text-left px-4 py-3 text-foreground hover:text-primary hover:bg-accent rounded-lg transition-all duration-200"
-                      >
-                        My Dashboard
-                      </button>
-                      <button 
-                        onClick={() => { scrollToSection("testimonials"); setMobileMenuOpen(false); }} 
-                        className="text-left px-4 py-3 text-foreground hover:text-primary hover:bg-accent rounded-lg transition-all duration-200"
-                      >
-                        Testimonials
-                      </button>
-                      <div className="border-t border-border my-2" />
-                      <Button 
-                        onClick={() => { navigate("/complaints/new"); setMobileMenuOpen(false); }} 
-                        variant="outline" 
-                        className="justify-start hover-scale"
-                      >
-                        <AlertCircle className="w-4 h-4 mr-2" />
-                        File Complaint
-                      </Button>
-                      <Button 
-                        onClick={() => { navigate("/payment-history"); setMobileMenuOpen(false); }} 
-                        variant="outline" 
-                        className="justify-start hover-scale"
-                      >
-                        <Receipt className="w-4 h-4 mr-2" />
-                        Payment History
-                      </Button>
-                      <Button 
-                        onClick={() => { navigate("/homeowner-settings"); setMobileMenuOpen(false); }} 
-                        variant="outline" 
-                        className="justify-start hover-scale"
-                      >
-                        Settings
-                      </Button>
-                      <div className="border-t border-border my-2" />
-                      <Button 
-                        onClick={handleLogout} 
-                        variant="destructive" 
-                        className="justify-start"
-                      >
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Logout
-                      </Button>
-                    </div>
-                  </SheetContent>
-                </Sheet>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                >
+                  {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                </Button>
               </div>
             </div>
           </div>
         </nav>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="fixed top-[73px] left-0 right-0 z-40 md:hidden glass-card border-b border-border/40 animate-fade-in">
+            <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
+              <button onClick={() => { scrollToSection("services"); setMobileMenuOpen(false); }} className="text-left px-4 py-2 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors">
+                Services
+              </button>
+              <button onClick={() => { scrollToSection("my-dashboard"); setMobileMenuOpen(false); }} className="text-left px-4 py-2 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors">
+                My Dashboard
+              </button>
+              <button onClick={() => { scrollToSection("testimonials"); setMobileMenuOpen(false); }} className="text-left px-4 py-2 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors">
+                Testimonials
+              </button>
+              <Button onClick={() => { navigate("/complaints/new"); setMobileMenuOpen(false); }} variant="outline" className="justify-start">
+                <AlertCircle className="w-4 h-4 mr-2" />
+                File Complaint
+              </Button>
+              <Button onClick={() => { navigate("/payment-history"); setMobileMenuOpen(false); }} variant="outline" className="justify-start">
+                <Receipt className="w-4 h-4 mr-2" />
+                Payment History
+              </Button>
+              <Button onClick={() => { navigate("/homeowner-settings"); setMobileMenuOpen(false); }} variant="outline" className="justify-start">
+                Settings
+              </Button>
+              <Button onClick={handleLogout} variant="outline" className="justify-start">
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Hero Section */}
         <section id="hero" className="pt-32 pb-20 px-4">
