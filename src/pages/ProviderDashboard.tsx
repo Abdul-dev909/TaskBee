@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createNotification } from "@/hooks/useNotifications";
@@ -18,7 +19,11 @@ import {
   AlertCircle,
   MessageSquare,
   LogOut,
-  Wallet
+  Wallet,
+  Sun,
+  Moon,
+  Menu,
+  X
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -77,6 +82,7 @@ interface JobRequest {
 }
 
 const ProviderDashboard = () => {
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
   const [activeTab, setActiveTab] = useState("browse");
@@ -85,6 +91,7 @@ const ProviderDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [cityFilter, setCityFilter] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -265,7 +272,7 @@ const ProviderDashboard = () => {
                 </div>
               </div>
               
-              <div className="flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-4">
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -295,10 +302,62 @@ const ProviderDashboard = () => {
                   <LogOut className="w-4 h-4 mr-2" />
                   Logout
                 </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="rounded-full"
+                >
+                  {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                </Button>
+              </div>
+
+              {/* Mobile Menu Button */}
+              <div className="md:hidden flex items-center gap-2">
+                <NotificationBell userId={currentUserId} />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="rounded-full"
+                >
+                  {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                >
+                  {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                </Button>
               </div>
             </div>
           </div>
         </header>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="fixed top-[73px] left-0 right-0 z-40 md:hidden glass-card border-b border-border/40 animate-fade-in">
+            <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
+              <Button onClick={() => { navigate("/provider/wallet"); setMobileMenuOpen(false); }} variant="outline" className="justify-start">
+                <Wallet className="w-4 h-4 mr-2" />
+                My Wallet
+              </Button>
+              <Button onClick={() => { navigate("/provider/complaints"); setMobileMenuOpen(false); }} variant="outline" className="justify-start">
+                <AlertCircle className="w-4 h-4 mr-2" />
+                View Complaints
+              </Button>
+              <Button onClick={() => { navigate("/provider-settings"); setMobileMenuOpen(false); }} variant="outline" className="justify-start">
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
+              <Button onClick={handleLogout} variant="outline" className="justify-start">
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Main Content */}
         <main className="container mx-auto px-4 py-8">

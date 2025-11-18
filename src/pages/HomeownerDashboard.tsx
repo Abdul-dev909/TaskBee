@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,7 +30,11 @@ import {
   AlertCircle,
   MessageSquare,
   LogOut,
-  Receipt
+  Receipt,
+  Sun,
+  Moon,
+  Menu,
+  X
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -100,6 +105,7 @@ interface ProviderReview {
 }
 
 const HomeownerDashboard = () => {
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
   
@@ -129,6 +135,7 @@ const HomeownerDashboard = () => {
   const [providerRatings, setProviderRatings] = useState<{ [key: string]: { avg: number; count: number } }>({});
   const [providerReviews, setProviderReviews] = useState<{ [key: string]: ProviderReview[] }>({});
   const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedJobForRating, setSelectedJobForRating] = useState<{ jobId: string; providerId: string; providerName: string } | null>(null);
   
   // Form state
@@ -576,11 +583,71 @@ const HomeownerDashboard = () => {
                     <LogOut className="w-4 h-4 mr-2" />
                     Logout
                   </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    className="rounded-full"
+                  >
+                    {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                  </Button>
                 </div>
+              </div>
+
+              {/* Mobile Menu Button */}
+              <div className="md:hidden flex items-center gap-2">
+                <NotificationBell userId={currentUserId} />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="rounded-full"
+                >
+                  {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                >
+                  {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                </Button>
               </div>
             </div>
           </div>
         </nav>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="fixed top-[73px] left-0 right-0 z-40 md:hidden glass-card border-b border-border/40 animate-fade-in">
+            <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
+              <button onClick={() => { scrollToSection("services"); setMobileMenuOpen(false); }} className="text-left px-4 py-2 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors">
+                Services
+              </button>
+              <button onClick={() => { scrollToSection("my-dashboard"); setMobileMenuOpen(false); }} className="text-left px-4 py-2 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors">
+                My Dashboard
+              </button>
+              <button onClick={() => { scrollToSection("testimonials"); setMobileMenuOpen(false); }} className="text-left px-4 py-2 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors">
+                Testimonials
+              </button>
+              <Button onClick={() => { navigate("/complaints/new"); setMobileMenuOpen(false); }} variant="outline" className="justify-start">
+                <AlertCircle className="w-4 h-4 mr-2" />
+                File Complaint
+              </Button>
+              <Button onClick={() => { navigate("/payment-history"); setMobileMenuOpen(false); }} variant="outline" className="justify-start">
+                <Receipt className="w-4 h-4 mr-2" />
+                Payment History
+              </Button>
+              <Button onClick={() => { navigate("/homeowner-settings"); setMobileMenuOpen(false); }} variant="outline" className="justify-start">
+                Settings
+              </Button>
+              <Button onClick={handleLogout} variant="outline" className="justify-start">
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Hero Section */}
         <section id="hero" className="pt-32 pb-20 px-4">
