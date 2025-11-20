@@ -101,24 +101,29 @@ All colors MUST be HSL.
 
 @layer utilities {
   .glass-card {
-    @apply bg-white/70 backdrop-blur-md;
-    box-shadow: var(--shadow-soft);
+    @apply bg-white/60 backdrop-blur-2xl border border-white/30;
+    box-shadow: var(--shadow-soft),
+                0 0 0 1px rgba(255, 255, 255, 0.2) inset,
+                0 20px 60px -10px rgba(0, 0, 0, 0.1);
   }
 
   .dark .glass-card {
-    @apply bg-card/40 backdrop-blur-xl border border-border/50;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 
-                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    @apply bg-card/25 backdrop-blur-3xl border border-white/10;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 
+                0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+                0 20px 80px -15px rgba(0, 0, 0, 0.8);
   }
 
   .glass-nav {
-    @apply bg-background/80 backdrop-blur-lg border-b border-border/30;
+    @apply bg-background/70 backdrop-blur-2xl border-b border-white/20;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   }
 
   .dark .glass-nav {
-    @apply bg-card/30 backdrop-blur-2xl border-b border-border/40;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5),
-                0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+    @apply bg-card/20 backdrop-blur-3xl border-b border-white/10;
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   }
 
   .input-elegant {
