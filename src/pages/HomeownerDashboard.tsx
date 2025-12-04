@@ -34,13 +34,16 @@ import {
   Sun,
   Moon,
   Menu,
-  X
+  X,
+  Sparkles,
+  FileText
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import genieLamp from "@/assets/home-genie-logo.png";
 import dashboardBg from "@/assets/dashboard-bg.jpg";
 import { NotificationBell } from "@/components/NotificationBell";
+import { SmartJobCreator } from "@/components/SmartJobCreator";
 
 const checkIfBlocked = async (navigate: any) => {
   const { data: { session } } = await supabase.auth.getSession();
@@ -136,6 +139,7 @@ const HomeownerDashboard = () => {
   const [providerReviews, setProviderReviews] = useState<{ [key: string]: ProviderReview[] }>({});
   const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [useAIJobCreator, setUseAIJobCreator] = useState(true);
   const [selectedJobForRating, setSelectedJobForRating] = useState<{ jobId: string; providerId: string; providerName: string } | null>(null);
   
   // Form state
@@ -864,121 +868,154 @@ const HomeownerDashboard = () => {
 
               {/* Post Job Tab */}
               <TabsContent value="post-job">
-                <Card className="glass-card">
-                  <CardHeader>
-                    <CardTitle>{editingJob ? "Edit Job" : "Post a New Job"}</CardTitle>
-                    <CardDescription>
-                      {editingJob ? "Update your job details" : "Fill in the details to post your job"}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <form onSubmit={handleSubmitJob} className="space-y-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="title">Job Title *</Label>
-                        <Input
-                          id="title"
-                          placeholder="e.g., Fix leaking kitchen sink"
-                          value={formData.title}
-                          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                          className="input-elegant"
-                          required
-                        />
-                      </div>
+                {/* Mode Toggle - only show when not editing */}
+                {!editingJob && (
+                  <div className="flex justify-center gap-2 mb-6">
+                    <Button
+                      variant={useAIJobCreator ? "default" : "outline"}
+                      onClick={() => setUseAIJobCreator(true)}
+                      className="gap-2"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      AI Assistant
+                    </Button>
+                    <Button
+                      variant={!useAIJobCreator ? "default" : "outline"}
+                      onClick={() => setUseAIJobCreator(false)}
+                      className="gap-2"
+                    >
+                      <FileText className="w-4 h-4" />
+                      Manual Form
+                    </Button>
+                  </div>
+                )}
 
-                      <div className="space-y-2">
-                        <Label htmlFor="category">Service Category *</Label>
-                        <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                          <SelectTrigger className="input-elegant">
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Plumbing">Plumbing</SelectItem>
-                            <SelectItem value="Electrical">Electrical</SelectItem>
-                            <SelectItem value="Painting">Painting</SelectItem>
-                            <SelectItem value="Cleaning">Cleaning</SelectItem>
-                            <SelectItem value="Carpentry">Carpentry</SelectItem>
-                            <SelectItem value="Other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="description">Description *</Label>
-                        <Textarea
-                          id="description"
-                          placeholder="Describe the job in detail..."
-                          rows={5}
-                          value={formData.description}
-                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                          className="input-elegant"
-                          required
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* AI Job Creator */}
+                {useAIJobCreator && !editingJob ? (
+                  <SmartJobCreator 
+                    onJobCreated={() => {
+                      fetchJobs();
+                      setActiveTab("my-jobs");
+                    }}
+                  />
+                ) : (
+                  /* Manual Form */
+                  <Card className="glass-card">
+                    <CardHeader>
+                      <CardTitle>{editingJob ? "Edit Job" : "Post a New Job"}</CardTitle>
+                      <CardDescription>
+                        {editingJob ? "Update your job details" : "Fill in the details to post your job"}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <form onSubmit={handleSubmitJob} className="space-y-6">
                         <div className="space-y-2">
-                          <Label htmlFor="budget">Budget (Optional)</Label>
+                          <Label htmlFor="title">Job Title *</Label>
                           <Input
-                            id="budget"
-                            placeholder="e.g., Rs. 100 - Rs. 200"
-                            value={formData.budget}
-                            onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                            className="input-elegant"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="city">City / Location *</Label>
-                          <Input
-                            id="city"
-                            placeholder="e.g., New York"
-                            value={formData.city}
-                            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                            id="title"
+                            placeholder="e.g., Fix leaking kitchen sink"
+                            value={formData.title}
+                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                             className="input-elegant"
                             required
                           />
                         </div>
-                      </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="dateTime">Preferred Date / Time (Optional)</Label>
-                        <Input
-                          id="dateTime"
-                          type="datetime-local"
-                          value={formData.dateTime}
-                          onChange={(e) => setFormData({ ...formData, dateTime: e.target.value })}
-                          className="input-elegant"
-                        />
-                      </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="category">Service Category *</Label>
+                          <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+                            <SelectTrigger className="input-elegant">
+                              <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Plumbing">Plumbing</SelectItem>
+                              <SelectItem value="Electrical">Electrical</SelectItem>
+                              <SelectItem value="Painting">Painting</SelectItem>
+                              <SelectItem value="Cleaning">Cleaning</SelectItem>
+                              <SelectItem value="Carpentry">Carpentry</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-                      <div className="flex gap-4">
-                        <Button type="submit" className="flex-1 btn-glow" disabled={loading}>
-                          <Plus className="w-4 h-4 mr-2" />
-                          {loading ? "Processing..." : editingJob ? "Update Job" : "Post Job"}
-                        </Button>
-                        {editingJob && (
-                          <Button 
-                            type="button" 
-                            variant="outline" 
-                            onClick={() => {
-                              setEditingJob(null);
-                              setFormData({
-                                title: "",
-                                category: "",
-                                description: "",
-                                budget: "",
-                                city: "",
-                                dateTime: "",
-                              });
-                            }}
-                          >
-                            Cancel
+                        <div className="space-y-2">
+                          <Label htmlFor="description">Description *</Label>
+                          <Textarea
+                            id="description"
+                            placeholder="Describe the job in detail..."
+                            rows={5}
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            className="input-elegant"
+                            required
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="budget">Budget (Optional)</Label>
+                            <Input
+                              id="budget"
+                              placeholder="e.g., Rs. 100 - Rs. 200"
+                              value={formData.budget}
+                              onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                              className="input-elegant"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="city">City / Location *</Label>
+                            <Input
+                              id="city"
+                              placeholder="e.g., New York"
+                              value={formData.city}
+                              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                              className="input-elegant"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="dateTime">Preferred Date / Time (Optional)</Label>
+                          <Input
+                            id="dateTime"
+                            type="datetime-local"
+                            value={formData.dateTime}
+                            onChange={(e) => setFormData({ ...formData, dateTime: e.target.value })}
+                            className="input-elegant"
+                          />
+                        </div>
+
+                        <div className="flex gap-4">
+                          <Button type="submit" className="flex-1 btn-glow" disabled={loading}>
+                            <Plus className="w-4 h-4 mr-2" />
+                            {loading ? "Processing..." : editingJob ? "Update Job" : "Post Job"}
                           </Button>
-                        )}
-                      </div>
-                    </form>
-                  </CardContent>
-                </Card>
+                          {editingJob && (
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              onClick={() => {
+                                setEditingJob(null);
+                                setFormData({
+                                  title: "",
+                                  category: "",
+                                  description: "",
+                                  budget: "",
+                                  city: "",
+                                  dateTime: "",
+                                });
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                        </div>
+                      </form>
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
 
               {/* My Jobs Tab */}

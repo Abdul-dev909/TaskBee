@@ -3,6 +3,9 @@ project_id = "fwovxgemndnrbphhyyer"
 [functions.ai-assistant]
 verify_jwt = false
 
+[functions.ai-job-creator]
+verify_jwt = false
+
 [functions.payment-reminders]
 verify_jwt = false
 
