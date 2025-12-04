@@ -1,1 +1,10 @@
 project_id = "fwovxgemndnrbphhyyer"
+
+[functions.ai-assistant]
+verify_jwt = false
+
+[functions.payment-reminders]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = true
