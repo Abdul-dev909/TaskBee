@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AIChatWidget from "@/components/AIChatWidget";
+import BottomNavigation from "@/components/BottomNavigation";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -39,34 +40,37 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AIChatWidget />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/become-provider" element={<BecomeProvider />} />
-          <Route path="/provider-success" element={<ProviderSuccess />} />
-          <Route path="/homeowner-dashboard" element={<HomeownerDashboard />} />
-          <Route path="/provider-dashboard" element={<ProviderDashboard />} />
-          <Route path="/provider-settings" element={<ProviderSettings />} />
-          <Route path="/homeowner-settings" element={<HomeownerSettings />} />
-          <Route path="/job/:jobId" element={<JobDetails />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
-          <Route path="/admin/jobs" element={<AdminJobs />} />
-          <Route path="/admin/categories" element={<AdminCategories />} />
-          <Route path="/admin/complaints" element={<AdminComplaints />} />
-          <Route path="/admin/payments" element={<AdminPayments />} />
-          <Route path="/admin/kyc-verification" element={<AdminKycVerification />} />
-          <Route path="/complaints/new" element={<FileComplaint />} />
-          <Route path="/provider/complaints" element={<ProviderComplaints />} />
-          <Route path="/provider/wallet" element={<ProviderWallet />} />
-          <Route path="/provider/verify" element={<ProviderVerify />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/payment" element={<Payment />} />
-          <Route path="/payment-history" element={<PaymentHistory />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <div className="pb-16 md:pb-0">
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/become-provider" element={<BecomeProvider />} />
+            <Route path="/provider-success" element={<ProviderSuccess />} />
+            <Route path="/homeowner-dashboard" element={<HomeownerDashboard />} />
+            <Route path="/provider-dashboard" element={<ProviderDashboard />} />
+            <Route path="/provider-settings" element={<ProviderSettings />} />
+            <Route path="/homeowner-settings" element={<HomeownerSettings />} />
+            <Route path="/job/:jobId" element={<JobDetails />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/jobs" element={<AdminJobs />} />
+            <Route path="/admin/categories" element={<AdminCategories />} />
+            <Route path="/admin/complaints" element={<AdminComplaints />} />
+            <Route path="/admin/payments" element={<AdminPayments />} />
+            <Route path="/admin/kyc-verification" element={<AdminKycVerification />} />
+            <Route path="/complaints/new" element={<FileComplaint />} />
+            <Route path="/provider/complaints" element={<ProviderComplaints />} />
+            <Route path="/provider/wallet" element={<ProviderWallet />} />
+            <Route path="/provider/verify" element={<ProviderVerify />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/payment" element={<Payment />} />
+            <Route path="/payment-history" element={<PaymentHistory />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+        <BottomNavigation />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

@@ -44,6 +44,8 @@ import genieLamp from "@/assets/home-genie-logo.png";
 import dashboardBg from "@/assets/dashboard-bg.jpg";
 import { NotificationBell } from "@/components/NotificationBell";
 import { SmartJobCreator } from "@/components/SmartJobCreator";
+import QuickActions from "@/components/QuickActions";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 const checkIfBlocked = async (navigate: any) => {
   const { data: { session } } = await supabase.auth.getSession();
@@ -773,15 +775,22 @@ const HomeownerDashboard = () => {
         {/* My Dashboard Section */}
         <section id="my-dashboard" className="py-20 px-4 bg-muted/30">
           <div className="container mx-auto">
+            <Breadcrumbs />
+            
             <motion.h2 
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
               variants={fadeInUp}
-              className="text-4xl font-bold text-center mb-12"
+              className="text-4xl font-bold text-center mb-8"
             >
               My Dashboard
             </motion.h2>
+
+            {/* Quick Actions */}
+            <div className="max-w-5xl mx-auto">
+              <QuickActions role="homeowner" onTabChange={setActiveTab} />
+            </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-5xl mx-auto">
               <TabsList className="glass-card grid w-full grid-cols-3">

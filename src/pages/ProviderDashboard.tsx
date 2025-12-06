@@ -31,6 +31,8 @@ import genieLamp from "@/assets/home-genie-logo.png";
 import dashboardBg from "@/assets/dashboard-bg.jpg";
 import { NotificationBell } from "@/components/NotificationBell";
 import { KycStatusBadge, checkKycVerification } from "@/components/KycStatusBadge";
+import QuickActions from "@/components/QuickActions";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 const checkIfBlocked = async (navigate: any) => {
   const { data: { session } } = await supabase.auth.getSession();
@@ -406,17 +408,22 @@ const ProviderDashboard = () => {
 
         {/* Main Content */}
         <main className="container mx-auto px-4 py-8">
-          <div className="mb-8 animate-fade-in">
+          <Breadcrumbs />
+          
+          <div className="mb-6 animate-fade-in">
             <h2 className="text-3xl font-bold mb-2">Welcome back, Provider!</h2>
             <p className="text-muted-foreground">Find jobs and manage your applications</p>
           </div>
 
           {/* KYC Status Badge */}
           {currentUserId && (
-            <div className="mb-8 animate-fade-in">
+            <div className="mb-6 animate-fade-in">
               <KycStatusBadge providerId={currentUserId} />
             </div>
           )}
+
+          {/* Quick Actions */}
+          <QuickActions role="provider" onTabChange={setActiveTab} />
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">

@@ -189,4 +189,9 @@ All colors MUST be HSL.
       transform: scale(1.12) translate(1%, -1%);
     }
   }
+
+  /* Safe area padding for mobile bottom navigation */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }
