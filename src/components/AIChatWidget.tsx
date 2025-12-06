@@ -124,7 +124,7 @@ const AIChatWidget: React.FC = () => {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-6 right-6 z-50"
+            className="fixed bottom-20 md:bottom-6 right-6 z-[60]"
           >
             <Button
               onClick={() => setIsOpen(true)}
@@ -144,7 +144,7 @@ const AIChatWidget: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-48px)] h-[500px] max-h-[calc(100vh-100px)] rounded-2xl overflow-hidden shadow-2xl border border-border/50 glass-card flex flex-col"
+            className="fixed bottom-20 md:bottom-6 right-6 z-[60] w-[380px] max-w-[calc(100vw-48px)] h-[500px] max-h-[calc(100vh-150px)] md:max-h-[calc(100vh-100px)] rounded-2xl overflow-hidden shadow-2xl border border-border/50 glass-card flex flex-col"
           >
             {/* Header */}
             <div className="bg-primary text-primary-foreground p-4 flex items-center justify-between">
