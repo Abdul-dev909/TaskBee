@@ -14,6 +14,7 @@ import { z } from "zod";
 import { createNotification } from "@/hooks/useNotifications";
 import { checkRateLimit } from "@/hooks/useRateLimit";
 import { requireKycVerification } from "@/utils/kycValidation";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 const jobOfferSchema = z.object({
   message: z.string()
@@ -222,6 +223,8 @@ const JobDetails = () => {
 
         {/* Main Content */}
         <main className="container mx-auto px-4 py-8 max-w-4xl">
+          <Breadcrumbs />
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
