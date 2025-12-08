@@ -803,7 +803,14 @@ const Index = () => {
                 const rating = providerRatings[provider.user_id] || { avg: 0, count: 0 };
                 const reviews = providerReviews[provider.user_id] || [];
                 return (
-                  <Card key={provider.id} className="glass-card">
+                  <Card 
+                    key={provider.id} 
+                    className="glass-card cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.01] hover:border-primary/30"
+                    onClick={() => {
+                      setShowProvidersDialog(false);
+                      navigate(`/provider/${provider.user_id}`);
+                    }}
+                  >
                     <CardHeader>
                       <div className="flex items-start gap-4">
                         <Avatar className="w-16 h-16">
@@ -812,7 +819,7 @@ const Index = () => {
                         </Avatar>
                         <div className="flex-1">
                           <CardTitle className="text-xl">{provider.full_name}</CardTitle>
-                          <p className="text-sm text-muted-foreground">{provider.skill_category}</p>
+                          <p className="text-sm text-muted-foreground capitalize">{provider.skill_category}</p>
                           <div className="flex items-center gap-2 mt-2">
                             <div className="flex items-center gap-1">
                               <Star className="w-4 h-4 fill-primary text-primary" />
@@ -831,50 +838,15 @@ const Index = () => {
                     </CardHeader>
                     <CardContent>
                       {provider.bio && (
-                        <p className="text-sm text-muted-foreground mb-4">{provider.bio}</p>
+                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{provider.bio}</p>
                       )}
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <MapPin className="w-4 h-4" />
                           <span>{provider.city}</span>
                         </div>
+                        <span className="text-xs text-primary font-medium">View Profile →</span>
                       </div>
-                      
-                      {/* Reviews Section */}
-                      {reviews.length > 0 && (
-                        <div className="border-t pt-4 mt-4">
-                          <h4 className="font-semibold mb-3">Recent Reviews</h4>
-                          <div className="space-y-3">
-                            {reviews.slice(0, 3).map((review: any) => (
-                              <div key={review.id} className="bg-muted/30 p-3 rounded-lg">
-                                <div className="flex items-center gap-1 mb-1">
-                                  {[...Array(5)].map((_, i) => (
-                                    <Star
-                                      key={i}
-                                      className={`w-3 h-3 ${
-                                        i < review.rating
-                                          ? "fill-primary text-primary"
-                                          : "text-muted-foreground"
-                                      }`}
-                                    />
-                                  ))}
-                                  <span className="text-xs text-muted-foreground ml-2">
-                                    {new Date(review.created_at).toLocaleDateString()}
-                                  </span>
-                                </div>
-                                {review.review && (
-                                  <p className="text-sm text-foreground">{review.review}</p>
-                                )}
-                              </div>
-                            ))}
-                            {reviews.length > 3 && (
-                              <p className="text-xs text-muted-foreground text-center">
-                                +{reviews.length - 3} more {reviews.length - 3 === 1 ? "review" : "reviews"}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )}
                     </CardContent>
                   </Card>
                 );

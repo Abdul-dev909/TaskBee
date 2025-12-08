@@ -29,6 +29,7 @@ import Payment from "./pages/Payment";
 import PaymentHistory from "./pages/PaymentHistory";
 import ProviderWallet from "./pages/ProviderWallet";
 import ProviderVerify from "./pages/ProviderVerify";
+import ProviderProfile from "./pages/ProviderProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="/provider/complaints" element={<ProviderComplaints />} />
             <Route path="/provider/wallet" element={<ProviderWallet />} />
             <Route path="/provider/verify" element={<ProviderVerify />} />
+            <Route path="/provider/:providerId" element={<ProviderProfile />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/payment-history" element={<PaymentHistory />} />
