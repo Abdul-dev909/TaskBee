@@ -31,25 +31,39 @@ interface QuickActionsProps {
 const QuickActions = ({ role, onTabChange, isKycVerified = true }: QuickActionsProps) => {
   const navigate = useNavigate();
 
+  const handleTabChange = (tab: string) => {
+    onTabChange?.(tab);
+    // Scroll to tabs section with offset for fixed header
+    setTimeout(() => {
+      const tabsElement = document.querySelector('[role="tablist"]');
+      if (tabsElement) {
+        const headerOffset = 120;
+        const elementPosition = tabsElement.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
   const homeownerActions: QuickAction[] = [
     {
       icon: <Plus className="w-5 h-5" />,
       label: "Post a Job",
       description: "Create a new job posting",
-      onClick: () => onTabChange?.("post-job"),
+      onClick: () => handleTabChange("post-job"),
       variant: "primary",
     },
     {
       icon: <Briefcase className="w-5 h-5" />,
       label: "My Jobs",
       description: "View your posted jobs",
-      onClick: () => onTabChange?.("my-jobs"),
+      onClick: () => handleTabChange("my-jobs"),
     },
     {
       icon: <Search className="w-5 h-5" />,
       label: "Find Providers",
       description: "Browse service providers",
-      onClick: () => onTabChange?.("overview"),
+      onClick: () => handleTabChange("overview"),
     },
     {
       icon: <Receipt className="w-5 h-5" />,
@@ -64,14 +78,14 @@ const QuickActions = ({ role, onTabChange, isKycVerified = true }: QuickActionsP
       icon: <Search className="w-5 h-5" />,
       label: "Browse Jobs",
       description: "Find available jobs",
-      onClick: () => onTabChange?.("browse"),
+      onClick: () => handleTabChange("browse"),
       variant: "primary",
     },
     {
       icon: <FileText className="w-5 h-5" />,
       label: "My Offers",
       description: "View submitted offers",
-      onClick: () => onTabChange?.("applications"),
+      onClick: () => handleTabChange("applications"),
     },
     {
       icon: <Wallet className="w-5 h-5" />,
