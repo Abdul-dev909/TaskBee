@@ -1398,9 +1398,15 @@ const HomeownerDashboard = () => {
             <div className="grid gap-6 mt-4">
               {providers.map((provider) => {
                 const rating = providerRatings[provider.user_id] || { avg: 0, count: 0 };
-                const reviews = providerReviews[provider.user_id] || [];
                 return (
-                  <Card key={provider.id} className="glass-card">
+                  <Card 
+                    key={provider.id} 
+                    className="glass-card cursor-pointer hover:bg-accent/50 transition-colors"
+                    onClick={() => {
+                      setSelectedService(null);
+                      navigate(`/provider/${provider.user_id}`);
+                    }}
+                  >
                     <CardHeader>
                       <div className="flex items-start gap-4">
                         <Avatar className="w-16 h-16">
@@ -1430,48 +1436,13 @@ const HomeownerDashboard = () => {
                       {provider.bio && (
                         <p className="text-sm text-muted-foreground mb-4">{provider.bio}</p>
                       )}
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <MapPin className="w-4 h-4" />
                           <span>{provider.city}</span>
                         </div>
                       </div>
-                      
-                      {/* Reviews Section */}
-                      {reviews.length > 0 && (
-                        <div className="border-t pt-4 mt-4">
-                          <h4 className="font-semibold mb-3">Recent Reviews</h4>
-                          <div className="space-y-3">
-                            {reviews.slice(0, 3).map((review) => (
-                              <div key={review.id} className="bg-muted/30 p-3 rounded-lg">
-                                <div className="flex items-center gap-1 mb-1">
-                                  {[...Array(5)].map((_, i) => (
-                                    <Star
-                                      key={i}
-                                      className={`w-3 h-3 ${
-                                        i < review.rating
-                                          ? "fill-primary text-primary"
-                                          : "text-muted-foreground"
-                                      }`}
-                                    />
-                                  ))}
-                                  <span className="text-xs text-muted-foreground ml-2">
-                                    {new Date(review.created_at).toLocaleDateString()}
-                                  </span>
-                                </div>
-                                {review.review && (
-                                  <p className="text-sm text-foreground">{review.review}</p>
-                                )}
-                              </div>
-                            ))}
-                            {reviews.length > 3 && (
-                              <p className="text-xs text-muted-foreground text-center">
-                                +{reviews.length - 3} more {reviews.length - 3 === 1 ? "review" : "reviews"}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )}
+                      <p className="text-xs text-primary mt-3">Click to view full profile →</p>
                     </CardContent>
                   </Card>
                 );

@@ -69,7 +69,7 @@ const BottomNavigation = () => {
     return [
       { icon: Home, label: "Home", path: basePath },
       { icon: Briefcase, label: "Jobs", path: basePath },
-      { icon: MessageSquare, label: "Chat", path: "/chat" },
+      { icon: MessageSquare, label: "Messages", path: "/messages" },
       { icon: Bell, label: "Alerts", path: basePath },
       { icon: User, label: "Profile", path: settingsPath },
     ];
