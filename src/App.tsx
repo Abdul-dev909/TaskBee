@@ -25,6 +25,7 @@ import AdminKycVerification from "./pages/AdminKycVerification";
 import FileComplaint from "./pages/FileComplaint";
 import ProviderComplaints from "./pages/ProviderComplaints";
 import Chat from "./pages/Chat";
+import Messages from "./pages/Messages";
 import Payment from "./pages/Payment";
 import PaymentHistory from "./pages/PaymentHistory";
 import ProviderWallet from "./pages/ProviderWallet";
@@ -66,6 +67,7 @@ const App = () => (
             <Route path="/provider/verify" element={<ProviderVerify />} />
             <Route path="/provider/:providerId" element={<ProviderProfile />} />
             <Route path="/chat" element={<Chat />} />
+            <Route path="/messages" element={<Messages />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/payment-history" element={<PaymentHistory />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

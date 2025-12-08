@@ -61,7 +61,12 @@ const routeMap: Record<string, BreadcrumbRoute[]> = {
   ],
   "/chat": [
     { label: "Home", path: "/" },
-    { label: "Messages", path: "/chat" },
+    { label: "Messages", path: "/messages" },
+    { label: "Chat", path: "/chat" },
+  ],
+  "/messages": [
+    { label: "Home", path: "/" },
+    { label: "Messages", path: "/messages" },
   ],
   "/complaints/new": [
     { label: "Home", path: "/" },

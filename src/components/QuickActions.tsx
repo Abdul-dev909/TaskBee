@@ -89,7 +89,7 @@ const QuickActions = ({ role, onTabChange, isKycVerified = true }: QuickActionsP
       icon: <MessageSquare className="w-5 h-5" />,
       label: "Messages",
       description: "Chat with clients",
-      onClick: () => navigate("/chat"),
+      onClick: () => navigate("/messages"),
     },
   ];
 
