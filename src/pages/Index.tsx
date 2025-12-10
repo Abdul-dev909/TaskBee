@@ -226,14 +226,14 @@ const Index = () => {
   };
 
   const services = [
-    { icon: Wrench, name: "Handyman", description: "General repairs & maintenance" },
-    { icon: Droplet, name: "Plumbing", description: "Fixes, installations & more" },
-    { icon: Zap, name: "Electrical", description: "Wiring, outlets & lighting" },
-    { icon: Sparkles, name: "Cleaning", description: "Deep cleaning services" },
-    { icon: Paintbrush, name: "Painting", description: "Interior & exterior" },
-    { icon: Truck, name: "Moving", description: "Packing & transportation" },
-    { icon: Home, name: "Yard Work", description: "Landscaping & maintenance" },
-    { icon: Wrench, name: "Assembly", description: "Furniture & equipment" },
+    { icon: Wrench, name: "Handyman", description: "General repairs & maintenance", startingPrice: 500 },
+    { icon: Droplet, name: "Plumbing", description: "Fixes, installations & more", startingPrice: 800 },
+    { icon: Zap, name: "Electrical", description: "Wiring, outlets & lighting", startingPrice: 700 },
+    { icon: Sparkles, name: "Cleaning", description: "Deep cleaning services", startingPrice: 1500 },
+    { icon: Paintbrush, name: "Painting", description: "Interior & exterior", startingPrice: 2000 },
+    { icon: Truck, name: "Moving", description: "Packing & transportation", startingPrice: 3000 },
+    { icon: Home, name: "Yard Work", description: "Landscaping & maintenance", startingPrice: 600 },
+    { icon: Wrench, name: "Assembly", description: "Furniture & equipment", startingPrice: 400 },
   ];
 
   const testimonials = [
@@ -455,6 +455,61 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Satisfaction Guarantee Trust Banner */}
+      <section className="px-4 py-8 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-y border-primary/20">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12"
+          >
+            {/* Satisfaction Guarantee Badge */}
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+                  <Shield className="w-8 h-8 text-primary-foreground" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4 text-white" />
+                </div>
+              </div>
+              <div>
+                <h3 className="font-bold text-primary text-lg">100% Satisfaction Guarantee</h3>
+                <p className="text-sm text-muted-foreground">Your happiness, or your money back</p>
+              </div>
+            </div>
+
+            <div className="hidden md:block w-px h-12 bg-primary/20" />
+
+            {/* Verified Professionals */}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Users className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-primary">Verified & Background-Checked</h4>
+                <p className="text-sm text-muted-foreground">Every provider is thoroughly vetted</p>
+              </div>
+            </div>
+
+            <div className="hidden md:block w-px h-12 bg-primary/20" />
+
+            {/* Secure Payments */}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Star className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-primary">Top-Rated Professionals</h4>
+                <p className="text-sm text-muted-foreground">4.8+ average customer rating</p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Service Categories */}
       <section id="services" className="relative px-4 py-20 overflow-hidden">
         {/* Background Image with Overlay */}
@@ -499,9 +554,13 @@ const Index = () => {
                   transition: { duration: 0.3 }
                 }}
                 onClick={() => handleServiceClick(service.name)}
-                className="glass-card p-6 rounded-xl text-center cursor-pointer group"
+                className="glass-card p-6 rounded-xl text-center cursor-pointer group relative overflow-hidden"
                 style={{ transformStyle: "preserve-3d" }}
               >
+                {/* Starting Price Badge */}
+                <div className="absolute top-2 right-2 bg-primary/90 text-primary-foreground text-xs font-semibold px-2 py-1 rounded-full">
+                  From Rs. {service.startingPrice}
+                </div>
                 <motion.div
                   whileHover={{ rotateZ: 360 }}
                   transition={{ duration: 0.6 }}
