@@ -479,54 +479,50 @@ const Index = () => {
       </section>
 
       {/* Satisfaction Guarantee Trust Banner */}
-      <section className="px-4 py-8 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-y border-primary/20">
+      <section className="px-4 py-6 md:py-8 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-y border-primary/20">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-8"
           >
             {/* Satisfaction Guarantee Badge */}
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
-                  <Shield className="w-8 h-8 text-primary-foreground" />
+            <div className="flex items-center gap-3 justify-center sm:justify-start">
+              <div className="relative flex-shrink-0">
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+                  <Shield className="w-6 h-6 md:w-8 md:h-8 text-primary-foreground" />
                 </div>
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                  <CheckCircle2 className="w-4 h-4 text-white" />
+                <div className="absolute -top-1 -right-1 w-5 h-5 md:w-6 md:h-6 bg-green-500 rounded-full flex items-center justify-center">
+                  <CheckCircle2 className="w-3 h-3 md:w-4 md:h-4 text-white" />
                 </div>
               </div>
-              <div>
-                <h3 className="font-bold text-primary text-lg">100% Satisfaction Guarantee</h3>
-                <p className="text-sm text-muted-foreground">Your happiness, or your money back</p>
+              <div className="text-left">
+                <h3 className="font-bold text-primary text-sm md:text-lg leading-tight">100% Satisfaction</h3>
+                <p className="text-xs md:text-sm text-muted-foreground">Money back guarantee</p>
               </div>
             </div>
-
-            <div className="hidden md:block w-px h-12 bg-primary/20" />
 
             {/* Verified Professionals */}
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Users className="w-6 h-6 text-primary" />
+            <div className="flex items-center gap-3 justify-center">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5 md:w-6 md:h-6 text-primary" />
               </div>
-              <div>
-                <h4 className="font-semibold text-primary">Verified & Background-Checked</h4>
-                <p className="text-sm text-muted-foreground">Every provider is thoroughly vetted</p>
+              <div className="text-left">
+                <h4 className="font-semibold text-primary text-sm md:text-base leading-tight">Background-Checked</h4>
+                <p className="text-xs md:text-sm text-muted-foreground">Thoroughly vetted</p>
               </div>
             </div>
 
-            <div className="hidden md:block w-px h-12 bg-primary/20" />
-
-            {/* Secure Payments */}
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Star className="w-6 h-6 text-primary" />
+            {/* Top Rated */}
+            <div className="flex items-center gap-3 justify-center sm:justify-end">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Star className="w-5 h-5 md:w-6 md:h-6 text-primary" />
               </div>
-              <div>
-                <h4 className="font-semibold text-primary">Top-Rated Professionals</h4>
-                <p className="text-sm text-muted-foreground">4.8+ average customer rating</p>
+              <div className="text-left">
+                <h4 className="font-semibold text-primary text-sm md:text-base leading-tight">Top-Rated Pros</h4>
+                <p className="text-xs md:text-sm text-muted-foreground">4.8+ avg rating</p>
               </div>
             </div>
           </motion.div>
@@ -534,70 +530,70 @@ const Index = () => {
       </section>
 
       {/* Social Proof Stats Section */}
-      <section className="px-4 py-12 bg-background">
+      <section className="px-4 py-8 md:py-12 bg-background">
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            className="grid grid-cols-3 gap-3 md:gap-6"
           >
             {/* Jobs Completed */}
             <motion.div
               whileHover={{ scale: 1.03 }}
-              className="glass-card p-6 rounded-2xl text-center"
+              className="glass-card p-4 md:p-6 rounded-xl md:rounded-2xl text-center"
             >
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Briefcase className="w-7 h-7 text-primary" />
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mx-auto mb-2 md:mb-4">
+                <Briefcase className="w-5 h-5 md:w-7 md:h-7 text-primary" />
               </div>
               <motion.p
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
-                className="text-4xl font-bold text-primary mb-1"
+                className="text-xl md:text-4xl font-bold text-primary mb-0.5 md:mb-1"
               >
                 {platformStats.jobs}+
               </motion.p>
-              <p className="text-muted-foreground font-medium">Jobs Completed</p>
+              <p className="text-xs md:text-base text-muted-foreground font-medium">Jobs Done</p>
             </motion.div>
 
             {/* Verified Providers */}
             <motion.div
               whileHover={{ scale: 1.03 }}
-              className="glass-card p-6 rounded-2xl text-center"
+              className="glass-card p-4 md:p-6 rounded-xl md:rounded-2xl text-center"
             >
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-500/20 to-green-500/10 flex items-center justify-center mx-auto mb-4">
-                <BadgeCheck className="w-7 h-7 text-green-600" />
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-green-500/20 to-green-500/10 flex items-center justify-center mx-auto mb-2 md:mb-4">
+                <BadgeCheck className="w-5 h-5 md:w-7 md:h-7 text-green-600" />
               </div>
               <motion.p
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
-                className="text-4xl font-bold text-green-600 mb-1"
+                className="text-xl md:text-4xl font-bold text-green-600 mb-0.5 md:mb-1"
               >
                 {platformStats.providers}+
               </motion.p>
-              <p className="text-muted-foreground font-medium">Verified Providers</p>
+              <p className="text-xs md:text-base text-muted-foreground font-medium">Verified Pros</p>
             </motion.div>
 
             {/* Happy Customers */}
             <motion.div
               whileHover={{ scale: 1.03 }}
-              className="glass-card p-6 rounded-2xl text-center"
+              className="glass-card p-4 md:p-6 rounded-xl md:rounded-2xl text-center"
             >
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-500/10 flex items-center justify-center mx-auto mb-4">
-                <ThumbsUp className="w-7 h-7 text-amber-600" />
+              <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-500/10 flex items-center justify-center mx-auto mb-2 md:mb-4">
+                <ThumbsUp className="w-5 h-5 md:w-7 md:h-7 text-amber-600" />
               </div>
               <motion.p
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
-                className="text-4xl font-bold text-amber-600 mb-1"
+                className="text-xl md:text-4xl font-bold text-amber-600 mb-0.5 md:mb-1"
               >
                 {platformStats.customers}+
               </motion.p>
-              <p className="text-muted-foreground font-medium">Happy Customers</p>
+              <p className="text-xs md:text-base text-muted-foreground font-medium">Happy Users</p>
             </motion.div>
           </motion.div>
         </div>

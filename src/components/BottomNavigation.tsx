@@ -8,6 +8,7 @@ interface NavItem {
   icon: React.ElementType;
   label: string;
   path: string;
+  key: string;
 }
 
 const BottomNavigation = () => {
@@ -59,19 +60,19 @@ const BottomNavigation = () => {
     // Admin has different navigation
     if (userRole === 'admin') {
       return [
-        { icon: Home, label: "Dashboard", path: "/admin/dashboard" },
-        { icon: Briefcase, label: "Jobs", path: "/admin/jobs" },
-        { icon: User, label: "Users", path: "/admin/users" },
-        { icon: Bell, label: "KYC", path: "/admin/kyc-verification" },
+        { icon: Home, label: "Dashboard", path: "/admin/dashboard", key: "admin-dashboard" },
+        { icon: Briefcase, label: "Jobs", path: "/admin/jobs", key: "admin-jobs" },
+        { icon: User, label: "Users", path: "/admin/users", key: "admin-users" },
+        { icon: Bell, label: "KYC", path: "/admin/kyc-verification", key: "admin-kyc" },
       ];
     }
 
     return [
-      { icon: Home, label: "Home", path: basePath },
-      { icon: Briefcase, label: "Jobs", path: basePath },
-      { icon: MessageSquare, label: "Messages", path: "/messages" },
-      { icon: Bell, label: "Alerts", path: basePath },
-      { icon: User, label: "Profile", path: settingsPath },
+      { icon: Home, label: "Home", path: basePath, key: "home" },
+      { icon: Briefcase, label: "Jobs", path: `${basePath}?tab=jobs`, key: "jobs" },
+      { icon: MessageSquare, label: "Messages", path: "/messages", key: "messages" },
+      { icon: Bell, label: "Alerts", path: `${basePath}?tab=alerts`, key: "alerts" },
+      { icon: User, label: "Profile", path: settingsPath, key: "profile" },
     ];
   };
 
@@ -90,7 +91,7 @@ const BottomNavigation = () => {
           
           return (
             <button
-              key={item.path}
+              key={item.key}
               onClick={() => navigate(item.path)}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[60px]",
