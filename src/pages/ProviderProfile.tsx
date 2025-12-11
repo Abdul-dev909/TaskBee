@@ -194,8 +194,8 @@ const ProviderProfile = () => {
                     </AvatarFallback>
                   </Avatar>
                   {provider.is_verified && (
-                    <div className="absolute -bottom-1 -right-1 bg-green-500 text-white p-1.5 rounded-full shadow-lg">
-                      <CheckCircle2 className="w-5 h-5" />
+                    <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 rounded-full flex items-center justify-center border-2 border-white shadow-lg shadow-amber-500/30">
+                      <Shield className="w-5 h-5 text-white drop-shadow-sm" />
                     </div>
                   )}
                 </div>
@@ -205,9 +205,10 @@ const ProviderProfile = () => {
                   <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
                     <h1 className="text-2xl md:text-3xl font-bold text-foreground">{provider.full_name}</h1>
                     {provider.is_verified && (
-                      <Badge className="bg-green-500/10 text-green-600 border-green-500/30 w-fit mx-auto md:mx-0">
-                        <Shield className="w-3 h-3 mr-1" /> Verified
-                      </Badge>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-yellow-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-sm font-semibold shadow-sm w-fit mx-auto md:mx-0">
+                        <Shield className="w-4 h-4" />
+                        Verified Pro
+                      </span>
                     )}
                   </div>
                   
