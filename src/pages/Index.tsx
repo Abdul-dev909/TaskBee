@@ -141,7 +141,7 @@ const Index = () => {
       const { data, error } = await supabase
         .from('provider_profiles')
         .select('*')
-        .ilike('skill_category', `%${dbCategory}%`);
+        .eq('skill_category', dbCategory);
 
       if (error) throw error;
 
