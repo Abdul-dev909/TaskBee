@@ -978,18 +978,18 @@ const Index = () => {
                               <AvatarFallback>{provider.full_name.charAt(0)}</AvatarFallback>
                             </Avatar>
                             {provider.is_verified && (
-                              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center border-2 border-background">
-                                <BadgeCheck className="w-4 h-4 text-white" />
+                              <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 rounded-full flex items-center justify-center border-2 border-white shadow-lg shadow-amber-500/30">
+                                <Shield className="w-4 h-4 text-white drop-shadow-sm" />
                               </div>
                             )}
                           </div>
                           <div className="flex-1">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <CardTitle className="text-xl">{provider.full_name}</CardTitle>
                               {provider.is_verified && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 text-xs font-medium">
-                                  <BadgeCheck className="w-3 h-3" />
-                                  Verified
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-yellow-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-semibold shadow-sm">
+                                  <Shield className="w-3.5 h-3.5" />
+                                  Verified Pro
                                 </span>
                               )}
                             </div>
