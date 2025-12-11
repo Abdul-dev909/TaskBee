@@ -122,13 +122,6 @@ const Index = () => {
   };
 
   const handleServiceClick = async (serviceCategory: string) => {
-    // Check if user is logged in
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate('/login');
-      return;
-    }
-
     // Map display names to database skill categories
     const categoryMap: { [key: string]: string } = {
       'Plumbing': 'plumber',
@@ -172,13 +165,6 @@ const Index = () => {
   };
 
   const handleSearch = async () => {
-    // Check if user is logged in
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate('/login');
-      return;
-    }
-
     if (!searchQuery.trim()) {
       toast({
         title: "Enter a search term",
