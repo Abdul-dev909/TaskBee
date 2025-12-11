@@ -105,10 +105,9 @@ const AdminUsers = () => {
     const validRoles = ["homeowner", "service_provider", "admin"];
     if (!validRoles.includes(newRole)) return;
 
-    const { error } = await supabase
-      .from("user_roles")
-      .update({ role: newRole as "homeowner" | "service_provider" | "admin" })
-      .eq("user_id", userId);
+    const { data, error } = await supabase.functions.invoke("change-user-role", {
+      body: { targetUserId: userId, newRole },
+    });
 
     if (error) {
       toast({
@@ -121,7 +120,7 @@ const AdminUsers = () => {
 
     toast({
       title: "Success",
-      description: "User role updated successfully",
+      description: data?.message || "User role updated successfully",
     });
 
     fetchUsers();
