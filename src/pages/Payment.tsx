@@ -127,101 +127,27 @@ const Payment = () => {
 
     setProcessing(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error("Not authenticated");
+      // Call secure server-side payment processing
+      const { data, error } = await supabase.functions.invoke("process-payment", {
+        body: { jobId }
+      });
 
-      const totalAmount = offeredRate + platformFee;
-
-      // Create payment record
-      const { error: paymentError } = await supabase
-        .from("payments")
-        .insert({
-          job_id: jobId,
-          homeowner_id: session.user.id,
-          provider_id: jobDetails.assigned_provider_id,
-          offered_rate: offeredRate,
-          platform_fee: platformFee,
-          total_amount: totalAmount,
-          status: "Paid"
-        });
-
-      if (paymentError) throw paymentError;
-
-      // Update job status
-      const { error: jobUpdateError } = await supabase
-        .from("jobs")
-        .update({ status: "completed" })
-        .eq("id", jobId);
-
-      if (jobUpdateError) throw jobUpdateError;
-
-      // Calculate provider payout
-      const commission = Math.floor(offeredRate * 0.08);
-      const netAmount = offeredRate - commission;
-
-      // Update or create provider wallet
-      const { data: existingWallet } = await supabase
-        .from("provider_wallet")
-        .select("balance")
-        .eq("provider_id", jobDetails.assigned_provider_id)
-        .maybeSingle();
-
-      if (existingWallet) {
-        await supabase
-          .from("provider_wallet")
-          .update({
-            balance: existingWallet.balance + netAmount,
-            updated_at: new Date().toISOString()
-          })
-          .eq("provider_id", jobDetails.assigned_provider_id);
-      } else {
-        await supabase
-          .from("provider_wallet")
-          .insert({
-            provider_id: jobDetails.assigned_provider_id,
-            balance: netAmount,
-            updated_at: new Date().toISOString()
-          });
+      if (error) {
+        console.error("Payment function error:", error);
+        throw new Error(error.message || "Payment processing failed");
       }
 
-      // Create provider transaction record
-      await supabase
-        .from("provider_transactions")
-        .insert({
-          provider_id: jobDetails.assigned_provider_id,
-          job_id: jobId,
-          gross_amount: offeredRate,
-          commission: commission,
-          net_amount: netAmount
-        });
+      if (!data?.success) {
+        throw new Error(data?.error || "Payment processing failed");
+      }
 
-      // Create notification for homeowner
-      await supabase
-        .from("notifications")
-        .insert({
-          user_id: session.user.id,
-          title: "Payment Successful ✅",
-          body: `Your payment of Rs. ${totalAmount} for "${jobDetails.title}" has been processed successfully.`,
-          type: "payment",
-          related_id: jobId
-        });
-
-      // Create notification for provider
-      await supabase
-        .from("notifications")
-        .insert({
-          user_id: jobDetails.assigned_provider_id,
-          title: "Payment Received 💰",
-          body: `You received Rs. ${netAmount} (after 8% commission) for completing "${jobDetails.title}". Amount added to your wallet.`,
-          type: "payment",
-          related_id: jobId
-        });
-
+      // Update local state with server-returned values
+      setOfferedRate(data.offeredRate);
       setSuccess(true);
       toast.success("Payment successful!");
     } catch (error: any) {
       console.error("Payment error:", error);
-      toast.error("Payment failed. Please try again.");
+      toast.error(error.message || "Payment failed. Please try again.");
     } finally {
       setProcessing(false);
     }
