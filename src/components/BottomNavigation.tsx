@@ -10,6 +10,7 @@ interface NavItem {
   label: string;
   path: string;
   key: string;
+  queryParam?: string;
 }
 
 const BottomNavigation = () => {
@@ -70,35 +71,43 @@ const BottomNavigation = () => {
 
     return [
       { icon: Home, label: "Home", path: basePath, key: "home" },
-      { icon: Briefcase, label: "Jobs", path: `${basePath}?tab=jobs`, key: "jobs" },
+      { icon: Briefcase, label: "Jobs", path: basePath, key: "jobs", queryParam: "tab=jobs" },
       { icon: MessageSquare, label: "Messages", path: "/messages", key: "messages" },
-      { icon: Bell, label: "Alerts", path: `${basePath}?tab=alerts`, key: "alerts" },
+      { icon: Bell, label: "Alerts", path: basePath, key: "alerts", queryParam: "tab=alerts" },
       { icon: User, label: "Profile", path: settingsPath, key: "profile" },
     ];
   };
 
   const navItems = getNavItems();
 
-  const isActive = (path: string) => {
-    return location.pathname === path || location.pathname.startsWith(path + '/');
+  const isActive = (item: NavItem) => {
+    const basePath = item.path.split('?')[0];
+    const currentPath = location.pathname;
+    const currentSearch = location.search;
+    
+    if (item.queryParam) {
+      return currentPath === basePath && currentSearch.includes(item.queryParam);
+    }
+    return currentPath === basePath && !currentSearch.includes('tab=');
   };
 
-  const handleNavClick = (path: string) => {
+  const handleNavClick = (item: NavItem) => {
     hapticFeedback('light');
-    navigate(path);
+    const fullPath = item.queryParam ? `${item.path}?${item.queryParam}` : item.path;
+    navigate(fullPath);
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/80 backdrop-blur-xl border-t border-border/50 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-[60] md:hidden bg-background/95 backdrop-blur-xl border-t border-border/50 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.15)]">
       <div className="flex items-center justify-around px-2 py-3">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = isActive(item.path);
+          const active = isActive(item);
           
           return (
             <button
               key={item.key}
-              onClick={() => handleNavClick(item.path)}
+              onClick={() => handleNavClick(item)}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl min-w-[60px]",
                 "transition-all duration-300 ease-out active:scale-95",

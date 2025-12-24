@@ -625,32 +625,41 @@ const HomeownerDashboard = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="fixed top-[73px] left-0 right-0 z-40 md:hidden glass-card border-b border-border/40 animate-fade-in">
-            <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
-              <button onClick={() => { scrollToSection("services"); setMobileMenuOpen(false); }} className="text-left px-4 py-2 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors">
-                Services
-              </button>
-              <button onClick={() => { scrollToSection("my-dashboard"); setMobileMenuOpen(false); }} className="text-left px-4 py-2 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors">
-                My Dashboard
-              </button>
-              <button onClick={() => { scrollToSection("testimonials"); setMobileMenuOpen(false); }} className="text-left px-4 py-2 text-muted-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors">
-                Testimonials
-              </button>
-              <Button onClick={() => { navigate("/complaints/new"); setMobileMenuOpen(false); }} variant="outline" className="justify-start">
-                <AlertCircle className="w-4 h-4 mr-2" />
-                File Complaint
-              </Button>
-              <Button onClick={() => { navigate("/payment-history"); setMobileMenuOpen(false); }} variant="outline" className="justify-start">
-                <Receipt className="w-4 h-4 mr-2" />
-                Payment History
-              </Button>
-              <Button onClick={() => { navigate("/homeowner-settings"); setMobileMenuOpen(false); }} variant="outline" className="justify-start">
-                Settings
-              </Button>
-              <Button onClick={handleLogout} variant="outline" className="justify-start">
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
+          <div className="fixed top-[73px] left-0 right-0 bottom-0 z-[55] md:hidden">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            {/* Menu Content */}
+            <div className="relative bg-background border-b border-border/40 shadow-xl animate-fade-in max-h-[calc(100vh-73px)] overflow-y-auto">
+              <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
+                <button onClick={() => { scrollToSection("services"); setMobileMenuOpen(false); }} className="text-left px-4 py-3 text-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors font-medium">
+                  Services
+                </button>
+                <button onClick={() => { scrollToSection("my-dashboard"); setMobileMenuOpen(false); }} className="text-left px-4 py-3 text-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors font-medium">
+                  My Dashboard
+                </button>
+                <button onClick={() => { scrollToSection("testimonials"); setMobileMenuOpen(false); }} className="text-left px-4 py-3 text-foreground hover:text-primary hover:bg-accent rounded-lg transition-colors font-medium">
+                  Testimonials
+                </button>
+                <div className="h-px bg-border my-2" />
+                <Button onClick={() => { navigate("/complaints/new"); setMobileMenuOpen(false); }} variant="outline" className="justify-start h-12">
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  File Complaint
+                </Button>
+                <Button onClick={() => { navigate("/payment-history"); setMobileMenuOpen(false); }} variant="outline" className="justify-start h-12">
+                  <Receipt className="w-4 h-4 mr-2" />
+                  Payment History
+                </Button>
+                <Button onClick={() => { navigate("/homeowner-settings"); setMobileMenuOpen(false); }} variant="outline" className="justify-start h-12">
+                  Settings
+                </Button>
+                <Button onClick={handleLogout} variant="outline" className="justify-start h-12 text-destructive hover:text-destructive">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
             </div>
           </div>
         )}

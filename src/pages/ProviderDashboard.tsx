@@ -384,24 +384,32 @@ const ProviderDashboard = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="fixed top-[73px] left-0 right-0 z-40 md:hidden glass-card border-b border-border/40 animate-fade-in">
-            <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
-              <Button onClick={() => { navigate("/provider/wallet"); setMobileMenuOpen(false); }} variant="outline" className="justify-start">
-                <Wallet className="w-4 h-4 mr-2" />
-                My Wallet
-              </Button>
-              <Button onClick={() => { navigate("/provider/complaints"); setMobileMenuOpen(false); }} variant="outline" className="justify-start">
-                <AlertCircle className="w-4 h-4 mr-2" />
-                View Complaints
-              </Button>
-              <Button onClick={() => { navigate("/provider-settings"); setMobileMenuOpen(false); }} variant="outline" className="justify-start">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
-              <Button onClick={handleLogout} variant="outline" className="justify-start">
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
+          <div className="fixed top-[73px] left-0 right-0 bottom-0 z-[55] md:hidden">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            {/* Menu Content */}
+            <div className="relative bg-background border-b border-border/40 shadow-xl animate-fade-in max-h-[calc(100vh-73px)] overflow-y-auto">
+              <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
+                <Button onClick={() => { navigate("/provider/wallet"); setMobileMenuOpen(false); }} variant="outline" className="justify-start h-12">
+                  <Wallet className="w-4 h-4 mr-2" />
+                  My Wallet
+                </Button>
+                <Button onClick={() => { navigate("/provider/complaints"); setMobileMenuOpen(false); }} variant="outline" className="justify-start h-12">
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  View Complaints
+                </Button>
+                <Button onClick={() => { navigate("/provider-settings"); setMobileMenuOpen(false); }} variant="outline" className="justify-start h-12">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
+                </Button>
+                <Button onClick={handleLogout} variant="outline" className="justify-start h-12 text-destructive hover:text-destructive">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
             </div>
           </div>
         )}
