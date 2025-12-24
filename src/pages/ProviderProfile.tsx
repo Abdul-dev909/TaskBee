@@ -71,9 +71,13 @@ const ProviderProfile = () => {
         .from("provider_profiles")
         .select("*")
         .eq("user_id", providerId)
-        .single();
+        .maybeSingle();
 
       if (providerError) throw providerError;
+      if (!providerData) {
+        setProvider(null);
+        return;
+      }
       setProvider(providerData);
 
       // Fetch ratings and reviews

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -112,7 +112,32 @@ interface ProviderReview {
 const HomeownerDashboard = () => {
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
+  
+  // Get initial tab from URL or default to "overview"
+  const tabFromUrl = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabFromUrl || "overview");
+  
+  // Sync tab with URL changes
+  useEffect(() => {
+    const newTab = searchParams.get("tab");
+    if (newTab && newTab !== activeTab) {
+      setActiveTab(newTab);
+    } else if (!newTab && activeTab !== "overview") {
+      setActiveTab("overview");
+    }
+  }, [searchParams]);
+  
+  // Update URL when tab changes
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    if (value === "overview") {
+      setSearchParams({});
+    } else {
+      setSearchParams({ tab: value });
+    }
+  };
   
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -126,7 +151,6 @@ const HomeownerDashboard = () => {
   }, [navigate]);
   
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("overview");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(false);
   const [deleteJobId, setDeleteJobId] = useState<string | null>(null);
@@ -312,7 +336,7 @@ const HomeownerDashboard = () => {
         });
         setEditingJob(null);
         fetchJobs();
-        setActiveTab("my-jobs");
+        handleTabChange("my-jobs");
       }
     } else {
       const { error } = await supabase.from("jobs" as any).insert([jobData as any]);
@@ -337,7 +361,7 @@ const HomeownerDashboard = () => {
           dateTime: "",
         });
         fetchJobs();
-        setActiveTab("my-jobs");
+        handleTabChange("my-jobs");
       }
     }
 
@@ -379,7 +403,7 @@ const HomeownerDashboard = () => {
       city: job.city,
       dateTime: job.date_time || "",
     });
-    setActiveTab("post-job");
+    handleTabChange("post-job");
   };
 
   const handleUpdateStatus = async (jobId: string, newStatus: string) => {
@@ -798,10 +822,10 @@ const HomeownerDashboard = () => {
 
             {/* Quick Actions */}
             <div className="max-w-5xl mx-auto">
-              <QuickActions role="homeowner" onTabChange={setActiveTab} />
+              <QuickActions role="homeowner" onTabChange={handleTabChange} />
             </div>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-5xl mx-auto">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="max-w-5xl mx-auto">
               <TabsList className="glass-card grid w-full grid-cols-3">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="post-job">Post a Job</TabsTrigger>
@@ -913,7 +937,7 @@ const HomeownerDashboard = () => {
                   <SmartJobCreator 
                     onJobCreated={() => {
                       fetchJobs();
-                      setActiveTab("my-jobs");
+                      handleTabChange("my-jobs");
                     }}
                   />
                 ) : (
@@ -1048,7 +1072,7 @@ const HomeownerDashboard = () => {
                       <div className="text-center py-12">
                         <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                         <p className="text-muted-foreground mb-4">You haven't posted any jobs yet</p>
-                        <Button onClick={() => setActiveTab("post-job")}>
+                        <Button onClick={() => handleTabChange("post-job")}>
                           <Plus className="w-4 h-4 mr-2" />
                           Post Your First Job
                         </Button>
