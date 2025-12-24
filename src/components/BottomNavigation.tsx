@@ -3,6 +3,7 @@ import { Home, Briefcase, MessageSquare, Bell, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { hapticFeedback } from "@/hooks/useHaptic";
 
 interface NavItem {
   icon: React.ElementType;
@@ -82,6 +83,11 @@ const BottomNavigation = () => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
+  const handleNavClick = (path: string) => {
+    hapticFeedback('light');
+    navigate(path);
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/80 backdrop-blur-xl border-t border-border/50 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
       <div className="flex items-center justify-around px-2 py-3">
@@ -92,7 +98,7 @@ const BottomNavigation = () => {
           return (
             <button
               key={item.key}
-              onClick={() => navigate(item.path)}
+              onClick={() => handleNavClick(item.path)}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl min-w-[60px]",
                 "transition-all duration-300 ease-out active:scale-95",
