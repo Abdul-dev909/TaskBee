@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Download, Sparkles } from "lucide-react";
+import { X, Download, Sparkles, Share, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -12,6 +12,7 @@ const PWAInstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
     // Check if already installed
@@ -19,6 +20,10 @@ const PWAInstallPrompt = () => {
       setIsInstalled(true);
       return;
     }
+
+    // Detect iOS
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOS(isIOSDevice);
 
     // Check if user dismissed before (within last 7 days)
     const dismissedAt = localStorage.getItem("pwa-prompt-dismissed");
@@ -28,6 +33,12 @@ const PWAInstallPrompt = () => {
       if (daysSinceDismissed < 7) {
         return;
       }
+    }
+
+    // For iOS, show prompt after delay since there's no beforeinstallprompt event
+    if (isIOSDevice) {
+      setTimeout(() => setShowPrompt(true), 2000);
+      return;
     }
 
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -111,19 +122,44 @@ const PWAInstallPrompt = () => {
               <h3 className="font-semibold text-foreground">
                 Install Home Genie
               </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Add to your home screen for quick access and offline use
-              </p>
+              
+              {isIOS ? (
+                <>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    To install, tap the share button and select "Add to Home Screen"
+                  </p>
+                  
+                  {/* iOS Instructions */}
+                  <div className="mt-3 flex items-center gap-3 text-sm">
+                    <div className="flex items-center gap-1.5 rounded-lg bg-muted/50 px-2.5 py-1.5">
+                      <span className="text-muted-foreground">1.</span>
+                      <Share className="h-4 w-4 text-primary" />
+                      <span className="text-foreground">Tap Share</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 rounded-lg bg-muted/50 px-2.5 py-1.5">
+                      <span className="text-muted-foreground">2.</span>
+                      <Plus className="h-4 w-4 text-primary" />
+                      <span className="text-foreground">Add to Home</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Add to your home screen for quick access and offline use
+                  </p>
 
-              {/* Install button */}
-              <Button
-                onClick={handleInstall}
-                size="sm"
-                className="mt-3 gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
-              >
-                <Download className="h-4 w-4" />
-                Install App
-              </Button>
+                  {/* Install button */}
+                  <Button
+                    onClick={handleInstall}
+                    size="sm"
+                    className="mt-3 gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
+                  >
+                    <Download className="h-4 w-4" />
+                    Install App
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
