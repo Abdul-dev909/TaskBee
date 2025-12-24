@@ -94,13 +94,14 @@ const BottomNavigation = () => {
               key={item.key}
               onClick={() => navigate(item.path)}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[60px]",
+                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl min-w-[60px]",
+                "transition-all duration-300 ease-out active:scale-95",
                 active 
                   ? "text-primary bg-primary/10" 
                   : "text-muted-foreground hover:text-primary hover:bg-primary/5"
               )}
             >
-              <Icon className={cn("w-5 h-5", active && "scale-110")} />
+              <Icon className={cn("w-5 h-5 transition-transform duration-300 ease-out", active && "scale-110")} />
               <span className="text-[10px] font-medium">{item.label}</span>
             </button>
           );
