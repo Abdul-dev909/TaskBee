@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,8 +87,33 @@ interface JobRequest {
 const ProviderDashboard = () => {
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
-  const [activeTab, setActiveTab] = useState("browse");
+  
+  // Get initial tab from URL or default to "browse"
+  const tabFromUrl = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabFromUrl || "browse");
+  
+  // Sync tab with URL changes
+  useEffect(() => {
+    const newTab = searchParams.get("tab");
+    if (newTab && newTab !== activeTab) {
+      setActiveTab(newTab);
+    } else if (!newTab && activeTab !== "browse") {
+      setActiveTab("browse");
+    }
+  }, [searchParams]);
+  
+  // Update URL when tab changes
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    if (value === "browse") {
+      setSearchParams({});
+    } else {
+      setSearchParams({ tab: value });
+    }
+  };
+  
   const [jobs, setJobs] = useState<Job[]>([]);
   const [myApplications, setMyApplications] = useState<JobRequest[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -431,7 +456,7 @@ const ProviderDashboard = () => {
           )}
 
           {/* Quick Actions */}
-          <QuickActions role="provider" onTabChange={setActiveTab} />
+          <QuickActions role="provider" onTabChange={handleTabChange} />
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
@@ -473,7 +498,7 @@ const ProviderDashboard = () => {
           </div>
 
           {/* Main Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
             <TabsList className="glass-card">
               <TabsTrigger value="browse">Browse Jobs ({filteredJobs.length})</TabsTrigger>
               <TabsTrigger value="applications">My Offers ({myApplications.length})</TabsTrigger>
@@ -615,7 +640,7 @@ const ProviderDashboard = () => {
                     <div className="text-center py-12">
                       <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                       <p className="text-muted-foreground mb-4">You haven't submitted any offers yet</p>
-                      <Button onClick={() => setActiveTab("browse")}>
+                      <Button onClick={() => handleTabChange("browse")}>
                         Browse Available Jobs
                       </Button>
                     </div>
@@ -683,7 +708,7 @@ const ProviderDashboard = () => {
                     <div className="text-center py-12">
                       <CheckCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                       <p className="text-muted-foreground mb-4">No active jobs yet</p>
-                      <Button onClick={() => setActiveTab("browse")}>
+                      <Button onClick={() => handleTabChange("browse")}>
                         Browse & Apply for Jobs
                       </Button>
                     </div>

@@ -69,11 +69,14 @@ const BottomNavigation = () => {
       ];
     }
 
+    // Map tab names based on user role
+    const jobsTab = userRole === 'service_provider' ? 'browse' : 'my-jobs';
+    
     return [
       { icon: Home, label: "Home", path: basePath, key: "home" },
-      { icon: Briefcase, label: "Jobs", path: basePath, key: "jobs", queryParam: "tab=jobs" },
+      { icon: Briefcase, label: "Jobs", path: basePath, key: "jobs", queryParam: `tab=${jobsTab}` },
       { icon: MessageSquare, label: "Messages", path: "/messages", key: "messages" },
-      { icon: Bell, label: "Alerts", path: basePath, key: "alerts", queryParam: "tab=alerts" },
+      { icon: Bell, label: "Alerts", path: "/messages", key: "alerts" },
       { icon: User, label: "Profile", path: settingsPath, key: "profile" },
     ];
   };
