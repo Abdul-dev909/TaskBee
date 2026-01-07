@@ -115,6 +115,8 @@ export type Database = {
           date_time: string | null
           description: string
           id: string
+          latitude: number | null
+          longitude: number | null
           posted_by: string
           status: Database["public"]["Enums"]["job_status"]
           title: string
@@ -129,6 +131,8 @@ export type Database = {
           date_time?: string | null
           description: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           posted_by: string
           status?: Database["public"]["Enums"]["job_status"]
           title: string
@@ -143,6 +147,8 @@ export type Database = {
           date_time?: string | null
           description?: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           posted_by?: string
           status?: Database["public"]["Enums"]["job_status"]
           title?: string
@@ -357,8 +363,11 @@ export type Database = {
           full_name: string
           id: string
           is_verified: boolean
+          latitude: number | null
+          longitude: number | null
           phone: string
           profile_image_url: string | null
+          service_radius_km: number | null
           skill_category: string
           updated_at: string
           user_id: string
@@ -370,8 +379,11 @@ export type Database = {
           full_name: string
           id?: string
           is_verified?: boolean
+          latitude?: number | null
+          longitude?: number | null
           phone: string
           profile_image_url?: string | null
+          service_radius_km?: number | null
           skill_category: string
           updated_at?: string
           user_id: string
@@ -383,8 +395,11 @@ export type Database = {
           full_name?: string
           id?: string
           is_verified?: boolean
+          latitude?: number | null
+          longitude?: number | null
           phone?: string
           profile_image_url?: string | null
+          service_radius_km?: number | null
           skill_category?: string
           updated_at?: string
           user_id?: string
@@ -557,6 +572,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_distance_km: {
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
+        Returns: number
+      }
+      get_nearby_providers: {
+        Args: { job_category: string; job_lat: number; job_lon: number }
+        Returns: {
+          distance_km: number
+          full_name: string
+          provider_id: string
+          user_id: string
+        }[]
+      }
       has_applied_to_job: {
         Args: { _job_id: string; _user_id: string }
         Returns: boolean

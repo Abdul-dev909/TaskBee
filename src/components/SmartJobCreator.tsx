@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sparkles, Loader2, Check, Edit2, X } from "lucide-react";
+import { Send, Sparkles, Loader2, Check, Edit2, X, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { LocationCapture } from "@/components/LocationCapture";
 
 interface Message {
   role: "user" | "assistant";
@@ -40,6 +41,10 @@ export const SmartJobCreator = ({ onJobCreated, onClose }: SmartJobCreatorProps)
   const [isLoading, setIsLoading] = useState(false);
   const [jobData, setJobData] = useState<JobData | null>(null);
   const [isPosting, setIsPosting] = useState(false);
+  const [jobLocation, setJobLocation] = useState<{ latitude: number | null; longitude: number | null }>({
+    latitude: null,
+    longitude: null,
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -211,6 +216,8 @@ export const SmartJobCreator = ({ onJobCreated, onClose }: SmartJobCreatorProps)
         budget: jobData.budget || null,
         city: jobData.city,
         posted_by: session.user.id,
+        latitude: jobLocation.latitude,
+        longitude: jobLocation.longitude,
       }] as any);
 
       if (error) throw error;
@@ -356,6 +363,22 @@ export const SmartJobCreator = ({ onJobCreated, onClose }: SmartJobCreatorProps)
                     ⏰ Urgency: {jobData.urgency === "immediate" ? "Immediate" : jobData.urgency === "within_week" ? "Within a week" : "Flexible"}
                   </div>
                 )}
+              </div>
+
+              {/* Location Capture */}
+              <div className="mt-4 p-3 rounded-lg border border-primary/10 bg-muted/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium">Add Location (Optional)</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Adding your location helps notify nearby providers
+                </p>
+                <LocationCapture
+                  onLocationCaptured={(lat, lng) => setJobLocation({ latitude: lat, longitude: lng })}
+                  latitude={jobLocation.latitude}
+                  longitude={jobLocation.longitude}
+                />
               </div>
 
               <div className="flex gap-2 mt-4">
