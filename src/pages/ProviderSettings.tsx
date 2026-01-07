@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Camera, Loader2, Lock, Trash2 } from "lucide-react";
+import { ArrowLeft, Camera, Loader2, Lock, Trash2, MapPin } from "lucide-react";
+import { LocationCapture } from "@/components/LocationCapture";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,6 +52,9 @@ interface ProviderProfile {
   skill_category: string;
   bio: string;
   profile_image_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  service_radius_km: number;
 }
 
 const ProviderSettings = () => {
@@ -65,6 +69,9 @@ const ProviderSettings = () => {
     skill_category: "",
     bio: "",
     profile_image_url: null,
+    latitude: null,
+    longitude: null,
+    service_radius_km: 10,
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -111,6 +118,9 @@ const ProviderSettings = () => {
         skill_category: (data as any).skill_category || "",
         bio: (data as any).bio || "",
         profile_image_url: (data as any).profile_image_url || null,
+        latitude: (data as any).latitude || null,
+        longitude: (data as any).longitude || null,
+        service_radius_km: (data as any).service_radius_km || 10,
       });
       setImagePreview((data as any).profile_image_url || null);
     }
@@ -213,6 +223,9 @@ const ProviderSettings = () => {
         skill_category: formData.skill_category,
         bio: formData.bio,
         profile_image_url: formData.profile_image_url,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        service_radius_km: formData.service_radius_km,
       })
       .eq("user_id", session.user.id);
 
@@ -458,6 +471,25 @@ const ProviderSettings = () => {
                     onChange={handleInputChange}
                     placeholder="Tell homeowners about your experience and expertise..."
                     rows={4}
+                  />
+                </div>
+
+                {/* Service Location & Radius */}
+                <div className="space-y-4 p-4 rounded-lg border border-primary/20 bg-primary/5">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    <Label className="text-base font-semibold">Service Area</Label>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Set your location to receive notifications for nearby jobs
+                  </p>
+                  <LocationCapture
+                    onLocationCaptured={(lat, lng) => setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }))}
+                    latitude={formData.latitude}
+                    longitude={formData.longitude}
+                    showRadius={true}
+                    radius={formData.service_radius_km}
+                    onRadiusChange={(radius) => setFormData(prev => ({ ...prev, service_radius_km: radius }))}
                   />
                 </div>
 

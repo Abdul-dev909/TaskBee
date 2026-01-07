@@ -46,6 +46,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { SmartJobCreator } from "@/components/SmartJobCreator";
 import QuickActions from "@/components/QuickActions";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { LocationCapture } from "@/components/LocationCapture";
 
 const checkIfBlocked = async (navigate: any) => {
   const { data: { session } } = await supabase.auth.getSession();
@@ -176,6 +177,8 @@ const HomeownerDashboard = () => {
     budget: "",
     city: "",
     dateTime: "",
+    latitude: null as number | null,
+    longitude: null as number | null,
   });
 
   useEffect(() => {
@@ -307,6 +310,8 @@ const HomeownerDashboard = () => {
       city: formData.city,
       date_time: formData.dateTime || null,
       posted_by: session.user.id,
+      latitude: formData.latitude,
+      longitude: formData.longitude,
     };
 
     if (editingJob) {
@@ -333,6 +338,8 @@ const HomeownerDashboard = () => {
           budget: "",
           city: "",
           dateTime: "",
+          latitude: null,
+          longitude: null,
         });
         setEditingJob(null);
         fetchJobs();
@@ -359,6 +366,8 @@ const HomeownerDashboard = () => {
           budget: "",
           city: "",
           dateTime: "",
+          latitude: null,
+          longitude: null,
         });
         fetchJobs();
         handleTabChange("my-jobs");
@@ -402,6 +411,8 @@ const HomeownerDashboard = () => {
       budget: job.budget || "",
       city: job.city,
       dateTime: job.date_time || "",
+      latitude: null,
+      longitude: null,
     });
     handleTabChange("post-job");
   };
@@ -1029,6 +1040,15 @@ const HomeownerDashboard = () => {
                           />
                         </div>
 
+                        <div className="space-y-2">
+                          <Label>Job Location (Optional - enables nearby provider matching)</Label>
+                          <LocationCapture
+                            onLocationCaptured={(lat, lng) => setFormData({ ...formData, latitude: lat, longitude: lng })}
+                            latitude={formData.latitude}
+                            longitude={formData.longitude}
+                          />
+                        </div>
+
                         <div className="flex gap-4">
                           <Button type="submit" className="flex-1 btn-glow" disabled={loading}>
                             <Plus className="w-4 h-4 mr-2" />
@@ -1047,6 +1067,8 @@ const HomeownerDashboard = () => {
                                   budget: "",
                                   city: "",
                                   dateTime: "",
+                                  latitude: null,
+                                  longitude: null,
                                 });
                               }}
                             >
