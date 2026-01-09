@@ -33,6 +33,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { KycStatusBadge, checkKycVerification } from "@/components/KycStatusBadge";
 import QuickActions from "@/components/QuickActions";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import JobsMap from "@/components/JobsMap";
 
 const checkIfBlocked = async (navigate: any) => {
   const { data: { session } } = await supabase.auth.getSession();
@@ -72,6 +73,8 @@ interface Job {
   date_time: string | null;
   status: string;
   created_at: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 interface JobRequest {
@@ -120,6 +123,11 @@ const ProviderDashboard = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [cityFilter, setCityFilter] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [providerLocation, setProviderLocation] = useState<{
+    latitude: number | null;
+    longitude: number | null;
+    service_radius_km: number;
+  } | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -184,44 +192,46 @@ const ProviderDashboard = () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    // First, get the provider's skill category
+    // First, get the provider's profile including location
     const { data: profileData, error: profileError } = await supabase
       .from("provider_profiles" as any)
-      .select("skill_category, city")
+      .select("skill_category, city, latitude, longitude, service_radius_km")
       .eq("user_id", session.user.id)
       .single();
 
     if (profileError) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch your profile",
-        variant: "destructive",
+      console.error("Profile error:", profileError);
+      // Still fetch all open jobs even if profile fails
+    } else {
+      // Set provider location for map
+      setProviderLocation({
+        latitude: (profileData as any)?.latitude ?? null,
+        longitude: (profileData as any)?.longitude ?? null,
+        service_radius_km: (profileData as any)?.service_radius_km ?? 10,
       });
-      return;
     }
 
-    // Map provider skill categories to job categories
-    const categoryMap: { [key: string]: string } = {
-      'plumber': 'Plumbing',
-      'electrician': 'Electrical',
-      'cleaner': 'Cleaning',
-      'painter': 'Painting',
-      'handyman': 'Handyman',
-      'mover': 'Moving',
-      'gardener': 'Yard Work',
-      'carpenter': 'Assembly'
+    // Map provider skill categories to job categories (case-insensitive matching)
+    const categoryMap: { [key: string]: string[] } = {
+      'plumber': ['Plumbing', 'plumbing'],
+      'electrician': ['Electrical', 'electrical'],
+      'cleaner': ['Cleaning', 'cleaning'],
+      'painter': ['Painting', 'painting'],
+      'handyman': ['Handyman', 'handyman', 'AC Repair', 'General'],
+      'mover': ['Moving', 'moving'],
+      'gardener': ['Yard Work', 'yard work', 'Gardening'],
+      'carpenter': ['Assembly', 'assembly', 'Carpentry', 'carpentry']
     };
 
     const providerSkill = (profileData as any)?.skill_category?.toLowerCase() || '';
-    const jobCategory = categoryMap[providerSkill] || providerSkill;
+    const matchingCategories = categoryMap[providerSkill] || [providerSkill, (profileData as any)?.skill_category];
 
-    // Fetch jobs matching the provider's category
+    // Fetch all open jobs first (RLS will filter appropriately)
     const { data, error } = await supabase
       .from("jobs" as any)
       .select("*")
       .eq("status", "open")
       .neq("posted_by", session.user.id)
-      .eq("category", jobCategory)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -231,7 +241,16 @@ const ProviderDashboard = () => {
         variant: "destructive",
       });
     } else {
-      setJobs((data as any) || []);
+      // Filter jobs client-side using case-insensitive matching
+      const allJobs = (data as any) || [];
+      const filteredByCategory = allJobs.filter((job: Job) => 
+        matchingCategories.some(cat => 
+          job.category.toLowerCase() === cat.toLowerCase()
+        )
+      );
+      
+      // If no matching jobs found, show all jobs (provider may want to see other categories too)
+      setJobs(filteredByCategory.length > 0 ? filteredByCategory : allJobs);
     }
   };
 
@@ -499,11 +518,21 @@ const ProviderDashboard = () => {
 
           {/* Main Tabs */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="glass-card">
+            <TabsList className="glass-card flex-wrap">
               <TabsTrigger value="browse">Browse Jobs ({filteredJobs.length})</TabsTrigger>
+              <TabsTrigger value="map">Map View</TabsTrigger>
               <TabsTrigger value="applications">My Offers ({myApplications.length})</TabsTrigger>
               <TabsTrigger value="active">Active Jobs ({myApplications.filter(a => a.status === 'accepted').length})</TabsTrigger>
             </TabsList>
+
+            {/* Map View Tab */}
+            <TabsContent value="map" className="animate-fade-in">
+              <JobsMap 
+                jobs={jobs} 
+                providerLocation={providerLocation} 
+                onJobClick={(jobId) => navigate(`/job/${jobId}`)}
+              />
+            </TabsContent>
 
             {/* Browse Jobs Tab */}
             <TabsContent value="browse" className="space-y-6 animate-fade-in">
