@@ -1,35 +1,6 @@
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-leaflet";
-import L from "leaflet";
+import { useEffect, useState, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { MapPin, Briefcase, DollarSign, Calendar } from "lucide-react";
-
-// Fix for default marker icons in Leaflet with Vite
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-});
-
-// Custom icons
-const jobIcon = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
-
-const providerIcon = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
 
 interface Job {
   id: string;
@@ -56,15 +27,6 @@ export interface JobsMapContentProps {
   onJobClick: (jobId: string) => void;
 }
 
-// Component to recenter map
-function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
-  const map = useMap();
-  useEffect(() => {
-    map.setView([lat, lng], map.getZoom());
-  }, [lat, lng, map]);
-  return null;
-}
-
 // Calculate distance using Haversine formula
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371; // Earth's radius in km
@@ -80,14 +42,40 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c;
 }
 
-export default function JobsMapContent({ jobs, providerLocation, onJobClick }: JobsMapContentProps) {
+function JobsMapContent({ jobs, providerLocation, onJobClick }: JobsMapContentProps) {
+  const [MapComponents, setMapComponents] = useState<any>(null);
+  const [L, setL] = useState<any>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([31.5204, 74.3587]); // Default: Lahore
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
   // Filter jobs with valid coordinates
   const jobsWithLocation = jobs.filter(
     (job) => job.latitude !== null && job.longitude !== null
   );
+
+  // Dynamically import react-leaflet and leaflet
+  useEffect(() => {
+    let mounted = true;
+    
+    Promise.all([
+      import("react-leaflet"),
+      import("leaflet")
+    ]).then(([reactLeaflet, leaflet]) => {
+      if (!mounted) return;
+      
+      // Fix for default marker icons in Leaflet with Vite
+      delete (leaflet.default.Icon.Default.prototype as any)._getIconUrl;
+      leaflet.default.Icon.Default.mergeOptions({
+        iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+        iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+        shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+      });
+      
+      setL(leaflet.default);
+      setMapComponents(reactLeaflet);
+    });
+
+    return () => { mounted = false; };
+  }, []);
 
   useEffect(() => {
     if (providerLocation?.latitude && providerLocation?.longitude) {
@@ -95,7 +83,36 @@ export default function JobsMapContent({ jobs, providerLocation, onJobClick }: J
     } else if (jobsWithLocation.length > 0) {
       setMapCenter([jobsWithLocation[0].latitude!, jobsWithLocation[0].longitude!]);
     }
-  }, [providerLocation, jobsWithLocation]);
+  }, [providerLocation, jobsWithLocation.length]);
+
+  if (!MapComponents || !L) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-muted/20">
+        <span className="text-sm text-muted-foreground">Loading map...</span>
+      </div>
+    );
+  }
+
+  const { MapContainer, TileLayer, Marker, Popup, Circle } = MapComponents;
+
+  // Custom icons
+  const jobIcon = new L.Icon({
+    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
+    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  });
+
+  const providerIcon = new L.Icon({
+    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
+    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  });
 
   return (
     <MapContainer
@@ -111,7 +128,6 @@ export default function JobsMapContent({ jobs, providerLocation, onJobClick }: J
 
       {providerLocation?.latitude && providerLocation?.longitude && (
         <>
-          <RecenterMap lat={providerLocation.latitude} lng={providerLocation.longitude} />
           <Marker
             position={[providerLocation.latitude, providerLocation.longitude]}
             icon={providerIcon}
@@ -153,9 +169,6 @@ export default function JobsMapContent({ jobs, providerLocation, onJobClick }: J
             key={job.id}
             position={[job.latitude!, job.longitude!]}
             icon={jobIcon}
-            eventHandlers={{
-              click: () => setSelectedJob(job),
-            }}
           >
             <Popup>
               <div className="min-w-[200px]">
@@ -198,3 +211,5 @@ export default function JobsMapContent({ jobs, providerLocation, onJobClick }: J
     </MapContainer>
   );
 }
+
+export default memo(JobsMapContent);
