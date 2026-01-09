@@ -1,10 +1,7 @@
-import { lazy, Suspense, useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Navigation, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-// Lazy load the entire map content component to avoid react-leaflet context issues
-const JobsMapContent = lazy(() => import("./JobsMapContent"));
 
 interface Job {
   id: string;
@@ -30,6 +27,35 @@ interface JobsMapProps {
   providerLocation: ProviderLocation | null;
   onJobClick?: (jobId: string) => void;
 }
+
+// Dynamically import the map component to avoid SSR issues
+const JobsMapContent = ({ jobs, providerLocation, onJobClick }: { 
+  jobs: Job[]; 
+  providerLocation: ProviderLocation | null; 
+  onJobClick: (jobId: string) => void 
+}) => {
+  const [MapComponent, setMapComponent] = useState<React.ComponentType<any> | null>(null);
+
+  useEffect(() => {
+    // Dynamic import on client side only
+    import("./JobsMapContent").then((mod) => {
+      setMapComponent(() => mod.default);
+    });
+  }, []);
+
+  if (!MapComponent) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-muted/20">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <span className="text-sm text-muted-foreground">Loading map...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return <MapComponent jobs={jobs} providerLocation={providerLocation} onJobClick={onJobClick} />;
+};
 
 export default function JobsMap({ jobs, providerLocation, onJobClick }: JobsMapProps) {
   const navigate = useNavigate();
@@ -72,22 +98,11 @@ export default function JobsMap({ jobs, providerLocation, onJobClick }: JobsMapP
         )}
 
         <div className="relative rounded-xl overflow-hidden border border-border" style={{ height: "400px" }}>
-          <Suspense
-            fallback={
-              <div className="w-full h-full flex items-center justify-center bg-muted/20">
-                <div className="flex flex-col items-center gap-2">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">Loading map...</span>
-                </div>
-              </div>
-            }
-          >
-            <JobsMapContent
-              jobs={jobs}
-              providerLocation={providerLocation}
-              onJobClick={handleJobClick}
-            />
-          </Suspense>
+          <JobsMapContent
+            jobs={jobs}
+            providerLocation={providerLocation}
+            onJobClick={handleJobClick}
+          />
         </div>
 
         {/* Stats */}
