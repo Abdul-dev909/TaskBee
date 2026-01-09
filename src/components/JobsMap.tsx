@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import { lazy, Suspense, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Navigation } from "lucide-react";
+import { MapPin, Navigation, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import "leaflet/dist/leaflet.css";
-import JobsMapContent from "./JobsMapContent";
+
+// Lazy load the entire map content component to avoid react-leaflet context issues
+const JobsMapContent = lazy(() => import("./JobsMapContent"));
 
 interface Job {
   id: string;
@@ -71,11 +72,22 @@ export default function JobsMap({ jobs, providerLocation, onJobClick }: JobsMapP
         )}
 
         <div className="relative rounded-xl overflow-hidden border border-border" style={{ height: "400px" }}>
-          <JobsMapContent
-            jobs={jobs}
-            providerLocation={providerLocation}
-            onJobClick={handleJobClick}
-          />
+          <Suspense
+            fallback={
+              <div className="w-full h-full flex items-center justify-center bg-muted/20">
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  <span className="text-sm text-muted-foreground">Loading map...</span>
+                </div>
+              </div>
+            }
+          >
+            <JobsMapContent
+              jobs={jobs}
+              providerLocation={providerLocation}
+              onJobClick={handleJobClick}
+            />
+          </Suspense>
         </div>
 
         {/* Stats */}
