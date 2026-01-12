@@ -241,16 +241,9 @@ const ProviderDashboard = () => {
         variant: "destructive",
       });
     } else {
-      // Filter jobs client-side using case-insensitive matching
+      // Show ALL jobs to providers - they can filter by category if needed
       const allJobs = (data as any) || [];
-      const filteredByCategory = allJobs.filter((job: Job) => 
-        matchingCategories.some(cat => 
-          job.category.toLowerCase() === cat.toLowerCase()
-        )
-      );
-      
-      // If no matching jobs found, show all jobs (provider may want to see other categories too)
-      setJobs(filteredByCategory.length > 0 ? filteredByCategory : allJobs);
+      setJobs(allJobs);
     }
   };
 
@@ -531,6 +524,9 @@ const ProviderDashboard = () => {
                 jobs={jobs} 
                 providerLocation={providerLocation} 
                 onJobClick={(jobId) => navigate(`/job/${jobId}`)}
+                onLocationUpdate={(lat, lng) => {
+                  setProviderLocation(prev => prev ? { ...prev, latitude: lat, longitude: lng } : { latitude: lat, longitude: lng, service_radius_km: 10 });
+                }}
               />
             </TabsContent>
 

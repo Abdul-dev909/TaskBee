@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import L from "leaflet";
 import { Button } from "@/components/ui/button";
-import { MapPin, Briefcase, DollarSign, Calendar, Navigation, Loader2 } from "lucide-react";
+import { MapPin, Briefcase, DollarSign, Calendar, Navigation, Loader2, Save } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 import { createRoot } from "react-dom/client";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 // Fix for default marker icons in Leaflet with Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -56,6 +57,7 @@ export interface JobsMapContentProps {
   jobs: Job[];
   providerLocation: ProviderLocation | null;
   onJobClick: (jobId: string) => void;
+  onLocationUpdate?: (lat: number, lng: number) => void;
 }
 
 // Calculate distance using Haversine formula
@@ -112,7 +114,7 @@ function JobPopupContent({ job, distance, onJobClick }: { job: Job; distance: st
   );
 }
 
-export default function JobsMapContent({ jobs, providerLocation, onJobClick }: JobsMapContentProps) {
+export default function JobsMapContent({ jobs, providerLocation, onJobClick, onLocationUpdate }: JobsMapContentProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
@@ -120,6 +122,8 @@ export default function JobsMapContent({ jobs, providerLocation, onJobClick }: J
   const userLocationMarkerRef = useRef<L.Marker | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const [currentUserLocation, setCurrentUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [isSavingLocation, setIsSavingLocation] = useState(false);
 
   // Filter jobs with valid coordinates
   const jobsWithLocation = jobs.filter(
@@ -244,6 +248,40 @@ export default function JobsMapContent({ jobs, providerLocation, onJobClick }: J
     shadowSize: [41, 41],
   });
 
+  // Save location to provider profile
+  const handleSaveLocation = useCallback(async () => {
+    if (!currentUserLocation) return;
+    
+    setIsSavingLocation(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Please log in to save your location");
+        return;
+      }
+
+      const { error } = await supabase
+        .from("provider_profiles")
+        .update({
+          latitude: currentUserLocation.lat,
+          longitude: currentUserLocation.lng,
+        })
+        .eq("user_id", session.user.id);
+
+      if (error) {
+        console.error("Error saving location:", error);
+        toast.error("Failed to save location");
+      } else {
+        toast.success("Location saved to your profile!");
+        onLocationUpdate?.(currentUserLocation.lat, currentUserLocation.lng);
+      }
+    } catch (err) {
+      toast.error("Failed to save location");
+    } finally {
+      setIsSavingLocation(false);
+    }
+  }, [currentUserLocation, onLocationUpdate]);
+
   // Locate Me function
   const handleLocateMe = useCallback(() => {
     const map = mapInstanceRef.current;
@@ -252,7 +290,9 @@ export default function JobsMapContent({ jobs, providerLocation, onJobClick }: J
     setIsLocating(true);
 
     const successCallback = (position: GeolocationPosition) => {
-      const { latitude, longitude } = position.coords;
+      const { latitude, longitude, accuracy } = position.coords;
+      
+      console.log("Location obtained:", { latitude, longitude, accuracy });
       
       // Remove existing user location marker
       if (userLocationMarkerRef.current) {
@@ -262,32 +302,37 @@ export default function JobsMapContent({ jobs, providerLocation, onJobClick }: J
       // Add new marker at user's location
       const marker = L.marker([latitude, longitude], { icon: userLocationIcon })
         .addTo(map)
-        .bindPopup("<strong>You are here</strong>");
+        .bindPopup(`<strong>You are here</strong><br/><small>Accuracy: ~${Math.round(accuracy)}m</small>`);
       
       userLocationMarkerRef.current = marker;
+      setCurrentUserLocation({ lat: latitude, lng: longitude });
 
       // Center map on user's location with animation
       map.flyTo([latitude, longitude], 14, { duration: 1 });
       
-      toast.success("Location found!");
+      toast.success(`Location found! (Accuracy: ~${Math.round(accuracy)}m)`);
       setIsLocating(false);
     };
 
     const errorCallback = (error: GeolocationPositionError) => {
+      console.error("Geolocation error:", error.code, error.message);
       setIsLocating(false);
+      
       if (error.code === error.TIMEOUT) {
         // Retry with lower accuracy
+        toast.info("Trying with lower accuracy...");
         navigator.geolocation.getCurrentPosition(
           successCallback,
           (retryError) => {
-            toast.error("Could not get your location. Please check your location settings.");
+            console.error("Retry failed:", retryError);
+            toast.error("Could not get your location. Please check location settings and try again.");
           },
           { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
         );
       } else if (error.code === error.PERMISSION_DENIED) {
-        toast.error("Location permission denied. Please enable location access.");
+        toast.error("Location permission denied. Please enable location access in your browser settings.");
       } else {
-        toast.error("Could not get your location. Please try again.");
+        toast.error("Could not get your location. Please try again or set location manually in Settings.");
       }
     };
 
@@ -300,9 +345,14 @@ export default function JobsMapContent({ jobs, providerLocation, onJobClick }: J
     navigator.geolocation.getCurrentPosition(successCallback, errorCallback, {
       enableHighAccuracy: true,
       timeout: 30000,
-      maximumAge: 300000,
+      maximumAge: 0, // Force fresh location
     });
-  }, []);
+  }, [userLocationIcon]);
+
+  // Jobs without location
+  const jobsWithoutLocation = jobs.filter(
+    (job) => job.latitude === null || job.longitude === null
+  );
 
   return (
     <div className="relative h-full w-full">
@@ -312,21 +362,67 @@ export default function JobsMapContent({ jobs, providerLocation, onJobClick }: J
         className="z-0"
       />
       
-      {/* Locate Me Button */}
-      <Button
-        variant="secondary"
-        size="sm"
-        className="absolute top-3 right-3 z-[1000] shadow-lg bg-background/95 backdrop-blur-sm hover:bg-background"
-        onClick={handleLocateMe}
-        disabled={isLocating}
-      >
-        {isLocating ? (
-          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-        ) : (
-          <Navigation className="w-4 h-4 mr-2" />
+      {/* Map Controls */}
+      <div className="absolute top-3 right-3 z-[1000] flex flex-col gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          className="shadow-lg bg-background/95 backdrop-blur-sm hover:bg-background"
+          onClick={handleLocateMe}
+          disabled={isLocating}
+        >
+          {isLocating ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Navigation className="w-4 h-4 mr-2" />
+          )}
+          {isLocating ? "Locating..." : "Locate Me"}
+        </Button>
+        
+        {currentUserLocation && (
+          <Button
+            variant="default"
+            size="sm"
+            className="shadow-lg"
+            onClick={handleSaveLocation}
+            disabled={isSavingLocation}
+          >
+            {isSavingLocation ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
+            Save Location
+          </Button>
         )}
-        {isLocating ? "Locating..." : "Locate Me"}
-      </Button>
+      </div>
+
+      {/* Jobs without location notice */}
+      {jobsWithoutLocation.length > 0 && (
+        <div className="absolute bottom-3 left-3 right-3 z-[1000] bg-background/95 backdrop-blur-sm p-2 rounded-lg border shadow-lg max-h-24 overflow-auto">
+          <p className="text-xs text-muted-foreground mb-1">
+            {jobsWithoutLocation.length} job(s) not shown on map (no coordinates):
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {jobsWithoutLocation.slice(0, 5).map((job) => (
+              <Button
+                key={job.id}
+                variant="ghost"
+                size="sm"
+                className="h-6 text-xs px-2"
+                onClick={() => onJobClick(job.id)}
+              >
+                {job.title.substring(0, 20)}...
+              </Button>
+            ))}
+            {jobsWithoutLocation.length > 5 && (
+              <span className="text-xs text-muted-foreground self-center">
+                +{jobsWithoutLocation.length - 5} more
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
