@@ -26,13 +26,15 @@ interface JobsMapProps {
   jobs: Job[];
   providerLocation: ProviderLocation | null;
   onJobClick?: (jobId: string) => void;
+  onLocationUpdate?: (lat: number, lng: number) => void;
 }
 
 // Dynamically import the map component to avoid SSR issues
-const JobsMapContent = ({ jobs, providerLocation, onJobClick }: { 
+const JobsMapContentWrapper = ({ jobs, providerLocation, onJobClick, onLocationUpdate }: { 
   jobs: Job[]; 
   providerLocation: ProviderLocation | null; 
-  onJobClick: (jobId: string) => void 
+  onJobClick: (jobId: string) => void;
+  onLocationUpdate?: (lat: number, lng: number) => void;
 }) => {
   const [MapComponent, setMapComponent] = useState<React.ComponentType<any> | null>(null);
 
@@ -54,10 +56,10 @@ const JobsMapContent = ({ jobs, providerLocation, onJobClick }: {
     );
   }
 
-  return <MapComponent jobs={jobs} providerLocation={providerLocation} onJobClick={onJobClick} />;
+  return <MapComponent jobs={jobs} providerLocation={providerLocation} onJobClick={onJobClick} onLocationUpdate={onLocationUpdate} />;
 };
 
-export default function JobsMap({ jobs, providerLocation, onJobClick }: JobsMapProps) {
+export default function JobsMap({ jobs, providerLocation, onJobClick, onLocationUpdate }: JobsMapProps) {
   const navigate = useNavigate();
 
   // Memoize job counts
@@ -98,10 +100,11 @@ export default function JobsMap({ jobs, providerLocation, onJobClick }: JobsMapP
         )}
 
         <div className="relative rounded-xl overflow-hidden border border-border" style={{ height: "400px" }}>
-          <JobsMapContent
+          <JobsMapContentWrapper
             jobs={jobs}
             providerLocation={providerLocation}
             onJobClick={handleJobClick}
+            onLocationUpdate={onLocationUpdate}
           />
         </div>
 
