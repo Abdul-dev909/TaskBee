@@ -589,62 +589,89 @@ const ProviderDashboard = () => {
               </Card>
 
               {/* Jobs List */}
-              <Card className="glass-card">
-                <CardHeader>
-                  <CardTitle>Available Jobs</CardTitle>
+              <Card className="glass-card overflow-hidden border-2 border-primary/10">
+                <CardHeader className="bg-gradient-to-r from-primary/5 via-transparent to-accent/5 border-b border-border/50">
+                  <CardTitle className="flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-primary" />
+                    Available Jobs
+                  </CardTitle>
                   <CardDescription>Click on a job to view details and apply</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4">
                   {filteredJobs.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground">No jobs available matching your filters</p>
+                    <div className="text-center py-16">
+                      <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted/50 flex items-center justify-center">
+                        <Briefcase className="w-10 h-10 text-muted-foreground" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">No Jobs Found</h3>
+                      <p className="text-muted-foreground max-w-md mx-auto">
+                        No jobs available matching your filters. Try adjusting your search criteria.
+                      </p>
                     </div>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                       {filteredJobs.map((job) => (
                         <div 
                           key={job.id} 
-                          className="p-4 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                          className="group relative p-5 rounded-2xl border-2 border-border/50 bg-gradient-to-br from-background via-background to-muted/20 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 cursor-pointer hover:-translate-y-1"
                           onClick={() => navigate(`/job/${job.id}`)}
                         >
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-lg mb-2">{job.title}</h3>
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
-                                <span className="flex items-center gap-1">
-                                  <Briefcase className="w-4 h-4" />
-                                  {job.category}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <MapPin className="w-4 h-4" />
-                                  {job.city}
-                                </span>
-                                {job.budget && (
-                                  <span className="flex items-center gap-1">
-                                    <DollarSign className="w-4 h-4" />
-                                    {job.budget}
-                                  </span>
-                                )}
-                                {job.date_time && (
-                                  <span className="flex items-center gap-1">
-                                    <Calendar className="w-4 h-4" />
-                                    {new Date(job.date_time).toLocaleDateString()}
-                                  </span>
-                                )}
-                                <span className="text-xs">
-                                  Posted {new Date(job.created_at).toLocaleDateString()}
-                                </span>
-                              </div>
-                              <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{job.description}</p>
-                            </div>
+                          {/* Category Badge */}
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                              {job.category}
+                            </span>
+                            {job.budget && (
+                              <span className="flex items-center gap-1 text-sm font-semibold text-green-600 dark:text-green-400">
+                                <DollarSign className="w-4 h-4" />
+                                {job.budget}
+                              </span>
+                            )}
                           </div>
-                          <Button size="sm" className="btn-glow" onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/job/${job.id}`);
-                          }}>
-                            View Details & Apply
-                          </Button>
+                          
+                          {/* Title */}
+                          <h3 className="font-bold text-lg mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                            {job.title}
+                          </h3>
+                          
+                          {/* Description */}
+                          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                            {job.description}
+                          </p>
+                          
+                          {/* Meta Info */}
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mb-4">
+                            <span className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-lg">
+                              <MapPin className="w-3.5 h-3.5" />
+                              {job.city}
+                            </span>
+                            {job.date_time && (
+                              <span className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-lg">
+                                <Calendar className="w-3.5 h-3.5" />
+                                {new Date(job.date_time).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                          
+                          {/* Footer */}
+                          <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                            <span className="text-xs text-muted-foreground">
+                              Posted {new Date(job.created_at).toLocaleDateString()}
+                            </span>
+                            <Button 
+                              size="sm" 
+                              className="btn-glow gap-2 opacity-0 group-hover:opacity-100 transition-opacity" 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/job/${job.id}`);
+                              }}
+                            >
+                              Apply Now
+                            </Button>
+                          </div>
+                          
+                          {/* Hover Glow Effect */}
+                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/0 via-primary/5 to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                         </div>
                       ))}
                     </div>
