@@ -75,41 +75,71 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c;
 }
 
-// Popup content component
+// Popup content component - styled for map popup
 function JobPopupContent({ job, distance, onJobClick }: { job: Job; distance: string | null; onJobClick: (id: string) => void }) {
   return (
-    <div className="min-w-[200px]">
-      <h3 className="font-semibold text-base mb-1">{job.title}</h3>
-      <div className="space-y-1 text-sm text-gray-600 mb-2">
-        <div className="flex items-center gap-1">
-          <Briefcase className="w-3 h-3" />
+    <div className="min-w-[220px] p-1">
+      {/* Category Badge */}
+      <div className="flex items-center justify-between mb-2">
+        <span 
+          className="px-2 py-0.5 rounded-full text-xs font-medium"
+          style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.2)' }}
+        >
           {job.category}
-        </div>
-        <div className="flex items-center gap-1">
-          <MapPin className="w-3 h-3" />
-          {job.city}
-          {distance && ` (${distance} km)`}
-        </div>
+        </span>
         {job.budget && (
-          <div className="flex items-center gap-1">
-            <DollarSign className="w-3 h-3" />
-            {job.budget}
-          </div>
+          <span className="text-sm font-bold" style={{ color: '#22c55e' }}>
+            Rs. {job.budget}
+          </span>
         )}
+      </div>
+      
+      {/* Title */}
+      <h3 className="font-bold text-base mb-2" style={{ color: '#1f2937' }}>
+        {job.title}
+      </h3>
+      
+      {/* Details */}
+      <div className="space-y-1.5 text-sm mb-3" style={{ color: '#6b7280' }}>
+        <div className="flex items-center gap-2">
+          <MapPin className="w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
+          <span>{job.city}</span>
+          {distance && (
+            <span 
+              className="px-1.5 py-0.5 rounded text-xs font-medium"
+              style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', color: '#16a34a' }}
+            >
+              {distance} km away
+            </span>
+          )}
+        </div>
         {job.date_time && (
-          <div className="flex items-center gap-1">
-            <Calendar className="w-3 h-3" />
-            {new Date(job.date_time).toLocaleDateString()}
+          <div className="flex items-center gap-2">
+            <Calendar className="w-3.5 h-3.5" style={{ color: '#9ca3af' }} />
+            <span>{new Date(job.date_time).toLocaleDateString()}</span>
           </div>
         )}
       </div>
-      <Button
-        size="sm"
-        className="w-full"
+      
+      {/* Action Button */}
+      <button
         onClick={() => onJobClick(job.id)}
+        className="w-full py-2 px-4 rounded-lg text-sm font-semibold text-white transition-all"
+        style={{ 
+          background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+          boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)'
+        }}
+        onMouseOver={(e) => {
+          e.currentTarget.style.transform = 'translateY(-1px)';
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.4)';
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.3)';
+        }}
       >
-        View & Apply
-      </Button>
+        View & Apply →
+      </button>
     </div>
   );
 }
