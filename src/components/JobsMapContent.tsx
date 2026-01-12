@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import L from "leaflet";
 import { Button } from "@/components/ui/button";
-import { MapPin, Briefcase, DollarSign, Calendar } from "lucide-react";
+import { MapPin, Briefcase, DollarSign, Calendar, Navigation, Loader2 } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 import { createRoot } from "react-dom/client";
+import { toast } from "sonner";
 
 // Fix for default marker icons in Leaflet with Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -116,7 +117,9 @@ export default function JobsMapContent({ jobs, providerLocation, onJobClick }: J
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const circleRef = useRef<L.Circle | null>(null);
+  const userLocationMarkerRef = useRef<L.Marker | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
 
   // Filter jobs with valid coordinates
   const jobsWithLocation = jobs.filter(
@@ -231,11 +234,99 @@ export default function JobsMapContent({ jobs, providerLocation, onJobClick }: J
     });
   }, [jobs, providerLocation, onJobClick, isReady, jobsWithLocation]);
 
+  // Custom icon for user's current location
+  const userLocationIcon = new L.Icon({
+    iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  });
+
+  // Locate Me function
+  const handleLocateMe = useCallback(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    setIsLocating(true);
+
+    const successCallback = (position: GeolocationPosition) => {
+      const { latitude, longitude } = position.coords;
+      
+      // Remove existing user location marker
+      if (userLocationMarkerRef.current) {
+        userLocationMarkerRef.current.remove();
+      }
+
+      // Add new marker at user's location
+      const marker = L.marker([latitude, longitude], { icon: userLocationIcon })
+        .addTo(map)
+        .bindPopup("<strong>You are here</strong>");
+      
+      userLocationMarkerRef.current = marker;
+
+      // Center map on user's location with animation
+      map.flyTo([latitude, longitude], 14, { duration: 1 });
+      
+      toast.success("Location found!");
+      setIsLocating(false);
+    };
+
+    const errorCallback = (error: GeolocationPositionError) => {
+      setIsLocating(false);
+      if (error.code === error.TIMEOUT) {
+        // Retry with lower accuracy
+        navigator.geolocation.getCurrentPosition(
+          successCallback,
+          (retryError) => {
+            toast.error("Could not get your location. Please check your location settings.");
+          },
+          { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
+        );
+      } else if (error.code === error.PERMISSION_DENIED) {
+        toast.error("Location permission denied. Please enable location access.");
+      } else {
+        toast.error("Could not get your location. Please try again.");
+      }
+    };
+
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      setIsLocating(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(successCallback, errorCallback, {
+      enableHighAccuracy: true,
+      timeout: 30000,
+      maximumAge: 300000,
+    });
+  }, []);
+
   return (
-    <div
-      ref={mapContainerRef}
-      style={{ height: "100%", width: "100%" }}
-      className="z-0"
-    />
+    <div className="relative h-full w-full">
+      <div
+        ref={mapContainerRef}
+        style={{ height: "100%", width: "100%" }}
+        className="z-0"
+      />
+      
+      {/* Locate Me Button */}
+      <Button
+        variant="secondary"
+        size="sm"
+        className="absolute top-3 right-3 z-[1000] shadow-lg bg-background/95 backdrop-blur-sm hover:bg-background"
+        onClick={handleLocateMe}
+        disabled={isLocating}
+      >
+        {isLocating ? (
+          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+        ) : (
+          <Navigation className="w-4 h-4 mr-2" />
+        )}
+        {isLocating ? "Locating..." : "Locate Me"}
+      </Button>
+    </div>
   );
 }
