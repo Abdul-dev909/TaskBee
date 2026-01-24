@@ -19,6 +19,7 @@ import AdminCategories from "@/pages/AdminCategories";
 import AdminComplaints from "@/pages/AdminComplaints";
 import AdminPayments from "@/pages/AdminPayments";
 import AdminKycVerification from "@/pages/AdminKycVerification";
+import AdminArchivedJobs from "@/pages/AdminArchivedJobs";
 import FileComplaint from "@/pages/FileComplaint";
 import ProviderComplaints from "@/pages/ProviderComplaints";
 import Chat from "@/pages/Chat";
@@ -53,6 +54,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin/complaints" element={<PageTransition><AdminComplaints /></PageTransition>} />
         <Route path="/admin/payments" element={<PageTransition><AdminPayments /></PageTransition>} />
         <Route path="/admin/kyc-verification" element={<PageTransition><AdminKycVerification /></PageTransition>} />
+        <Route path="/admin/archived" element={<PageTransition><AdminArchivedJobs /></PageTransition>} />
         <Route path="/complaints/new" element={<PageTransition><FileComplaint /></PageTransition>} />
         <Route path="/provider/complaints" element={<PageTransition><ProviderComplaints /></PageTransition>} />
         <Route path="/provider/wallet" element={<PageTransition><ProviderWallet /></PageTransition>} />
