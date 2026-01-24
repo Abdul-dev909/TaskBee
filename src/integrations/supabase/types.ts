@@ -14,6 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
+      archived_jobs: {
+        Row: {
+          archived_at: string
+          assigned_provider_id: string | null
+          budget: string | null
+          category: string
+          city: string
+          date_time: string | null
+          description: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          original_created_at: string
+          original_updated_at: string
+          posted_by: string
+          status: string
+          title: string
+        }
+        Insert: {
+          archived_at?: string
+          assigned_provider_id?: string | null
+          budget?: string | null
+          category: string
+          city: string
+          date_time?: string | null
+          description: string
+          id: string
+          latitude?: number | null
+          longitude?: number | null
+          original_created_at: string
+          original_updated_at: string
+          posted_by: string
+          status: string
+          title: string
+        }
+        Update: {
+          archived_at?: string
+          assigned_provider_id?: string | null
+          budget?: string | null
+          category?: string
+          city?: string
+          date_time?: string | null
+          description?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          original_created_at?: string
+          original_updated_at?: string
+          posted_by?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      archived_messages: {
+        Row: {
+          archived_at: string
+          id: string
+          is_read: boolean
+          job_id: string
+          message_text: string
+          original_created_at: string
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          archived_at?: string
+          id: string
+          is_read: boolean
+          job_id: string
+          message_text: string
+          original_created_at: string
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          archived_at?: string
+          id?: string
+          is_read?: boolean
+          job_id?: string
+          message_text?: string
+          original_created_at?: string
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       complaints: {
         Row: {
           admin_notes: string | null
@@ -572,6 +659,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      archive_old_data: { Args: { days_old?: number }; Returns: Json }
       calculate_distance_km: {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
