@@ -7,7 +7,7 @@ import { Users, Briefcase, CheckCircle, Clock, FileText, MessageSquare, Shield }
 import { useNavigate } from "react-router-dom";
 import { NotificationBell } from "@/components/NotificationBell";
 import { AdminAnnouncements } from "@/components/AdminAnnouncements";
-
+import { StorageUsageCard } from "@/components/StorageUsageCard";
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({
@@ -249,6 +249,14 @@ const AdminDashboard = () => {
                 </Card>
               );
             })}
+          </div>
+        </div>
+
+        {/* Storage Usage Section */}
+        <div>
+          <h2 className="text-2xl font-bold mb-4">System Health</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <StorageUsageCard autoRefreshInterval={30000} />
           </div>
         </div>
 
