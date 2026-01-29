@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LocationCapture } from "@/components/LocationCapture";
-
+import { validateJobData, normalizeCategory } from "@/utils/jobValidation";
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -209,12 +209,36 @@ export const SmartJobCreator = ({ onJobCreated, onClose }: SmartJobCreatorProps)
         return;
       }
 
-      const { error } = await supabase.from("jobs" as any).insert([{
+      // Validate job data before submitting
+      const validation = validateJobData({
         title: jobData.title,
         category: jobData.category,
         description: jobData.description,
-        budget: jobData.budget || null,
+        budget: jobData.budget,
         city: jobData.city,
+      });
+
+      if (!validation.success) {
+        const errorMessage = validation.error.issues
+          .map(issue => issue.message)
+          .join(', ');
+        toast({
+          title: "Invalid Job Data",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Normalize category for database consistency
+      const normalizedCategory = normalizeCategory(validation.data.category);
+
+      const { error } = await supabase.from("jobs" as any).insert([{
+        title: validation.data.title,
+        category: normalizedCategory,
+        description: validation.data.description,
+        budget: validation.data.budget || null,
+        city: validation.data.city,
         posted_by: session.user.id,
         latitude: jobLocation.latitude,
         longitude: jobLocation.longitude,

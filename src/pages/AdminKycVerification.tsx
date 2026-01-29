@@ -9,8 +9,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Eye, CheckCircle, XCircle, Clock, FileText } from "lucide-react";
+import { Shield, Eye, CheckCircle, XCircle, Clock, FileText, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { loadKycSignedUrls } from "@/utils/kycDocuments";
 
 interface KycRecord {
   id: string;
@@ -36,6 +37,12 @@ export default function AdminKycVerification() {
   const [showModal, setShowModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [loading, setLoading] = useState(false);
+  const [signedUrls, setSignedUrls] = useState<{
+    front: string | null;
+    back: string | null;
+    selfie: string | null;
+  } | null>(null);
+  const [loadingUrls, setLoadingUrls] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -285,9 +292,24 @@ export default function AdminKycVerification() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
+                          onClick={async () => {
                             setSelectedKyc(kyc);
                             setShowModal(true);
+                            setLoadingUrls(true);
+                            setSignedUrls(null);
+                            try {
+                              const urls = await loadKycSignedUrls(kyc);
+                              setSignedUrls(urls);
+                            } catch (error) {
+                              console.error('Failed to load document URLs:', error);
+                              toast({
+                                title: "Error",
+                                description: "Failed to load document images",
+                                variant: "destructive",
+                              });
+                            } finally {
+                              setLoadingUrls(false);
+                            }
                           }}
                         >
                           <Eye className="h-4 w-4 mr-2" />
@@ -350,32 +372,57 @@ export default function AdminKycVerification() {
 
               <div className="space-y-4">
                 <Label className="text-lg font-semibold">Uploaded Documents</Label>
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div>
-                    <Label className="text-sm text-muted-foreground">CNIC Front</Label>
-                    <img
-                      src={selectedKyc.cnic_front_url}
-                      alt="CNIC Front"
-                      className="w-full h-48 object-cover rounded-lg border mt-2"
-                    />
+                {loadingUrls ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <span className="ml-2">Loading documents...</span>
                   </div>
-                  <div>
-                    <Label className="text-sm text-muted-foreground">CNIC Back</Label>
-                    <img
-                      src={selectedKyc.cnic_back_url}
-                      alt="CNIC Back"
-                      className="w-full h-48 object-cover rounded-lg border mt-2"
-                    />
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div>
+                      <Label className="text-sm text-muted-foreground">CNIC Front</Label>
+                      {signedUrls?.front ? (
+                        <img
+                          src={signedUrls.front}
+                          alt="CNIC Front"
+                          className="w-full h-48 object-cover rounded-lg border mt-2"
+                        />
+                      ) : (
+                        <div className="w-full h-48 flex items-center justify-center bg-muted rounded-lg border mt-2">
+                          <p className="text-sm text-muted-foreground">Unable to load image</p>
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <Label className="text-sm text-muted-foreground">CNIC Back</Label>
+                      {signedUrls?.back ? (
+                        <img
+                          src={signedUrls.back}
+                          alt="CNIC Back"
+                          className="w-full h-48 object-cover rounded-lg border mt-2"
+                        />
+                      ) : (
+                        <div className="w-full h-48 flex items-center justify-center bg-muted rounded-lg border mt-2">
+                          <p className="text-sm text-muted-foreground">Unable to load image</p>
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <Label className="text-sm text-muted-foreground">Selfie with CNIC</Label>
+                      {signedUrls?.selfie ? (
+                        <img
+                          src={signedUrls.selfie}
+                          alt="Selfie"
+                          className="w-full h-48 object-cover rounded-lg border mt-2"
+                        />
+                      ) : (
+                        <div className="w-full h-48 flex items-center justify-center bg-muted rounded-lg border mt-2">
+                          <p className="text-sm text-muted-foreground">Unable to load image</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <Label className="text-sm text-muted-foreground">Selfie with CNIC</Label>
-                    <img
-                      src={selectedKyc.selfie_url}
-                      alt="Selfie"
-                      className="w-full h-48 object-cover rounded-lg border mt-2"
-                    />
-                  </div>
-                </div>
+                )}
               </div>
 
               {selectedKyc.status === "pending" && (
