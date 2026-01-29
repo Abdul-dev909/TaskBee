@@ -10,6 +10,7 @@ import { Archive, Trash2, RefreshCw, Loader2, Calendar, Database } from "lucide-
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { StorageUsageCard } from "@/components/StorageUsageCard";
 
 interface ArchivedJob {
   id: string;
@@ -149,6 +150,9 @@ const AdminArchivedJobs = () => {
           <h1 className="text-3xl font-bold text-foreground mb-2">Archived Data</h1>
           <p className="text-muted-foreground">View archived jobs and run manual cleanup</p>
         </div>
+
+        {/* Storage Usage Card */}
+        <StorageUsageCard autoRefreshInterval={15000} className="max-w-md" />
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
