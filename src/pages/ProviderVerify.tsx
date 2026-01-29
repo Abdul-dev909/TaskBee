@@ -96,11 +96,10 @@ export default function ProviderVerify() {
 
     if (error) throw error;
 
-    const { data: urlData } = supabase.storage
-      .from("kyc_documents")
-      .getPublicUrl(path);
-
-    return urlData.publicUrl;
+    // Return just the path, not a public URL
+    // The private bucket requires signed URLs for access
+    // Admins will generate signed URLs when viewing documents
+    return path;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
