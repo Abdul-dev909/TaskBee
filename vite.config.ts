@@ -6,7 +6,6 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "/homegenie-landing-pages/",
   server: {
     host: "::",
     port: 8080,
