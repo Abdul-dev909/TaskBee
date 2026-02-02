@@ -38,7 +38,6 @@ interface Rating {
   rating: number;
   review: string | null;
   created_at: string;
-  homeowner_id: string;
 }
 
 interface CompletedJob {
@@ -80,9 +79,9 @@ const ProviderProfile = () => {
       }
       setProvider(providerData);
 
-      // Fetch ratings and reviews
+      // Fetch ratings using secure view that protects customer privacy
       const { data: ratingsData, error: ratingsError } = await supabase
-        .from("provider_ratings")
+        .from("provider_ratings_public")
         .select("*")
         .eq("provider_id", providerId)
         .order("created_at", { ascending: false });

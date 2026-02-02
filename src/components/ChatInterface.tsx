@@ -3,10 +3,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send } from "lucide-react";
+import { Send, Trash2, MoreVertical } from "lucide-react";
 import { useMessages } from "@/hooks/useMessages";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ChatInterfaceProps {
   jobId: string;
@@ -23,8 +39,9 @@ export const ChatInterface = ({
   otherUserName,
   jobTitle,
 }: ChatInterfaceProps) => {
-  const { messages, loading, sendMessage, isOtherUserTyping, setTypingStatus } = useMessages(jobId, currentUserId);
+  const { messages, loading, sendMessage, deleteMessage, isOtherUserTyping, setTypingStatus } = useMessages(jobId, currentUserId);
   const [newMessage, setNewMessage] = useState("");
+  const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -69,8 +86,33 @@ export const ChatInterface = ({
     }
   };
 
+  const handleDeleteMessage = async () => {
+    if (messageToDelete) {
+      await deleteMessage(messageToDelete);
+      setMessageToDelete(null);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!messageToDelete} onOpenChange={(open) => !open && setMessageToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Message</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this message? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteMessage} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Chat Header */}
       <Card className="p-4 rounded-none border-x-0 border-t-0">
         <div className="flex items-center gap-3">
@@ -123,36 +165,61 @@ export const ChatInterface = ({
                 return (
                   <div
                     key={message.id}
-                    className={`flex ${isSender ? "justify-end" : "justify-start"} animate-fade-in`}
+                    className={`flex ${isSender ? "justify-end" : "justify-start"} animate-fade-in group`}
                   >
-                    <div
-                      className={`max-w-[70%] rounded-lg p-3 backdrop-blur-sm ${
-                        isSender
-                          ? "bg-primary text-primary-foreground shadow-lg"
-                          : "bg-card/80 border border-border/50 shadow-md"
-                      }`}
-                    >
-                      <p className="text-sm break-words">{message.message_text}</p>
-                      <div className="flex items-center justify-between gap-2 mt-1">
-                        <p
-                          className={`text-xs ${
-                            isSender ? "text-primary-foreground/70" : "text-muted-foreground"
-                          }`}
-                        >
-                          {formatDistanceToNow(new Date(message.created_at), {
-                            addSuffix: true,
-                          })}
-                        </p>
-                        {isSender && message.is_read && (
-                          <span className="text-xs text-primary-foreground/70 flex items-center gap-1">
-                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
-                              <path d="M19.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0" opacity="0.5"/>
-                            </svg>
-                            Seen
-                          </span>
-                        )}
+                    <div className={`flex items-start gap-1 ${isSender ? "flex-row-reverse" : ""}`}>
+                      <div
+                        className={`max-w-[70%] rounded-lg p-3 backdrop-blur-sm ${
+                          isSender
+                            ? "bg-primary text-primary-foreground shadow-lg"
+                            : "bg-card/80 border border-border/50 shadow-md"
+                        }`}
+                      >
+                        <p className="text-sm break-words">{message.message_text}</p>
+                        <div className="flex items-center justify-between gap-2 mt-1">
+                          <p
+                            className={`text-xs ${
+                              isSender ? "text-primary-foreground/70" : "text-muted-foreground"
+                            }`}
+                          >
+                            {formatDistanceToNow(new Date(message.created_at), {
+                              addSuffix: true,
+                            })}
+                          </p>
+                          {isSender && message.is_read && (
+                            <span className="text-xs text-primary-foreground/70 flex items-center gap-1">
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
+                                <path d="M19.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0" opacity="0.5"/>
+                              </svg>
+                              Seen
+                            </span>
+                          )}
+                        </div>
                       </div>
+                      {/* Delete option for sent messages */}
+                      {isSender && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <MoreVertical className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => setMessageToDelete(message.id)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete message
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
                   </div>
                 );
