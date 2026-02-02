@@ -88,9 +88,10 @@ const Index = () => {
     if (providerIds.length === 0) return;
 
     try {
+      // Use secure view that excludes homeowner_id to protect customer privacy
       const { data, error } = await supabase
-        .from("provider_ratings")
-        .select("provider_id, rating, review, created_at, id, homeowner_id")
+        .from("provider_ratings_public")
+        .select("provider_id, rating, review, created_at, id")
         .in("provider_id", providerIds)
         .order("created_at", { ascending: false });
 

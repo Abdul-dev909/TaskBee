@@ -92,6 +92,19 @@ export const useMessages = (jobId: string | undefined, userId: string | undefine
           );
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'messages',
+          filter: `job_id=eq.${jobId}`,
+        },
+        (payload) => {
+          const deletedMessage = payload.old as Message;
+          setMessages(prev => prev.filter(msg => msg.id !== deletedMessage.id));
+        }
+      )
       .on('presence', { event: 'sync' }, () => {
         const presenceState = channel.presenceState();
         const otherUserPresence = Object.values(presenceState).find(
@@ -166,10 +179,35 @@ export const useMessages = (jobId: string | undefined, userId: string | undefine
     await channel.track({ user_id: userId, typing: isTyping });
   };
 
+  const deleteMessage = async (messageId: string) => {
+    if (!userId) return false;
+
+    const { error } = await supabase
+      .from('messages')
+      .delete()
+      .eq('id', messageId)
+      .eq('sender_id', userId); // Only allow deleting own messages
+
+    if (error) {
+      console.error('Error deleting message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete message",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Remove from local state immediately
+    setMessages(prev => prev.filter(msg => msg.id !== messageId));
+    return true;
+  };
+
   return {
     messages,
     loading,
     sendMessage,
+    deleteMessage,
     isOtherUserTyping,
     setTypingStatus,
   };

@@ -656,13 +656,43 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      provider_ratings_public: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          provider_id: string | null
+          rating: number | null
+          review: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          provider_id?: string | null
+          rating?: number | null
+          review?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          provider_id?: string | null
+          rating?: number | null
+          review?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       archive_old_data: { Args: { days_old?: number }; Returns: Json }
       calculate_distance_km: {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
+      }
+      get_fuzzy_coordinates: {
+        Args: { lat: number; lon: number; precision_km?: number }
+        Returns: {
+          fuzzy_lat: number
+          fuzzy_lon: number
+        }[]
       }
       get_nearby_providers: {
         Args: { job_category: string; job_lat: number; job_lon: number }
@@ -675,6 +705,10 @@ export type Database = {
       }
       has_applied_to_job: {
         Args: { _job_id: string; _user_id: string }
+        Returns: boolean
+      }
+      has_job_relationship: {
+        Args: { _profile_id: string; _viewer_id: string }
         Returns: boolean
       }
       has_role: {
