@@ -45,11 +45,29 @@ serve(async (req) => {
 
     console.log('Processing payment for user:', user.id);
 
-    const { jobId } = await req.json();
+    const { jobId, paymentMethod = 'card', transactionId } = await req.json();
+    
     if (!jobId) {
       console.error('No jobId provided');
       return new Response(
         JSON.stringify({ error: 'Job ID is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate payment method
+    const validPaymentMethods = ['card', 'jazzcash', 'easypaisa'];
+    if (!validPaymentMethods.includes(paymentMethod)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid payment method' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // For mobile payments, transaction ID is required
+    if ((paymentMethod === 'jazzcash' || paymentMethod === 'easypaisa') && !transactionId) {
+      return new Response(
+        JSON.stringify({ error: 'Transaction ID is required for mobile payments' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -125,7 +143,20 @@ serve(async (req) => {
     const commission = Math.floor(offeredRate * 0.08); // 8% commission
     const netAmount = offeredRate - commission;
 
-    console.log('Payment calculation:', { offeredRate, platformFee, totalAmount, commission, netAmount });
+    // Determine verification status based on payment method
+    const isMobilePayment = paymentMethod === 'jazzcash' || paymentMethod === 'easypaisa';
+    const verificationStatus = isMobilePayment ? 'pending_verification' : 'verified';
+    const paymentStatus = isMobilePayment ? 'Pending Verification' : 'Paid';
+
+    console.log('Payment calculation:', { 
+      offeredRate, 
+      platformFee, 
+      totalAmount, 
+      commission, 
+      netAmount,
+      paymentMethod,
+      verificationStatus
+    });
 
     // SERVER-SIDE: Create payment record (using service role)
     const { error: paymentError } = await supabaseAdmin
@@ -137,7 +168,10 @@ serve(async (req) => {
         offered_rate: offeredRate,
         platform_fee: platformFee,
         total_amount: totalAmount,
-        status: 'Paid'
+        status: paymentStatus,
+        payment_method: paymentMethod,
+        transaction_reference: transactionId || null,
+        verification_status: verificationStatus
       });
 
     if (paymentError) {
@@ -145,10 +179,13 @@ serve(async (req) => {
       throw new Error('Failed to create payment record');
     }
 
-    // SERVER-SIDE: Update job status to completed
+    // For card payments, complete the transaction immediately
+    // For mobile payments, mark job as in_progress until verified
+    const newJobStatus = isMobilePayment ? 'in_progress' : 'completed';
+    
     const { error: jobUpdateError } = await supabaseAdmin
       .from('jobs')
-      .update({ status: 'completed' })
+      .update({ status: newJobStatus })
       .eq('id', jobId);
 
     if (jobUpdateError) {
@@ -156,81 +193,127 @@ serve(async (req) => {
       throw new Error('Failed to update job status');
     }
 
-    // SERVER-SIDE: Update provider wallet (using service role)
-    const { data: existingWallet } = await supabaseAdmin
-      .from('provider_wallet')
-      .select('balance')
-      .eq('provider_id', job.assigned_provider_id)
-      .maybeSingle();
-
-    if (existingWallet) {
-      const { error: walletUpdateError } = await supabaseAdmin
+    // For card payments, update wallet immediately
+    // For mobile payments, wallet update happens after admin verification
+    if (!isMobilePayment) {
+      const { data: existingWallet } = await supabaseAdmin
         .from('provider_wallet')
-        .update({
-          balance: existingWallet.balance + netAmount,
-          updated_at: new Date().toISOString()
-        })
-        .eq('provider_id', job.assigned_provider_id);
+        .select('balance')
+        .eq('provider_id', job.assigned_provider_id)
+        .maybeSingle();
 
-      if (walletUpdateError) {
-        console.error('Failed to update wallet:', walletUpdateError);
-        throw new Error('Failed to update provider wallet');
+      if (existingWallet) {
+        const { error: walletUpdateError } = await supabaseAdmin
+          .from('provider_wallet')
+          .update({
+            balance: existingWallet.balance + netAmount,
+            updated_at: new Date().toISOString()
+          })
+          .eq('provider_id', job.assigned_provider_id);
+
+        if (walletUpdateError) {
+          console.error('Failed to update wallet:', walletUpdateError);
+          throw new Error('Failed to update provider wallet');
+        }
+      } else {
+        const { error: walletInsertError } = await supabaseAdmin
+          .from('provider_wallet')
+          .insert({
+            provider_id: job.assigned_provider_id,
+            balance: netAmount,
+            updated_at: new Date().toISOString()
+          });
+
+        if (walletInsertError) {
+          console.error('Failed to create wallet:', walletInsertError);
+          throw new Error('Failed to create provider wallet');
+        }
       }
-    } else {
-      const { error: walletInsertError } = await supabaseAdmin
-        .from('provider_wallet')
+
+      // Create provider transaction record for card payments
+      const { error: transactionError } = await supabaseAdmin
+        .from('provider_transactions')
         .insert({
           provider_id: job.assigned_provider_id,
-          balance: netAmount,
-          updated_at: new Date().toISOString()
+          job_id: jobId,
+          gross_amount: offeredRate,
+          commission: commission,
+          net_amount: netAmount
         });
 
-      if (walletInsertError) {
-        console.error('Failed to create wallet:', walletInsertError);
-        throw new Error('Failed to create provider wallet');
+      if (transactionError) {
+        console.error('Failed to create transaction record:', transactionError);
       }
     }
 
-    // SERVER-SIDE: Create provider transaction record (using service role)
-    const { error: transactionError } = await supabaseAdmin
-      .from('provider_transactions')
-      .insert({
-        provider_id: job.assigned_provider_id,
-        job_id: jobId,
-        gross_amount: offeredRate,
-        commission: commission,
-        net_amount: netAmount
-      });
+    // Create notifications
+    if (isMobilePayment) {
+      // Notification for homeowner - pending verification
+      await supabaseAdmin
+        .from('notifications')
+        .insert({
+          user_id: user.id,
+          title: 'Payment Submitted 📱',
+          body: `Your ${paymentMethod === 'jazzcash' ? 'JazzCash' : 'Easypaisa'} payment of Rs. ${totalAmount} is pending verification. Transaction ID: ${transactionId}`,
+          type: 'payment',
+          related_id: jobId
+        });
 
-    if (transactionError) {
-      console.error('Failed to create transaction record:', transactionError);
-      // Non-critical, don't fail the payment
+      // Notification for provider - payment pending
+      await supabaseAdmin
+        .from('notifications')
+        .insert({
+          user_id: job.assigned_provider_id,
+          title: 'Payment Pending Verification 🕐',
+          body: `Homeowner submitted a ${paymentMethod === 'jazzcash' ? 'JazzCash' : 'Easypaisa'} payment of Rs. ${totalAmount} for "${job.title}". Amount will be added to your wallet once verified.`,
+          type: 'payment',
+          related_id: jobId
+        });
+
+      // Notification for admin (if admin exists)
+      const { data: admins } = await supabaseAdmin
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin')
+        .limit(5);
+
+      if (admins && admins.length > 0) {
+        for (const admin of admins) {
+          await supabaseAdmin
+            .from('notifications')
+            .insert({
+              user_id: admin.user_id,
+              title: 'New Mobile Payment to Verify 💳',
+              body: `${paymentMethod === 'jazzcash' ? 'JazzCash' : 'Easypaisa'} payment of Rs. ${totalAmount} needs verification. TxID: ${transactionId}`,
+              type: 'admin_action',
+              related_id: jobId
+            });
+        }
+      }
+    } else {
+      // Card payment notifications (existing)
+      await supabaseAdmin
+        .from('notifications')
+        .insert({
+          user_id: user.id,
+          title: 'Payment Successful ✅',
+          body: `Your payment of Rs. ${totalAmount} for "${job.title}" has been processed successfully.`,
+          type: 'payment',
+          related_id: jobId
+        });
+
+      await supabaseAdmin
+        .from('notifications')
+        .insert({
+          user_id: job.assigned_provider_id,
+          title: 'Payment Received 💰',
+          body: `You received Rs. ${netAmount} (after 8% commission) for completing "${job.title}". Amount added to your wallet.`,
+          type: 'payment',
+          related_id: jobId
+        });
     }
 
-    // SERVER-SIDE: Create notifications (using service role)
-    // Notification for homeowner
-    await supabaseAdmin
-      .from('notifications')
-      .insert({
-        user_id: user.id,
-        title: 'Payment Successful ✅',
-        body: `Your payment of Rs. ${totalAmount} for "${job.title}" has been processed successfully.`,
-        type: 'payment',
-        related_id: jobId
-      });
-
-    // Notification for provider
-    await supabaseAdmin
-      .from('notifications')
-      .insert({
-        user_id: job.assigned_provider_id,
-        title: 'Payment Received 💰',
-        body: `You received Rs. ${netAmount} (after 8% commission) for completing "${job.title}". Amount added to your wallet.`,
-        type: 'payment',
-        related_id: jobId
-      });
-
-    console.log('Payment processed successfully for job:', jobId);
+    console.log('Payment processed successfully for job:', jobId, 'Method:', paymentMethod);
 
     return new Response(
       JSON.stringify({
@@ -238,7 +321,12 @@ serve(async (req) => {
         totalAmount: totalAmount,
         offeredRate: offeredRate,
         platformFee: platformFee,
-        netAmount: netAmount
+        netAmount: netAmount,
+        paymentMethod: paymentMethod,
+        verificationStatus: verificationStatus,
+        message: isMobilePayment 
+          ? 'Payment submitted for verification' 
+          : 'Payment processed successfully'
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

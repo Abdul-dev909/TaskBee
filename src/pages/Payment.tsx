@@ -6,7 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, CreditCard, CheckCircle2 } from "lucide-react";
+import { Loader2, CreditCard, CheckCircle2, Smartphone, Copy, AlertCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+// Platform mobile wallet numbers - REPLACE WITH YOUR ACTUAL NUMBERS
+const PLATFORM_JAZZCASH_NUMBER = "03XX-XXXXXXX";
+const PLATFORM_EASYPAISA_NUMBER = "03XX-XXXXXXX";
+const PLATFORM_ACCOUNT_TITLE = "Home Genie Services";
 
 const Payment = () => {
   const [searchParams] = useSearchParams();
@@ -16,6 +23,8 @@ const Payment = () => {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "jazzcash" | "easypaisa">("card");
+  const [mobilePaymentPending, setMobilePaymentPending] = useState(false);
   
   const [jobDetails, setJobDetails] = useState<any>(null);
   const [offeredRate, setOfferedRate] = useState(0);
@@ -25,6 +34,9 @@ const Payment = () => {
   const [cardName, setCardName] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
+  
+  // Mobile payment confirmation
+  const [transactionId, setTransactionId] = useState("");
 
   useEffect(() => {
     if (jobId) {
@@ -84,19 +96,16 @@ const Payment = () => {
   };
 
   const validateCard = () => {
-    // Card number: 16 digits
     if (!/^\d{16}$/.test(cardNumber.replace(/\s/g, ""))) {
       toast.error("Card number must be 16 digits");
       return false;
     }
 
-    // Name: not empty
     if (!cardName.trim()) {
       toast.error("Please enter cardholder name");
       return false;
     }
 
-    // Expiry: MM/YY format and in future
     const expiryRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
     if (!expiryRegex.test(expiry)) {
       toast.error("Expiry must be in MM/YY format");
@@ -113,7 +122,6 @@ const Payment = () => {
       return false;
     }
 
-    // CVV: 3 digits
     if (!/^\d{3}$/.test(cvv)) {
       toast.error("CVV must be 3 digits");
       return false;
@@ -122,14 +130,13 @@ const Payment = () => {
     return true;
   };
 
-  const handlePayment = async () => {
+  const handleCardPayment = async () => {
     if (!validateCard()) return;
 
     setProcessing(true);
     try {
-      // Call secure server-side payment processing
       const { data, error } = await supabase.functions.invoke("process-payment", {
-        body: { jobId }
+        body: { jobId, paymentMethod: "card" }
       });
 
       if (error) {
@@ -141,7 +148,6 @@ const Payment = () => {
         throw new Error(data?.error || "Payment processing failed");
       }
 
-      // Update local state with server-returned values
       setOfferedRate(data.offeredRate);
       setSuccess(true);
       toast.success("Payment successful!");
@@ -152,6 +158,54 @@ const Payment = () => {
       setProcessing(false);
     }
   };
+
+  const handleMobilePaymentSubmit = async () => {
+    if (!transactionId.trim()) {
+      toast.error("Please enter your transaction ID");
+      return;
+    }
+
+    if (transactionId.length < 6) {
+      toast.error("Transaction ID seems too short");
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("process-payment", {
+        body: { 
+          jobId, 
+          paymentMethod: paymentMethod,
+          transactionId: transactionId.trim()
+        }
+      });
+
+      if (error) {
+        console.error("Payment function error:", error);
+        throw new Error(error.message || "Payment processing failed");
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || "Payment processing failed");
+      }
+
+      setOfferedRate(data.offeredRate);
+      setSuccess(true);
+      toast.success("Payment submitted for verification!");
+    } catch (error: any) {
+      console.error("Payment error:", error);
+      toast.error(error.message || "Payment submission failed. Please try again.");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copied to clipboard`);
+  };
+
+  const totalAmount = offeredRate + platformFee;
 
   if (loading) {
     return (
@@ -166,11 +220,17 @@ const Payment = () => {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <CheckCircle2 className="h-10 w-10 text-green-600" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+              <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
             </div>
-            <CardTitle>Payment Successful!</CardTitle>
-            <CardDescription>Your payment has been processed</CardDescription>
+            <CardTitle>
+              {paymentMethod === "card" ? "Payment Successful!" : "Payment Submitted!"}
+            </CardTitle>
+            <CardDescription>
+              {paymentMethod === "card" 
+                ? "Your payment has been processed" 
+                : "Your payment will be verified within 24 hours"}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-lg bg-muted p-4 space-y-2">
@@ -185,9 +245,15 @@ const Payment = () => {
               <div className="border-t border-border pt-2 mt-2">
                 <div className="flex justify-between font-semibold">
                   <span>Total Paid:</span>
-                  <span className="text-primary">Rs. {offeredRate + platformFee}</span>
+                  <span className="text-primary">Rs. {totalAmount}</span>
                 </div>
               </div>
+              {paymentMethod !== "card" && transactionId && (
+                <div className="flex justify-between text-sm pt-2">
+                  <span className="text-muted-foreground">Transaction ID:</span>
+                  <span className="font-mono text-xs">{transactionId}</span>
+                </div>
+              )}
             </div>
             <Button onClick={() => navigate("/homeowner-dashboard")} className="w-full">
               Back to Dashboard
@@ -200,7 +266,7 @@ const Payment = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
@@ -223,106 +289,397 @@ const Payment = () => {
             <div className="border-t border-border pt-2 mt-2">
               <div className="flex justify-between font-semibold">
                 <span>Total Payable:</span>
-                <span className="text-primary">Rs. {offeredRate + platformFee}</span>
+                <span className="text-primary">Rs. {totalAmount}</span>
               </div>
             </div>
           </div>
 
-          {/* Test Card Info */}
-          <div className="rounded-lg bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 p-3">
-            <p className="text-xs text-yellow-800 dark:text-yellow-200">
-              <strong>Test Mode:</strong> Use any test card details for simulation
-            </p>
-          </div>
+          {/* Payment Method Tabs */}
+          <Tabs value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as any)}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="card" className="text-xs sm:text-sm">
+                <CreditCard className="h-4 w-4 mr-1 hidden sm:inline" />
+                Card
+              </TabsTrigger>
+              <TabsTrigger value="jazzcash" className="text-xs sm:text-sm">
+                <Smartphone className="h-4 w-4 mr-1 hidden sm:inline" />
+                JazzCash
+              </TabsTrigger>
+              <TabsTrigger value="easypaisa" className="text-xs sm:text-sm">
+                <Smartphone className="h-4 w-4 mr-1 hidden sm:inline" />
+                Easypaisa
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Card Input Form */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="cardNumber">Card Number</Label>
-              <Input
-                id="cardNumber"
-                placeholder="1234 5678 9012 3456"
-                value={cardNumber}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\s/g, "");
-                  if (value.length <= 16 && /^\d*$/.test(value)) {
-                    setCardNumber(value.replace(/(\d{4})/g, "$1 ").trim());
-                  }
-                }}
-                maxLength={19}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="cardName">Cardholder Name</Label>
-              <Input
-                id="cardName"
-                placeholder="John Doe"
-                value={cardName}
-                onChange={(e) => setCardName(e.target.value)}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="expiry">Expiry (MM/YY)</Label>
-                <Input
-                  id="expiry"
-                  placeholder="12/25"
-                  value={expiry}
-                  onChange={(e) => {
-                    let value = e.target.value.replace(/\D/g, "");
-                    if (value.length >= 2) {
-                      value = value.slice(0, 2) + "/" + value.slice(2, 4);
-                    }
-                    setExpiry(value);
-                  }}
-                  maxLength={5}
-                />
+            {/* Card Payment */}
+            <TabsContent value="card" className="space-y-4 mt-4">
+              <div className="rounded-lg bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 p-3">
+                <p className="text-xs text-yellow-800 dark:text-yellow-200">
+                  <strong>Test Mode:</strong> Use any test card details for simulation
+                </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="cvv">CVV</Label>
-                <Input
-                  id="cvv"
-                  placeholder="123"
-                  type="password"
-                  value={cvv}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, "");
-                    if (value.length <= 3) {
-                      setCvv(value);
-                    }
-                  }}
-                  maxLength={3}
-                />
-              </div>
-            </div>
-          </div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="cardNumber">Card Number</Label>
+                  <Input
+                    id="cardNumber"
+                    placeholder="1234 5678 9012 3456"
+                    value={cardNumber}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\s/g, "");
+                      if (value.length <= 16 && /^\d*$/.test(value)) {
+                        setCardNumber(value.replace(/(\d{4})/g, "$1 ").trim());
+                      }
+                    }}
+                    maxLength={19}
+                  />
+                </div>
 
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => navigate("/homeowner-dashboard")}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handlePayment}
-              disabled={processing}
-              className="flex-1"
-            >
-              {processing ? (
+                <div className="space-y-2">
+                  <Label htmlFor="cardName">Cardholder Name</Label>
+                  <Input
+                    id="cardName"
+                    placeholder="John Doe"
+                    value={cardName}
+                    onChange={(e) => setCardName(e.target.value)}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="expiry">Expiry (MM/YY)</Label>
+                    <Input
+                      id="expiry"
+                      placeholder="12/25"
+                      value={expiry}
+                      onChange={(e) => {
+                        let value = e.target.value.replace(/\D/g, "");
+                        if (value.length >= 2) {
+                          value = value.slice(0, 2) + "/" + value.slice(2, 4);
+                        }
+                        setExpiry(value);
+                      }}
+                      maxLength={5}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cvv">CVV</Label>
+                    <Input
+                      id="cvv"
+                      placeholder="123"
+                      type="password"
+                      value={cvv}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, "");
+                        if (value.length <= 3) {
+                          setCvv(value);
+                        }
+                      }}
+                      maxLength={3}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/homeowner-dashboard")}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCardPayment}
+                  disabled={processing}
+                  className="flex-1"
+                >
+                  {processing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    `Pay Rs. ${totalAmount}`
+                  )}
+                </Button>
+              </div>
+            </TabsContent>
+
+            {/* JazzCash Payment */}
+            <TabsContent value="jazzcash" className="space-y-4 mt-4">
+              {!mobilePaymentPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
+                  <Alert className="border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-800">
+                    <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                    <AlertDescription className="text-red-800 dark:text-red-200">
+                      Send exactly <strong>Rs. {totalAmount}</strong> to complete payment
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="rounded-lg border-2 border-dashed border-red-300 dark:border-red-700 p-4 space-y-4 bg-gradient-to-br from-red-50 to-white dark:from-red-950 dark:to-background">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="h-8 w-8 rounded-full bg-red-600 flex items-center justify-center">
+                        <span className="text-white font-bold text-xs">JC</span>
+                      </div>
+                      <span className="font-semibold text-red-700 dark:text-red-300">JazzCash</span>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Account Number</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <code className="flex-1 bg-background rounded px-3 py-2 font-mono text-lg border">
+                            {PLATFORM_JAZZCASH_NUMBER}
+                          </code>
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => copyToClipboard(PLATFORM_JAZZCASH_NUMBER.replace(/-/g, ""), "Number")}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Account Title</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <code className="flex-1 bg-background rounded px-3 py-2 font-medium border">
+                            {PLATFORM_ACCOUNT_TITLE}
+                          </code>
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => copyToClipboard(PLATFORM_ACCOUNT_TITLE, "Title")}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Amount to Send</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <code className="flex-1 bg-background rounded px-3 py-2 font-bold text-lg text-primary border">
+                            Rs. {totalAmount}
+                          </code>
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => copyToClipboard(totalAmount.toString(), "Amount")}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p>📱 Open JazzCash app → Send Money → Mobile Account</p>
+                    <p>💳 Enter the number above and send exact amount</p>
+                    <p>📝 Note down your Transaction ID</p>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate("/homeowner-dashboard")}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => setMobilePaymentPending(true)}
+                      className="flex-1 bg-red-600 hover:bg-red-700"
+                    >
+                      I've Sent the Payment
+                    </Button>
+                  </div>
                 </>
               ) : (
-                `Pay Rs. ${offeredRate + platformFee}`
+                <>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="transactionId">JazzCash Transaction ID</Label>
+                      <Input
+                        id="transactionId"
+                        placeholder="e.g., JC12345678"
+                        value={transactionId}
+                        onChange={(e) => setTransactionId(e.target.value.toUpperCase())}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Find this in your JazzCash app under transaction history
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setMobilePaymentPending(false)}
+                      className="flex-1"
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      onClick={handleMobilePaymentSubmit}
+                      disabled={processing || !transactionId.trim()}
+                      className="flex-1 bg-red-600 hover:bg-red-700"
+                    >
+                      {processing ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        "Confirm Payment"
+                      )}
+                    </Button>
+                  </div>
+                </>
               )}
-            </Button>
-          </div>
+            </TabsContent>
+
+            {/* Easypaisa Payment */}
+            <TabsContent value="easypaisa" className="space-y-4 mt-4">
+              {!mobilePaymentPending ? (
+                <>
+                  <Alert className="border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800">
+                    <AlertCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    <AlertDescription className="text-green-800 dark:text-green-200">
+                      Send exactly <strong>Rs. {totalAmount}</strong> to complete payment
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="rounded-lg border-2 border-dashed border-green-300 dark:border-green-700 p-4 space-y-4 bg-gradient-to-br from-green-50 to-white dark:from-green-950 dark:to-background">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="h-8 w-8 rounded-full bg-green-600 flex items-center justify-center">
+                        <span className="text-white font-bold text-xs">EP</span>
+                      </div>
+                      <span className="font-semibold text-green-700 dark:text-green-300">Easypaisa</span>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Account Number</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <code className="flex-1 bg-background rounded px-3 py-2 font-mono text-lg border">
+                            {PLATFORM_EASYPAISA_NUMBER}
+                          </code>
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => copyToClipboard(PLATFORM_EASYPAISA_NUMBER.replace(/-/g, ""), "Number")}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Account Title</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <code className="flex-1 bg-background rounded px-3 py-2 font-medium border">
+                            {PLATFORM_ACCOUNT_TITLE}
+                          </code>
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => copyToClipboard(PLATFORM_ACCOUNT_TITLE, "Title")}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Amount to Send</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <code className="flex-1 bg-background rounded px-3 py-2 font-bold text-lg text-primary border">
+                            Rs. {totalAmount}
+                          </code>
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => copyToClipboard(totalAmount.toString(), "Amount")}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p>📱 Open Easypaisa app → Send Money → Mobile Account</p>
+                    <p>💳 Enter the number above and send exact amount</p>
+                    <p>📝 Note down your Transaction ID</p>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate("/homeowner-dashboard")}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => setMobilePaymentPending(true)}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                    >
+                      I've Sent the Payment
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="transactionIdEp">Easypaisa Transaction ID</Label>
+                      <Input
+                        id="transactionIdEp"
+                        placeholder="e.g., EP12345678"
+                        value={transactionId}
+                        onChange={(e) => setTransactionId(e.target.value.toUpperCase())}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Find this in your Easypaisa app under transaction history
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setMobilePaymentPending(false)}
+                      className="flex-1"
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      onClick={handleMobilePaymentSubmit}
+                      disabled={processing || !transactionId.trim()}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                    >
+                      {processing ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        "Confirm Payment"
+                      )}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>
