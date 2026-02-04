@@ -321,10 +321,13 @@ export type Database = {
           id: string
           job_id: string
           offered_rate: number
+          payment_method: string | null
           platform_fee: number
           provider_id: string
           status: string
           total_amount: number
+          transaction_reference: string | null
+          verification_status: string | null
         }
         Insert: {
           created_at?: string
@@ -332,10 +335,13 @@ export type Database = {
           id?: string
           job_id: string
           offered_rate: number
+          payment_method?: string | null
           platform_fee?: number
           provider_id: string
           status?: string
           total_amount: number
+          transaction_reference?: string | null
+          verification_status?: string | null
         }
         Update: {
           created_at?: string
@@ -343,10 +349,13 @@ export type Database = {
           id?: string
           job_id?: string
           offered_rate?: number
+          payment_method?: string | null
           platform_fee?: number
           provider_id?: string
           status?: string
           total_amount?: number
+          transaction_reference?: string | null
+          verification_status?: string | null
         }
         Relationships: [
           {
