@@ -322,6 +322,7 @@ export type Database = {
           job_id: string
           offered_rate: number
           payment_method: string | null
+          payment_screenshot_url: string | null
           platform_fee: number
           provider_id: string
           status: string
@@ -336,6 +337,7 @@ export type Database = {
           job_id: string
           offered_rate: number
           payment_method?: string | null
+          payment_screenshot_url?: string | null
           platform_fee?: number
           provider_id: string
           status?: string
@@ -350,6 +352,7 @@ export type Database = {
           job_id?: string
           offered_rate?: number
           payment_method?: string | null
+          payment_screenshot_url?: string | null
           platform_fee?: number
           provider_id?: string
           status?: string
@@ -660,6 +663,48 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      withdrawal_requests: {
+        Row: {
+          account_number: string
+          account_title: string
+          admin_notes: string | null
+          amount: number
+          bank_name: string | null
+          created_at: string
+          id: string
+          processed_at: string | null
+          provider_id: string
+          status: string
+          withdrawal_method: string
+        }
+        Insert: {
+          account_number: string
+          account_title: string
+          admin_notes?: string | null
+          amount: number
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          provider_id: string
+          status?: string
+          withdrawal_method: string
+        }
+        Update: {
+          account_number?: string
+          account_title?: string
+          admin_notes?: string | null
+          amount?: number
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          provider_id?: string
+          status?: string
+          withdrawal_method?: string
         }
         Relationships: []
       }

@@ -45,7 +45,7 @@ serve(async (req) => {
 
     console.log('Processing payment for user:', user.id);
 
-    const { jobId, paymentMethod = 'card', transactionId } = await req.json();
+    const { jobId, paymentMethod = 'card', screenshotPath } = await req.json();
     
     if (!jobId) {
       console.error('No jobId provided');
@@ -64,10 +64,10 @@ serve(async (req) => {
       );
     }
 
-    // For mobile payments, transaction ID is required
-    if ((paymentMethod === 'jazzcash' || paymentMethod === 'easypaisa') && !transactionId) {
+    // For mobile payments, screenshot is required
+    if ((paymentMethod === 'jazzcash' || paymentMethod === 'easypaisa') && !screenshotPath) {
       return new Response(
-        JSON.stringify({ error: 'Transaction ID is required for mobile payments' }),
+        JSON.stringify({ error: 'Payment screenshot is required for mobile payments' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -170,7 +170,7 @@ serve(async (req) => {
         total_amount: totalAmount,
         status: paymentStatus,
         payment_method: paymentMethod,
-        transaction_reference: transactionId || null,
+        payment_screenshot_url: screenshotPath || null,
         verification_status: verificationStatus
       });
 
@@ -254,7 +254,7 @@ serve(async (req) => {
         .insert({
           user_id: user.id,
           title: 'Payment Submitted 📱',
-          body: `Your ${paymentMethod === 'jazzcash' ? 'JazzCash' : 'Easypaisa'} payment of Rs. ${totalAmount} is pending verification. Transaction ID: ${transactionId}`,
+          body: `Your ${paymentMethod === 'jazzcash' ? 'JazzCash' : 'Easypaisa'} payment of Rs. ${totalAmount} is pending verification. Screenshot uploaded for admin review.`,
           type: 'payment',
           related_id: jobId
         });
@@ -284,7 +284,7 @@ serve(async (req) => {
             .insert({
               user_id: admin.user_id,
               title: 'New Mobile Payment to Verify 💳',
-              body: `${paymentMethod === 'jazzcash' ? 'JazzCash' : 'Easypaisa'} payment of Rs. ${totalAmount} needs verification. TxID: ${transactionId}`,
+              body: `${paymentMethod === 'jazzcash' ? 'JazzCash' : 'Easypaisa'} payment of Rs. ${totalAmount} needs verification. Screenshot uploaded.`,
               type: 'admin_action',
               related_id: jobId
             });

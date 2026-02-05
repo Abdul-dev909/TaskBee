@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,13 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, CreditCard, CheckCircle2, Smartphone, Copy, AlertCircle } from "lucide-react";
+import { Loader2, CreditCard, CheckCircle2, Smartphone, Copy, AlertCircle, Upload, Image } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-// Platform mobile wallet numbers - REPLACE WITH YOUR ACTUAL NUMBERS
-const PLATFORM_JAZZCASH_NUMBER = "03XX-XXXXXXX";
-const PLATFORM_EASYPAISA_NUMBER = "03XX-XXXXXXX";
+// Platform mobile wallet number
+const PLATFORM_WALLET_NUMBER = "03341421986";
 const PLATFORM_ACCOUNT_TITLE = "Home Genie Services";
 
 const Payment = () => {
@@ -35,8 +34,11 @@ const Payment = () => {
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
   
-  // Mobile payment confirmation
-  const [transactionId, setTransactionId] = useState("");
+  // Mobile payment screenshot
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
+  const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (jobId) {
@@ -159,24 +161,52 @@ const Payment = () => {
     }
   };
 
-  const handleMobilePaymentSubmit = async () => {
-    if (!transactionId.trim()) {
-      toast.error("Please enter your transaction ID");
-      return;
+  const handleScreenshotSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image must be less than 5MB");
+        return;
+      }
+      setScreenshotFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => setScreenshotPreview(e.target?.result as string);
+      reader.readAsDataURL(file);
     }
+  };
 
-    if (transactionId.length < 6) {
-      toast.error("Transaction ID seems too short");
+  const handleMobilePaymentSubmit = async () => {
+    if (!screenshotFile) {
+      toast.error("Please upload a screenshot of your payment");
       return;
     }
 
     setProcessing(true);
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // Upload screenshot
+      setUploadingScreenshot(true);
+      const fileExt = screenshotFile.name.split('.').pop();
+      const fileName = `${user.id}/${jobId}-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('payment_screenshots')
+        .upload(fileName, screenshotFile);
+
+      if (uploadError) throw new Error("Failed to upload screenshot");
+
+      // Get the URL for admin to view
+      const screenshotPath = fileName;
+      setUploadingScreenshot(false);
+
       const { data, error } = await supabase.functions.invoke("process-payment", {
         body: { 
           jobId, 
           paymentMethod: paymentMethod,
-          transactionId: transactionId.trim()
+          screenshotPath: screenshotPath
         }
       });
 
@@ -197,6 +227,7 @@ const Payment = () => {
       toast.error(error.message || "Payment submission failed. Please try again.");
     } finally {
       setProcessing(false);
+      setUploadingScreenshot(false);
     }
   };
 
@@ -248,10 +279,9 @@ const Payment = () => {
                   <span className="text-primary">Rs. {totalAmount}</span>
                 </div>
               </div>
-              {paymentMethod !== "card" && transactionId && (
-                <div className="flex justify-between text-sm pt-2">
-                  <span className="text-muted-foreground">Transaction ID:</span>
-                  <span className="font-mono text-xs">{transactionId}</span>
+              {paymentMethod !== "card" && (
+                <div className="text-sm pt-2 text-center text-muted-foreground">
+                  Screenshot uploaded for verification
                 </div>
               )}
             </div>
@@ -432,12 +462,12 @@ const Payment = () => {
                         <Label className="text-xs text-muted-foreground">Account Number</Label>
                         <div className="flex items-center gap-2 mt-1">
                           <code className="flex-1 bg-background rounded px-3 py-2 font-mono text-lg border">
-                            {PLATFORM_JAZZCASH_NUMBER}
+                            {PLATFORM_WALLET_NUMBER}
                           </code>
                           <Button 
                             variant="outline" 
                             size="icon"
-                            onClick={() => copyToClipboard(PLATFORM_JAZZCASH_NUMBER.replace(/-/g, ""), "Number")}
+                            onClick={() => copyToClipboard(PLATFORM_WALLET_NUMBER, "Number")}
                           >
                             <Copy className="h-4 w-4" />
                           </Button>
@@ -481,7 +511,7 @@ const Payment = () => {
                   <div className="text-sm text-muted-foreground space-y-1">
                     <p>📱 Open JazzCash app → Send Money → Mobile Account</p>
                     <p>💳 Enter the number above and send exact amount</p>
-                    <p>📝 Note down your Transaction ID</p>
+                    <p>📸 Take a screenshot of the payment confirmation</p>
                   </div>
 
                   <div className="flex gap-3 pt-2">
@@ -504,15 +534,50 @@ const Payment = () => {
                 <>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="transactionId">JazzCash Transaction ID</Label>
-                      <Input
-                        id="transactionId"
-                        placeholder="e.g., JC12345678"
-                        value={transactionId}
-                        onChange={(e) => setTransactionId(e.target.value.toUpperCase())}
+                      <Label>Upload Payment Screenshot</Label>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleScreenshotSelect}
+                        className="hidden"
                       />
+                      
+                      {screenshotPreview ? (
+                        <div className="relative">
+                          <img 
+                            src={screenshotPreview} 
+                            alt="Payment screenshot" 
+                            className="w-full max-h-64 object-contain rounded-lg border"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="absolute top-2 right-2"
+                            onClick={() => {
+                              setScreenshotFile(null);
+                              setScreenshotPreview(null);
+                            }}
+                          >
+                            Change
+                          </Button>
+                        </div>
+                      ) : (
+                        <div 
+                          onClick={() => fileInputRef.current?.click()}
+                          className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
+                        >
+                          <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">
+                            Click to upload your JazzCash payment screenshot
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            PNG, JPG up to 5MB
+                          </p>
+                        </div>
+                      )}
                       <p className="text-xs text-muted-foreground">
-                        Find this in your JazzCash app under transaction history
+                        Upload a screenshot showing the transaction confirmation from JazzCash
                       </p>
                     </div>
                   </div>
@@ -520,20 +585,24 @@ const Payment = () => {
                   <div className="flex gap-3 pt-2">
                     <Button
                       variant="outline"
-                      onClick={() => setMobilePaymentPending(false)}
+                      onClick={() => {
+                        setMobilePaymentPending(false);
+                        setScreenshotFile(null);
+                        setScreenshotPreview(null);
+                      }}
                       className="flex-1"
                     >
                       Back
                     </Button>
                     <Button
                       onClick={handleMobilePaymentSubmit}
-                      disabled={processing || !transactionId.trim()}
+                      disabled={processing || !screenshotFile}
                       className="flex-1 bg-red-600 hover:bg-red-700"
                     >
                       {processing ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Submitting...
+                          {uploadingScreenshot ? "Uploading..." : "Submitting..."}
                         </>
                       ) : (
                         "Confirm Payment"
@@ -568,12 +637,12 @@ const Payment = () => {
                         <Label className="text-xs text-muted-foreground">Account Number</Label>
                         <div className="flex items-center gap-2 mt-1">
                           <code className="flex-1 bg-background rounded px-3 py-2 font-mono text-lg border">
-                            {PLATFORM_EASYPAISA_NUMBER}
+                            {PLATFORM_WALLET_NUMBER}
                           </code>
                           <Button 
                             variant="outline" 
                             size="icon"
-                            onClick={() => copyToClipboard(PLATFORM_EASYPAISA_NUMBER.replace(/-/g, ""), "Number")}
+                            onClick={() => copyToClipboard(PLATFORM_WALLET_NUMBER, "Number")}
                           >
                             <Copy className="h-4 w-4" />
                           </Button>
@@ -617,7 +686,7 @@ const Payment = () => {
                   <div className="text-sm text-muted-foreground space-y-1">
                     <p>📱 Open Easypaisa app → Send Money → Mobile Account</p>
                     <p>💳 Enter the number above and send exact amount</p>
-                    <p>📝 Note down your Transaction ID</p>
+                    <p>📸 Take a screenshot of the payment confirmation</p>
                   </div>
 
                   <div className="flex gap-3 pt-2">
@@ -640,15 +709,50 @@ const Payment = () => {
                 <>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="transactionIdEp">Easypaisa Transaction ID</Label>
-                      <Input
-                        id="transactionIdEp"
-                        placeholder="e.g., EP12345678"
-                        value={transactionId}
-                        onChange={(e) => setTransactionId(e.target.value.toUpperCase())}
+                      <Label>Upload Payment Screenshot</Label>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleScreenshotSelect}
+                        className="hidden"
                       />
+                      
+                      {screenshotPreview ? (
+                        <div className="relative">
+                          <img 
+                            src={screenshotPreview} 
+                            alt="Payment screenshot" 
+                            className="w-full max-h-64 object-contain rounded-lg border"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="absolute top-2 right-2"
+                            onClick={() => {
+                              setScreenshotFile(null);
+                              setScreenshotPreview(null);
+                            }}
+                          >
+                            Change
+                          </Button>
+                        </div>
+                      ) : (
+                        <div 
+                          onClick={() => fileInputRef.current?.click()}
+                          className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
+                        >
+                          <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">
+                            Click to upload your Easypaisa payment screenshot
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            PNG, JPG up to 5MB
+                          </p>
+                        </div>
+                      )}
                       <p className="text-xs text-muted-foreground">
-                        Find this in your Easypaisa app under transaction history
+                        Upload a screenshot showing the transaction confirmation from Easypaisa
                       </p>
                     </div>
                   </div>
@@ -656,20 +760,24 @@ const Payment = () => {
                   <div className="flex gap-3 pt-2">
                     <Button
                       variant="outline"
-                      onClick={() => setMobilePaymentPending(false)}
+                      onClick={() => {
+                        setMobilePaymentPending(false);
+                        setScreenshotFile(null);
+                        setScreenshotPreview(null);
+                      }}
                       className="flex-1"
                     >
                       Back
                     </Button>
                     <Button
                       onClick={handleMobilePaymentSubmit}
-                      disabled={processing || !transactionId.trim()}
+                      disabled={processing || !screenshotFile}
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
                       {processing ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Submitting...
+                          {uploadingScreenshot ? "Uploading..." : "Submitting..."}
                         </>
                       ) : (
                         "Confirm Payment"

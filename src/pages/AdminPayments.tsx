@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, Loader2, Search, Eye, CheckCircle, XCircle, Clock, Smartphone } from "lucide-react";
+import { DollarSign, Loader2, Search, Eye, CheckCircle, XCircle, Clock, Smartphone, ArrowUpRight, Building, Image } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import {
@@ -35,16 +35,24 @@ const AdminPayments = () => {
   const [payments, setPayments] = useState<any[]>([]);
   const [filteredPayments, setFilteredPayments] = useState<any[]>([]);
   const [pendingPayments, setPendingPayments] = useState<any[]>([]);
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [pendingWithdrawals, setPendingWithdrawals] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
+  const [selectedWithdrawal, setSelectedWithdrawal] = useState<any>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [withdrawalDialogOpen, setWithdrawalDialogOpen] = useState(false);
+  const [withdrawalRejectDialogOpen, setWithdrawalRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [processing, setProcessing] = useState(false);
+  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
+  const [screenshotDialogOpen, setScreenshotDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchPayments();
+    fetchWithdrawals();
   }, []);
 
   useEffect(() => {
@@ -74,7 +82,6 @@ const AdminPayments = () => {
 
       if (error) throw error;
 
-      // Fetch related data separately
       const paymentsWithDetails = await Promise.all(
         (data || []).map(async (payment) => {
           const [jobData, homeownerData, providerData] = await Promise.all([
@@ -92,15 +99,13 @@ const AdminPayments = () => {
         })
       );
 
-      // Separate pending mobile payments
       const pending = paymentsWithDetails.filter(
         (p) => p.verification_status === "pending" && (p.payment_method === "jazzcash" || p.payment_method === "easypaisa")
       );
-      const allPayments = paymentsWithDetails;
 
       setPendingPayments(pending);
-      setPayments(allPayments);
-      setFilteredPayments(allPayments);
+      setPayments(paymentsWithDetails);
+      setFilteredPayments(paymentsWithDetails);
     } catch (error: any) {
       console.error("Error fetching payments:", error);
       toast.error("Failed to load payments");
@@ -109,17 +114,75 @@ const AdminPayments = () => {
     }
   };
 
-  const calculateCommission = (offeredRate: number) => {
-    return Math.floor(offeredRate * 0.08);
+  const fetchWithdrawals = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("withdrawal_requests")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const withdrawalsWithDetails = await Promise.all(
+        (data || []).map(async (withdrawal) => {
+          const { data: providerData } = await supabase
+            .from("provider_profiles")
+            .select("full_name, phone")
+            .eq("user_id", withdrawal.provider_id)
+            .maybeSingle();
+
+          const { data: walletData } = await supabase
+            .from("provider_wallet")
+            .select("balance")
+            .eq("provider_id", withdrawal.provider_id)
+            .maybeSingle();
+
+          return {
+            ...withdrawal,
+            provider_profile: providerData,
+            wallet_balance: walletData?.balance || 0,
+          };
+        })
+      );
+
+      const pending = withdrawalsWithDetails.filter((w) => w.status === "pending");
+      setPendingWithdrawals(pending);
+      setWithdrawals(withdrawalsWithDetails);
+    } catch (error: any) {
+      console.error("Error fetching withdrawals:", error);
+    }
   };
 
-  const calculateProviderPayout = (offeredRate: number) => {
-    return offeredRate - calculateCommission(offeredRate);
-  };
+  const calculateCommission = (offeredRate: number) => Math.floor(offeredRate * 0.08);
+  const calculateProviderPayout = (offeredRate: number) => offeredRate - calculateCommission(offeredRate);
 
   const viewDetails = (payment: any) => {
     setSelectedPayment(payment);
     setDetailsOpen(true);
+  };
+
+  const viewScreenshot = async (payment: any) => {
+    if (!payment.payment_screenshot_url) {
+      toast.error("No screenshot available");
+      return;
+    }
+
+    try {
+      const { data } = await supabase.storage
+        .from("payment_screenshots")
+        .createSignedUrl(payment.payment_screenshot_url, 300);
+
+      if (data?.signedUrl) {
+        setScreenshotUrl(data.signedUrl);
+        setSelectedPayment(payment);
+        setScreenshotDialogOpen(true);
+      } else {
+        toast.error("Failed to load screenshot");
+      }
+    } catch (error) {
+      console.error("Error loading screenshot:", error);
+      toast.error("Failed to load screenshot");
+    }
   };
 
   const openVerifyDialog = (payment: any) => {
@@ -138,22 +201,16 @@ const AdminPayments = () => {
     setProcessing(true);
 
     try {
-      // Update payment status to verified
       const { error: paymentError } = await supabase
         .from("payments")
-        .update({
-          status: "Paid",
-          verification_status: "verified",
-        })
+        .update({ status: "Paid", verification_status: "verified" })
         .eq("id", selectedPayment.id);
 
       if (paymentError) throw paymentError;
 
-      // Calculate provider earnings
       const commission = calculateCommission(selectedPayment.offered_rate);
       const netAmount = selectedPayment.offered_rate - commission;
 
-      // Create provider transaction
       const { error: transactionError } = await supabase
         .from("provider_transactions")
         .insert({
@@ -166,7 +223,6 @@ const AdminPayments = () => {
 
       if (transactionError) throw transactionError;
 
-      // Update provider wallet
       const { data: walletData } = await supabase
         .from("provider_wallet")
         .select("balance")
@@ -185,7 +241,6 @@ const AdminPayments = () => {
         });
       }
 
-      // Notify provider
       await supabase.from("notifications").insert({
         user_id: selectedPayment.provider_id,
         title: "Payment Verified! 💰",
@@ -194,7 +249,6 @@ const AdminPayments = () => {
         related_id: selectedPayment.job_id,
       });
 
-      // Notify homeowner
       await supabase.from("notifications").insert({
         user_id: selectedPayment.homeowner_id,
         title: "Payment Confirmed ✅",
@@ -219,18 +273,13 @@ const AdminPayments = () => {
     setProcessing(true);
 
     try {
-      // Update payment status to rejected
       const { error: paymentError } = await supabase
         .from("payments")
-        .update({
-          status: "Rejected",
-          verification_status: "rejected",
-        })
+        .update({ status: "Rejected", verification_status: "rejected" })
         .eq("id", selectedPayment.id);
 
       if (paymentError) throw paymentError;
 
-      // Notify homeowner about rejection
       await supabase.from("notifications").insert({
         user_id: selectedPayment.homeowner_id,
         title: "Payment Rejected ❌",
@@ -245,6 +294,99 @@ const AdminPayments = () => {
     } catch (error: any) {
       console.error("Error rejecting payment:", error);
       toast.error("Failed to reject payment");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const openWithdrawalComplete = (withdrawal: any) => {
+    setSelectedWithdrawal(withdrawal);
+    setWithdrawalDialogOpen(true);
+  };
+
+  const openWithdrawalReject = (withdrawal: any) => {
+    setSelectedWithdrawal(withdrawal);
+    setRejectionReason("");
+    setWithdrawalRejectDialogOpen(true);
+  };
+
+  const completeWithdrawal = async () => {
+    if (!selectedWithdrawal) return;
+    setProcessing(true);
+
+    try {
+      // Update withdrawal status
+      const { error: withdrawalError } = await supabase
+        .from("withdrawal_requests")
+        .update({ status: "completed", processed_at: new Date().toISOString() })
+        .eq("id", selectedWithdrawal.id);
+
+      if (withdrawalError) throw withdrawalError;
+
+      // Deduct from wallet
+      const { data: walletData } = await supabase
+        .from("provider_wallet")
+        .select("balance")
+        .eq("provider_id", selectedWithdrawal.provider_id)
+        .single();
+
+      if (walletData) {
+        const newBalance = Math.max(0, walletData.balance - selectedWithdrawal.amount);
+        await supabase
+          .from("provider_wallet")
+          .update({ balance: newBalance })
+          .eq("provider_id", selectedWithdrawal.provider_id);
+      }
+
+      // Notify provider
+      await supabase.from("notifications").insert({
+        user_id: selectedWithdrawal.provider_id,
+        title: "Withdrawal Completed! 💸",
+        body: `Your withdrawal of Rs. ${selectedWithdrawal.amount} to ${selectedWithdrawal.withdrawal_method.toUpperCase()} (${selectedWithdrawal.account_number}) has been processed.`,
+        type: "withdrawal_completed",
+      });
+
+      toast.success("Withdrawal marked as completed");
+      setWithdrawalDialogOpen(false);
+      fetchWithdrawals();
+      fetchPayments();
+    } catch (error: any) {
+      console.error("Error completing withdrawal:", error);
+      toast.error("Failed to complete withdrawal");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const rejectWithdrawal = async () => {
+    if (!selectedWithdrawal) return;
+    setProcessing(true);
+
+    try {
+      const { error: withdrawalError } = await supabase
+        .from("withdrawal_requests")
+        .update({ 
+          status: "rejected", 
+          admin_notes: rejectionReason,
+          processed_at: new Date().toISOString() 
+        })
+        .eq("id", selectedWithdrawal.id);
+
+      if (withdrawalError) throw withdrawalError;
+
+      await supabase.from("notifications").insert({
+        user_id: selectedWithdrawal.provider_id,
+        title: "Withdrawal Rejected ❌",
+        body: `Your withdrawal request of Rs. ${selectedWithdrawal.amount} was rejected. Reason: ${rejectionReason || "Invalid account details"}`,
+        type: "withdrawal_rejected",
+      });
+
+      toast.success("Withdrawal rejected");
+      setWithdrawalRejectDialogOpen(false);
+      fetchWithdrawals();
+    } catch (error: any) {
+      console.error("Error rejecting withdrawal:", error);
+      toast.error("Failed to reject withdrawal");
     } finally {
       setProcessing(false);
     }
@@ -266,7 +408,7 @@ const AdminPayments = () => {
       return (
         <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
           <Clock className="w-3 h-3 mr-1" />
-          Pending Verification
+          Pending
         </Badge>
       );
     }
@@ -284,6 +426,18 @@ const AdminPayments = () => {
         {payment.status}
       </Badge>
     );
+  };
+
+  const getWithdrawalMethodIcon = (method: string) => {
+    switch (method) {
+      case "jazzcash":
+      case "easypaisa":
+        return <Smartphone className="h-4 w-4" />;
+      case "bank":
+        return <Building className="h-4 w-4" />;
+      default:
+        return null;
+    }
   };
 
   const totalRevenue = filteredPayments.filter(p => p.verification_status === "verified").reduce((sum, p) => sum + p.platform_fee, 0);
@@ -304,12 +458,12 @@ const AdminPayments = () => {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Payments</h1>
-          <p className="text-muted-foreground">Manage and verify all payment transactions</p>
+          <h1 className="text-3xl font-bold mb-2">Payments & Withdrawals</h1>
+          <p className="text-muted-foreground">Manage payment verifications and provider withdrawals</p>
         </div>
 
         {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-5">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Processed</CardTitle>
@@ -317,7 +471,6 @@ const AdminPayments = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">Rs. {totalProcessed.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">{filteredPayments.filter(p => p.verification_status === "verified").length} verified</p>
             </CardContent>
           </Card>
 
@@ -328,41 +481,56 @@ const AdminPayments = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">Rs. {totalRevenue.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">Fixed Rs. 49 per job</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Commission Earned</CardTitle>
+              <CardTitle className="text-sm font-medium">Commission</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">Rs. {totalCommission.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">8% from providers</p>
             </CardContent>
           </Card>
 
           <Card className={pendingPayments.length > 0 ? "border-yellow-500 bg-yellow-50/50 dark:bg-yellow-950/20" : ""}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Verification</CardTitle>
+              <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
               <Smartphone className="h-4 w-4 text-yellow-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-yellow-600">{pendingPayments.length}</div>
-              <p className="text-xs text-muted-foreground">Mobile payments awaiting review</p>
+            </CardContent>
+          </Card>
+
+          <Card className={pendingWithdrawals.length > 0 ? "border-orange-500 bg-orange-50/50 dark:bg-orange-950/20" : ""}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending Withdrawals</CardTitle>
+              <ArrowUpRight className="h-4 w-4 text-orange-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600">{pendingWithdrawals.length}</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Tabs for All Payments vs Pending */}
-        <Tabs defaultValue={pendingPayments.length > 0 ? "pending" : "all"} className="space-y-4">
+        {/* Tabs */}
+        <Tabs defaultValue={pendingPayments.length > 0 ? "pending" : pendingWithdrawals.length > 0 ? "withdrawals" : "all"} className="space-y-4">
           <TabsList>
             <TabsTrigger value="pending" className="relative">
-              Pending Verification
+              Pending Payments
               {pendingPayments.length > 0 && (
                 <span className="ml-2 bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full">
                   {pendingPayments.length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="withdrawals" className="relative">
+              Withdrawals
+              {pendingWithdrawals.length > 0 && (
+                <span className="ml-2 bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full">
+                  {pendingWithdrawals.length}
                 </span>
               )}
             </TabsTrigger>
@@ -378,7 +546,7 @@ const AdminPayments = () => {
                   Pending Mobile Payments
                 </CardTitle>
                 <CardDescription>
-                  Verify JazzCash and Easypaisa transactions before releasing funds to providers
+                  Verify JazzCash and Easypaisa payments by viewing uploaded screenshots
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -394,7 +562,7 @@ const AdminPayments = () => {
                       <Card key={payment.id} className="border-yellow-200 dark:border-yellow-800">
                         <CardContent className="p-4">
                           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="space-y-2">
+                            <div className="space-y-2 flex-1">
                               <div className="flex items-center gap-2">
                                 {getPaymentMethodBadge(payment.payment_method)}
                                 <span className="font-semibold text-lg">Rs. {payment.total_amount}</span>
@@ -413,15 +581,19 @@ const AdminPayments = () => {
                                   <p className="font-medium">{payment.provider_profile?.full_name || "N/A"}</p>
                                 </div>
                               </div>
-                              <div className="bg-muted p-3 rounded-lg">
-                                <p className="text-xs text-muted-foreground">Transaction ID (provided by user)</p>
-                                <p className="font-mono font-bold text-primary">{payment.transaction_reference || "Not provided"}</p>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  Submitted: {format(new Date(payment.created_at), "MMM dd, yyyy HH:mm")}
-                                </p>
-                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                Submitted: {format(new Date(payment.created_at), "MMM dd, yyyy HH:mm")}
+                              </p>
                             </div>
-                            <div className="flex flex-col gap-2 md:min-w-[150px]">
+                            <div className="flex flex-col gap-2 md:min-w-[180px]">
+                              <Button
+                                variant="outline"
+                                onClick={() => viewScreenshot(payment)}
+                                disabled={!payment.payment_screenshot_url}
+                              >
+                                <Image className="h-4 w-4 mr-2" />
+                                View Screenshot
+                              </Button>
                               <Button
                                 onClick={() => openVerifyDialog(payment)}
                                 className="bg-green-600 hover:bg-green-700"
@@ -448,18 +620,126 @@ const AdminPayments = () => {
             </Card>
           </TabsContent>
 
+          {/* Withdrawals Tab */}
+          <TabsContent value="withdrawals">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ArrowUpRight className="h-5 w-5 text-orange-600" />
+                  Provider Withdrawal Requests
+                </CardTitle>
+                <CardDescription>
+                  Process provider withdrawal requests to their bank/mobile accounts
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {withdrawals.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
+                    <p className="text-lg font-medium">No withdrawal requests</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Provider</TableHead>
+                          <TableHead>Method</TableHead>
+                          <TableHead>Account Details</TableHead>
+                          <TableHead className="text-right">Amount</TableHead>
+                          <TableHead className="text-right">Balance</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {withdrawals.map((withdrawal) => (
+                          <TableRow key={withdrawal.id} className={withdrawal.status === "pending" ? "bg-orange-50/50 dark:bg-orange-950/20" : ""}>
+                            <TableCell className="font-medium">
+                              {format(new Date(withdrawal.created_at), "MMM dd, yyyy")}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="font-medium">{withdrawal.provider_profile?.full_name || "N/A"}</span>
+                                <span className="text-xs text-muted-foreground">{withdrawal.provider_profile?.phone}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                {getWithdrawalMethodIcon(withdrawal.withdrawal_method)}
+                                <span className="capitalize">{withdrawal.withdrawal_method}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="font-medium">{withdrawal.account_title}</span>
+                                <span className="text-sm font-mono">{withdrawal.account_number}</span>
+                                {withdrawal.bank_name && (
+                                  <span className="text-xs text-muted-foreground">{withdrawal.bank_name}</span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right font-semibold">
+                              Rs. {withdrawal.amount.toLocaleString()}
+                            </TableCell>
+                            <TableCell className="text-right text-muted-foreground">
+                              Rs. {withdrawal.wallet_balance?.toLocaleString() || 0}
+                            </TableCell>
+                            <TableCell>
+                              {withdrawal.status === "pending" && (
+                                <Badge variant="outline" className="bg-yellow-50 text-yellow-700">Pending</Badge>
+                              )}
+                              {withdrawal.status === "completed" && (
+                                <Badge className="bg-green-500">Completed</Badge>
+                              )}
+                              {withdrawal.status === "rejected" && (
+                                <Badge variant="destructive">Rejected</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {withdrawal.status === "pending" && (
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => openWithdrawalComplete(withdrawal)}
+                                    className="bg-green-600 hover:bg-green-700"
+                                  >
+                                    <CheckCircle className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => openWithdrawalReject(withdrawal)}
+                                    className="border-red-300 text-red-600"
+                                  >
+                                    <XCircle className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* All Payments Tab */}
           <TabsContent value="all">
             <Card>
               <CardHeader>
                 <CardTitle>Payment Transactions</CardTitle>
-                <CardDescription>View all payment records and details</CardDescription>
+                <CardDescription>View all payment records</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Search className="h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search by homeowner, provider, job, ID, or transaction ref..."
+                    placeholder="Search by homeowner, provider, job..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="max-w-sm"
@@ -518,6 +798,34 @@ const AdminPayments = () => {
         </Tabs>
       </div>
 
+      {/* Screenshot Dialog */}
+      <Dialog open={screenshotDialogOpen} onOpenChange={setScreenshotDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Payment Screenshot</DialogTitle>
+            <DialogDescription>
+              {selectedPayment?.payment_method?.toUpperCase()} payment of Rs. {selectedPayment?.total_amount}
+            </DialogDescription>
+          </DialogHeader>
+          {screenshotUrl && (
+            <div className="flex justify-center">
+              <img 
+                src={screenshotUrl} 
+                alt="Payment screenshot" 
+                className="max-h-[500px] object-contain rounded-lg border"
+              />
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setScreenshotDialogOpen(false)}>Close</Button>
+            <Button onClick={() => { setScreenshotDialogOpen(false); openVerifyDialog(selectedPayment); }} className="bg-green-600 hover:bg-green-700">
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Verify Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Payment Details Dialog */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="max-w-2xl">
@@ -548,12 +856,6 @@ const AdminPayments = () => {
                   <p className="text-sm text-muted-foreground">Payment Method</p>
                   {getPaymentMethodBadge(selectedPayment.payment_method)}
                 </div>
-                {selectedPayment.transaction_reference && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Transaction Reference</p>
-                    <p className="font-mono font-bold text-primary">{selectedPayment.transaction_reference}</p>
-                  </div>
-                )}
               </div>
 
               <div className="border-t pt-4">
@@ -564,32 +866,12 @@ const AdminPayments = () => {
                     <span className="font-medium">Rs. {selectedPayment.offered_rate}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Platform Fee (Homeowner):</span>
+                    <span className="text-muted-foreground">Platform Fee:</span>
                     <span className="font-medium">Rs. {selectedPayment.platform_fee}</span>
                   </div>
                   <div className="flex justify-between border-t border-border pt-2">
-                    <span className="font-semibold">Total Paid by Homeowner:</span>
+                    <span className="font-semibold">Total:</span>
                     <span className="font-semibold text-primary">Rs. {selectedPayment.total_amount}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border-t pt-4">
-                <h4 className="font-semibold mb-3">Provider Payout</h4>
-                <div className="space-y-2 bg-muted rounded-lg p-4">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Gross Amount:</span>
-                    <span className="font-medium">Rs. {selectedPayment.offered_rate}</span>
-                  </div>
-                  <div className="flex justify-between text-red-600">
-                    <span>Platform Commission (8%):</span>
-                    <span className="font-medium">-Rs. {calculateCommission(selectedPayment.offered_rate)}</span>
-                  </div>
-                  <div className="flex justify-between border-t border-border pt-2">
-                    <span className="font-semibold">Net Provider Payout:</span>
-                    <span className="font-semibold text-green-600">
-                      Rs. {calculateProviderPayout(selectedPayment.offered_rate)}
-                    </span>
                   </div>
                 </div>
               </div>
@@ -613,7 +895,7 @@ const AdminPayments = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Verify Confirmation Dialog */}
+      {/* Verify Payment Dialog */}
       <AlertDialog open={verifyDialogOpen} onOpenChange={setVerifyDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -624,7 +906,6 @@ const AdminPayments = () => {
                 <div className="bg-muted p-3 rounded-lg mt-2 text-foreground">
                   <p><strong>Amount:</strong> Rs. {selectedPayment.total_amount}</p>
                   <p><strong>Method:</strong> {selectedPayment.payment_method?.toUpperCase()}</p>
-                  <p><strong>Transaction ID:</strong> {selectedPayment.transaction_reference || "N/A"}</p>
                   <p className="text-sm text-green-600 mt-2">
                     Rs. {calculateProviderPayout(selectedPayment.offered_rate)} will be added to the provider's wallet.
                   </p>
@@ -634,25 +915,21 @@ const AdminPayments = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={processing}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={verifyPayment}
-              disabled={processing}
-              className="bg-green-600 hover:bg-green-700"
-            >
+            <AlertDialogAction onClick={verifyPayment} disabled={processing} className="bg-green-600 hover:bg-green-700">
               {processing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle className="h-4 w-4 mr-2" />}
-              Verify & Release Funds
+              Verify & Release
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Reject Dialog */}
+      {/* Reject Payment Dialog */}
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Reject Payment</DialogTitle>
             <DialogDescription>
-              Please provide a reason for rejecting this payment. The homeowner will be notified.
+              Please provide a reason for rejecting this payment.
             </DialogDescription>
           </DialogHeader>
           {selectedPayment && (
@@ -660,12 +937,11 @@ const AdminPayments = () => {
               <div className="bg-muted p-3 rounded-lg">
                 <p><strong>Amount:</strong> Rs. {selectedPayment.total_amount}</p>
                 <p><strong>Method:</strong> {selectedPayment.payment_method?.toUpperCase()}</p>
-                <p><strong>Transaction ID:</strong> {selectedPayment.transaction_reference || "N/A"}</p>
               </div>
               <div>
                 <label className="text-sm font-medium">Rejection Reason</label>
                 <Textarea
-                  placeholder="e.g., Transaction ID not found, amount mismatch, duplicate submission..."
+                  placeholder="e.g., Screenshot unclear, amount mismatch..."
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
                   className="mt-1"
@@ -674,16 +950,74 @@ const AdminPayments = () => {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectDialogOpen(false)} disabled={processing}>
-              Cancel
-            </Button>
-            <Button
-              onClick={rejectPayment}
-              disabled={processing}
-              variant="destructive"
-            >
+            <Button variant="outline" onClick={() => setRejectDialogOpen(false)} disabled={processing}>Cancel</Button>
+            <Button onClick={rejectPayment} disabled={processing} variant="destructive">
               {processing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <XCircle className="h-4 w-4 mr-2" />}
               Reject Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Complete Withdrawal Dialog */}
+      <AlertDialog open={withdrawalDialogOpen} onOpenChange={setWithdrawalDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mark Withdrawal as Completed</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>Confirm that you have sent the funds to the provider.</p>
+              {selectedWithdrawal && (
+                <div className="bg-muted p-3 rounded-lg mt-2 text-foreground space-y-1">
+                  <p><strong>Amount:</strong> Rs. {selectedWithdrawal.amount}</p>
+                  <p><strong>Method:</strong> {selectedWithdrawal.withdrawal_method?.toUpperCase()}</p>
+                  <p><strong>Account:</strong> {selectedWithdrawal.account_number}</p>
+                  <p><strong>Title:</strong> {selectedWithdrawal.account_title}</p>
+                  {selectedWithdrawal.bank_name && <p><strong>Bank:</strong> {selectedWithdrawal.bank_name}</p>}
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={processing}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={completeWithdrawal} disabled={processing} className="bg-green-600 hover:bg-green-700">
+              {processing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle className="h-4 w-4 mr-2" />}
+              Mark Completed
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reject Withdrawal Dialog */}
+      <Dialog open={withdrawalRejectDialogOpen} onOpenChange={setWithdrawalRejectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Withdrawal</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for rejecting this withdrawal request.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedWithdrawal && (
+            <div className="space-y-4">
+              <div className="bg-muted p-3 rounded-lg">
+                <p><strong>Amount:</strong> Rs. {selectedWithdrawal.amount}</p>
+                <p><strong>Account:</strong> {selectedWithdrawal.account_number}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Rejection Reason</label>
+                <Textarea
+                  placeholder="e.g., Invalid account number, account verification failed..."
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setWithdrawalRejectDialogOpen(false)} disabled={processing}>Cancel</Button>
+            <Button onClick={rejectWithdrawal} disabled={processing} variant="destructive">
+              {processing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <XCircle className="h-4 w-4 mr-2" />}
+              Reject Withdrawal
             </Button>
           </DialogFooter>
         </DialogContent>
