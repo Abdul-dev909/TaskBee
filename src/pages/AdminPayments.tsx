@@ -100,7 +100,7 @@ const AdminPayments = () => {
       );
 
       const pending = paymentsWithDetails.filter(
-        (p) => p.verification_status === "pending" && (p.payment_method === "jazzcash" || p.payment_method === "easypaisa")
+        (p) => p.verification_status === "pending" && (p.payment_method === "jazzcash" || p.payment_method === "easypaisa" || p.payment_method === "bank_transfer")
       );
 
       setPendingPayments(pending);
@@ -398,6 +398,8 @@ const AdminPayments = () => {
         return <Badge className="bg-red-500 text-white">JazzCash</Badge>;
       case "easypaisa":
         return <Badge className="bg-green-500 text-white">Easypaisa</Badge>;
+      case "bank_transfer":
+        return <Badge className="bg-blue-500 text-white">Bank Transfer</Badge>;
       default:
         return <Badge variant="outline">Card</Badge>;
     }
@@ -543,10 +545,10 @@ const AdminPayments = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-yellow-600" />
-                  Pending Mobile Payments
+                  Pending Payment Verifications
                 </CardTitle>
                 <CardDescription>
-                  Verify JazzCash and Easypaisa payments by viewing uploaded screenshots
+                  Review payment screenshots and accept or reject — JazzCash, Easypaisa &amp; Bank Transfers
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -798,31 +800,80 @@ const AdminPayments = () => {
         </Tabs>
       </div>
 
-      {/* Screenshot Dialog */}
+      {/* Screenshot Dialog with Accept/Reject */}
       <Dialog open={screenshotDialogOpen} onOpenChange={setScreenshotDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Payment Screenshot</DialogTitle>
+            <DialogTitle>Verify Payment Screenshot</DialogTitle>
             <DialogDescription>
-              {selectedPayment?.payment_method?.toUpperCase()} payment of Rs. {selectedPayment?.total_amount}
+              Review the {selectedPayment?.payment_method?.toUpperCase()} payment screenshot and accept or reject it
             </DialogDescription>
           </DialogHeader>
+          
+          {/* Payment Summary */}
+          {selectedPayment && (
+            <div className="bg-muted rounded-lg p-4 space-y-2">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Amount:</span>
+                  <span className="font-bold text-lg ml-2">Rs. {selectedPayment.total_amount}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Method:</span>
+                  <span className="ml-2">{getPaymentMethodBadge(selectedPayment.payment_method)}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Homeowner:</span>
+                  <span className="font-medium ml-2">{selectedPayment.homeowner_profile?.full_name || "N/A"}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Provider:</span>
+                  <span className="font-medium ml-2">{selectedPayment.provider_profile?.full_name || "N/A"}</span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">Job:</span>
+                  <span className="font-medium ml-2">{selectedPayment.jobs?.title || "N/A"}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Screenshot Image */}
           {screenshotUrl && (
-            <div className="flex justify-center">
+            <div className="flex justify-center border rounded-lg overflow-hidden bg-black/5">
               <img 
                 src={screenshotUrl} 
                 alt="Payment screenshot" 
-                className="max-h-[500px] object-contain rounded-lg border"
+                className="max-h-[400px] object-contain"
               />
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setScreenshotDialogOpen(false)}>Close</Button>
-            <Button onClick={() => { setScreenshotDialogOpen(false); openVerifyDialog(selectedPayment); }} className="bg-green-600 hover:bg-green-700">
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Verify Payment
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setScreenshotDialogOpen(false)} 
+              className="flex-1"
+            >
+              Close
             </Button>
-          </DialogFooter>
+            <Button 
+              onClick={() => { setScreenshotDialogOpen(false); openRejectDialog(selectedPayment); }} 
+              variant="destructive"
+              className="flex-1"
+            >
+              <XCircle className="h-4 w-4 mr-2" />
+              Reject Payment
+            </Button>
+            <Button 
+              onClick={() => { setScreenshotDialogOpen(false); openVerifyDialog(selectedPayment); }} 
+              className="flex-1 bg-green-600 hover:bg-green-700"
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Accept & Release Funds
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
