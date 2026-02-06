@@ -6,13 +6,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, CreditCard, CheckCircle2, Smartphone, Copy, AlertCircle, Upload, Image } from "lucide-react";
+import { Loader2, CreditCard, CheckCircle2, Smartphone, Copy, AlertCircle, Upload, Image, Building } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Platform mobile wallet number
 const PLATFORM_WALLET_NUMBER = "03341421986";
 const PLATFORM_ACCOUNT_TITLE = "Home Genie Services";
+
+// Platform bank account details
+const PLATFORM_BANK_NAME = "Meezan Bank";
+const PLATFORM_BANK_ACCOUNT_NUMBER = "03341421986";
+const PLATFORM_BANK_ACCOUNT_TITLE = "Home Genie Services";
+const PLATFORM_BANK_IBAN = ""; // Add IBAN if available
 
 const Payment = () => {
   const [searchParams] = useSearchParams();
@@ -22,7 +28,7 @@ const Payment = () => {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "jazzcash" | "easypaisa">("card");
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "jazzcash" | "easypaisa" | "bank_transfer">("card");
   const [mobilePaymentPending, setMobilePaymentPending] = useState(false);
   
   const [jobDetails, setJobDetails] = useState<any>(null);
@@ -326,7 +332,7 @@ const Payment = () => {
 
           {/* Payment Method Tabs */}
           <Tabs value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as any)}>
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="card" className="text-xs sm:text-sm">
                 <CreditCard className="h-4 w-4 mr-1 hidden sm:inline" />
                 Card
@@ -338,6 +344,10 @@ const Payment = () => {
               <TabsTrigger value="easypaisa" className="text-xs sm:text-sm">
                 <Smartphone className="h-4 w-4 mr-1 hidden sm:inline" />
                 Easypaisa
+              </TabsTrigger>
+              <TabsTrigger value="bank_transfer" className="text-xs sm:text-sm">
+                <Building className="h-4 w-4 mr-1 hidden sm:inline" />
+                Bank
               </TabsTrigger>
             </TabsList>
 
@@ -773,6 +783,215 @@ const Payment = () => {
                       onClick={handleMobilePaymentSubmit}
                       disabled={processing || !screenshotFile}
                       className="flex-1 bg-green-600 hover:bg-green-700"
+                    >
+                      {processing ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {uploadingScreenshot ? "Uploading..." : "Submitting..."}
+                        </>
+                      ) : (
+                        "Confirm Payment"
+                      )}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </TabsContent>
+
+            {/* Bank Transfer Payment */}
+            <TabsContent value="bank_transfer" className="space-y-4 mt-4">
+              {!mobilePaymentPending ? (
+                <>
+                  <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+                    <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <AlertDescription className="text-blue-800 dark:text-blue-200">
+                      Transfer exactly <strong>Rs. {totalAmount}</strong> to the bank account below
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="rounded-lg border-2 border-dashed border-blue-300 dark:border-blue-700 p-4 space-y-4 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950 dark:to-background">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
+                        <Building className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="font-semibold text-blue-700 dark:text-blue-300">Bank Transfer</span>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Bank Name</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <code className="flex-1 bg-background rounded px-3 py-2 font-medium border">
+                            {PLATFORM_BANK_NAME}
+                          </code>
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => copyToClipboard(PLATFORM_BANK_NAME, "Bank name")}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Account Number</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <code className="flex-1 bg-background rounded px-3 py-2 font-mono text-lg border">
+                            {PLATFORM_BANK_ACCOUNT_NUMBER}
+                          </code>
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => copyToClipboard(PLATFORM_BANK_ACCOUNT_NUMBER, "Account number")}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Account Title</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <code className="flex-1 bg-background rounded px-3 py-2 font-medium border">
+                            {PLATFORM_BANK_ACCOUNT_TITLE}
+                          </code>
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => copyToClipboard(PLATFORM_BANK_ACCOUNT_TITLE, "Account title")}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {PLATFORM_BANK_IBAN && (
+                        <div>
+                          <Label className="text-xs text-muted-foreground">IBAN</Label>
+                          <div className="flex items-center gap-2 mt-1">
+                            <code className="flex-1 bg-background rounded px-3 py-2 font-mono border">
+                              {PLATFORM_BANK_IBAN}
+                            </code>
+                            <Button 
+                              variant="outline" 
+                              size="icon"
+                              onClick={() => copyToClipboard(PLATFORM_BANK_IBAN, "IBAN")}
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Amount to Transfer</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <code className="flex-1 bg-background rounded px-3 py-2 font-bold text-lg text-primary border">
+                            Rs. {totalAmount}
+                          </code>
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => copyToClipboard(totalAmount.toString(), "Amount")}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p>🏦 Open your banking app or visit your bank branch</p>
+                    <p>💳 Transfer the exact amount to the account above</p>
+                    <p>📸 Take a screenshot of the transfer confirmation</p>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate("/homeowner-dashboard")}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => setMobilePaymentPending(true)}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    >
+                      I've Sent the Payment
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Upload Bank Transfer Screenshot</Label>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleScreenshotSelect}
+                        className="hidden"
+                      />
+                      
+                      {screenshotPreview ? (
+                        <div className="relative">
+                          <img 
+                            src={screenshotPreview} 
+                            alt="Payment screenshot" 
+                            className="w-full max-h-64 object-contain rounded-lg border"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="absolute top-2 right-2"
+                            onClick={() => {
+                              setScreenshotFile(null);
+                              setScreenshotPreview(null);
+                            }}
+                          >
+                            Change
+                          </Button>
+                        </div>
+                      ) : (
+                        <div 
+                          onClick={() => fileInputRef.current?.click()}
+                          className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
+                        >
+                          <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">
+                            Click to upload your bank transfer screenshot
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            PNG, JPG up to 5MB
+                          </p>
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        Upload a screenshot showing the bank transfer confirmation
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setMobilePaymentPending(false);
+                        setScreenshotFile(null);
+                        setScreenshotPreview(null);
+                      }}
+                      className="flex-1"
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      onClick={handleMobilePaymentSubmit}
+                      disabled={processing || !screenshotFile}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700"
                     >
                       {processing ? (
                         <>

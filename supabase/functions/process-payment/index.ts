@@ -56,7 +56,7 @@ serve(async (req) => {
     }
 
     // Validate payment method
-    const validPaymentMethods = ['card', 'jazzcash', 'easypaisa'];
+    const validPaymentMethods = ['card', 'jazzcash', 'easypaisa', 'bank_transfer'];
     if (!validPaymentMethods.includes(paymentMethod)) {
       return new Response(
         JSON.stringify({ error: 'Invalid payment method' }),
@@ -64,10 +64,10 @@ serve(async (req) => {
       );
     }
 
-    // For mobile payments, screenshot is required
-    if ((paymentMethod === 'jazzcash' || paymentMethod === 'easypaisa') && !screenshotPath) {
+    // For mobile/bank payments, screenshot is required
+    if ((paymentMethod === 'jazzcash' || paymentMethod === 'easypaisa' || paymentMethod === 'bank_transfer') && !screenshotPath) {
       return new Response(
-        JSON.stringify({ error: 'Payment screenshot is required for mobile payments' }),
+        JSON.stringify({ error: 'Payment screenshot is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -144,7 +144,7 @@ serve(async (req) => {
     const netAmount = offeredRate - commission;
 
     // Determine verification status based on payment method
-    const isMobilePayment = paymentMethod === 'jazzcash' || paymentMethod === 'easypaisa';
+    const isMobilePayment = paymentMethod === 'jazzcash' || paymentMethod === 'easypaisa' || paymentMethod === 'bank_transfer';
     const verificationStatus = isMobilePayment ? 'pending_verification' : 'verified';
     const paymentStatus = isMobilePayment ? 'Pending Verification' : 'Paid';
 
@@ -248,13 +248,14 @@ serve(async (req) => {
 
     // Create notifications
     if (isMobilePayment) {
+      const methodLabel = paymentMethod === 'jazzcash' ? 'JazzCash' : paymentMethod === 'easypaisa' ? 'Easypaisa' : 'Bank Transfer';
       // Notification for homeowner - pending verification
       await supabaseAdmin
         .from('notifications')
         .insert({
           user_id: user.id,
           title: 'Payment Submitted 📱',
-          body: `Your ${paymentMethod === 'jazzcash' ? 'JazzCash' : 'Easypaisa'} payment of Rs. ${totalAmount} is pending verification. Screenshot uploaded for admin review.`,
+          body: `Your ${methodLabel} payment of Rs. ${totalAmount} is pending verification. Screenshot uploaded for admin review.`,
           type: 'payment',
           related_id: jobId
         });
@@ -265,7 +266,7 @@ serve(async (req) => {
         .insert({
           user_id: job.assigned_provider_id,
           title: 'Payment Pending Verification 🕐',
-          body: `Homeowner submitted a ${paymentMethod === 'jazzcash' ? 'JazzCash' : 'Easypaisa'} payment of Rs. ${totalAmount} for "${job.title}". Amount will be added to your wallet once verified.`,
+          body: `Homeowner submitted a ${methodLabel} payment of Rs. ${totalAmount} for "${job.title}". Amount will be added to your wallet once verified.`,
           type: 'payment',
           related_id: jobId
         });
@@ -283,8 +284,8 @@ serve(async (req) => {
             .from('notifications')
             .insert({
               user_id: admin.user_id,
-              title: 'New Mobile Payment to Verify 💳',
-              body: `${paymentMethod === 'jazzcash' ? 'JazzCash' : 'Easypaisa'} payment of Rs. ${totalAmount} needs verification. Screenshot uploaded.`,
+              title: 'New Payment to Verify 💳',
+              body: `${methodLabel} payment of Rs. ${totalAmount} needs verification. Screenshot uploaded.`,
               type: 'admin_action',
               related_id: jobId
             });
