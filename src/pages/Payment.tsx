@@ -15,10 +15,10 @@ const PLATFORM_WALLET_NUMBER = "03341421986";
 const PLATFORM_ACCOUNT_TITLE = "Home Genie Services";
 
 // Platform bank account details
-const PLATFORM_BANK_NAME = "Meezan Bank";
-const PLATFORM_BANK_ACCOUNT_NUMBER = "03341421986";
-const PLATFORM_BANK_ACCOUNT_TITLE = "Home Genie Services";
-const PLATFORM_BANK_IBAN = ""; // Add IBAN if available
+const PLATFORM_BANK_NAME = "Meezan Bank - Toba Tek Singh Branch";
+const PLATFORM_BANK_ACCOUNT_NUMBER = "59010111377917";
+const PLATFORM_BANK_ACCOUNT_TITLE = "ABDUL REHMAN";
+const PLATFORM_BANK_IBAN = "PK13MEZN0059010111377917";
 
 const Payment = () => {
   const [searchParams] = useSearchParams();

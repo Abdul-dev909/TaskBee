@@ -777,6 +777,10 @@ export type Database = {
         Args: { _job_id: string; _user_id: string }
         Returns: boolean
       }
+      is_provider_kyc_verified: {
+        Args: { _provider_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "homeowner" | "service_provider" | "admin"
