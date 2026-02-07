@@ -100,7 +100,7 @@ const AdminPayments = () => {
       );
 
       const pending = paymentsWithDetails.filter(
-        (p) => p.verification_status === "pending" && (p.payment_method === "jazzcash" || p.payment_method === "easypaisa" || p.payment_method === "bank_transfer")
+        (p) => (p.verification_status === "pending" || p.verification_status === "pending_verification") && (p.payment_method === "jazzcash" || p.payment_method === "easypaisa" || p.payment_method === "bank_transfer")
       );
 
       setPendingPayments(pending);
@@ -406,7 +406,7 @@ const AdminPayments = () => {
   };
 
   const getStatusBadge = (payment: any) => {
-    if (payment.verification_status === "pending") {
+    if (payment.verification_status === "pending" || payment.verification_status === "pending_verification") {
       return (
         <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
           <Clock className="w-3 h-3 mr-1" />
