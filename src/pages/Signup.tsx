@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import AuthLayout from "@/components/AuthLayout";
+import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import signupBg from "@/assets/signup-bg.jpg";
@@ -143,6 +144,7 @@ const Signup = () => {
 
   return (
     <AuthLayout backgroundImage={signupBg}>
+      <SEOHead title="Sign Up" description="Create your free Home Genie account. Find verified local service providers or become one and start earning today." canonical="/signup" />
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

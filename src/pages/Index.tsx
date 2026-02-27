@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import SEOHead from "@/components/SEOHead";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -269,8 +270,23 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
+      <SEOHead
+        canonical="/"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "Home Genie",
+          "url": "https://homegenie.lovable.app",
+          "description": "Find trusted, verified local service providers for plumbing, electrical, cleaning, painting, handyman & more in Pakistan.",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://homegenie.lovable.app/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }}
+      />
       {/* Navigation */}
-      <nav className="glass-card sticky top-0 z-50 border-b border-border">
+      <nav aria-label="Main navigation" className="glass-card sticky top-0 z-50 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3 group">
@@ -369,6 +385,7 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
+      <main>
       <section className="relative px-4 py-12 md:py-20 overflow-hidden bg-background">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
@@ -378,25 +395,19 @@ const Index = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <motion.h1 
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
+              <h1 
                 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight"
                 style={{ color: '#6B4423' }}
               >
                 Trusted, Local Service{' '}
                 <span style={{ color: '#A0754E' }}>Providers</span> for Every Odd Job
-              </motion.h1>
-              <motion.p 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
+              </h1>
+              <p 
                 className="text-lg md:text-xl mb-8"
                 style={{ color: '#8B6F47' }}
               >
                 From furniture assembly to garden help, find verified local service providers ready to help with any task.
-              </motion.p>
+              </p>
               
               {/* Search Bar */}
               <motion.div 
@@ -456,8 +467,11 @@ const Index = () => {
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <img 
                   src={heroProviders} 
-                  alt="Trusted local service providers" 
+                  alt="Verified local service providers ready to help with plumbing, electrical, cleaning and handyman tasks" 
                   className="w-full h-auto object-cover"
+                  loading="eager"
+                  width={600}
+                  height={400}
                 />
               </div>
             </motion.div>
@@ -871,6 +885,8 @@ const Index = () => {
         </div>
       </section>
 
+      </main>
+
       {/* Footer */}
       <footer className="bg-secondary/20 dark:footer-dark px-4 py-12 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
@@ -912,7 +928,7 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 Home Genie. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Home Genie. All rights reserved.</p>
           </div>
         </div>
       </footer>

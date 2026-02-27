@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import SEOHead from "@/components/SEOHead";
 import { Briefcase, Clock, DollarSign, Star, ArrowRight, Sun, Moon } from "lucide-react";
 import { Button as ShadcnButton } from "@/components/ui/button";
 import genieLamp from "@/assets/home-genie-logo.png";
@@ -208,6 +209,17 @@ const BecomeProvider = () => {
 
   return (
     <div className="min-h-screen">
+      <SEOHead 
+        title="Become a Service Provider" 
+        description="Join Home Genie as a verified service provider. Earn money by offering plumbing, electrical, cleaning, painting & more services in your city." 
+        canonical="/become-provider"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "Become a Service Provider - Home Genie",
+          "description": "Join Home Genie as a verified service provider and start earning."
+        }}
+      />
       {/* Dark Mode Toggle */}
       <div className="absolute top-4 right-4 z-50">
         <ShadcnButton

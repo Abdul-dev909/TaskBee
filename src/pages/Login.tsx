@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import AuthLayout from "@/components/AuthLayout";
+import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import loginBg from "@/assets/login-bg.jpg";
@@ -119,6 +120,7 @@ const Login = () => {
 
   return (
     <AuthLayout backgroundImage={loginBg}>
+      <SEOHead title="Login" description="Sign in to your Home Genie account to post jobs, manage bookings, and connect with local service providers." canonical="/login" />
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
