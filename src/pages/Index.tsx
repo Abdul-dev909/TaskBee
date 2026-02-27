@@ -272,21 +272,26 @@ const Index = () => {
     <div className="min-h-screen">
       <SEOHead
         canonical="/"
+        title="Find Trusted Local Service Providers"
+        description="HomeGenie (Home Genie) is Pakistan's #1 platform to find verified plumbers, electricians, cleaners, painters & handymen. Post a job and get help today!"
         jsonLd={{
           "@context": "https://schema.org",
-          "@type": "WebSite",
-          "name": "Home Genie",
+          "@type": "WebPage",
+          "name": "HomeGenie - Trusted Local Service Providers",
           "url": "https://homegenie.lovable.app",
-          "description": "Find trusted, verified local service providers for plumbing, electrical, cleaning, painting, handyman & more in Pakistan.",
-          "potentialAction": {
-            "@type": "SearchAction",
-            "target": "https://homegenie.lovable.app/?q={search_term_string}",
-            "query-input": "required name=search_term_string"
+          "description": "Find verified local service providers for plumbing, electrical, cleaning, painting, handyman & more in Pakistan.",
+          "isPartOf": { "@type": "WebSite", "name": "HomeGenie", "url": "https://homegenie.lovable.app" },
+          "about": {
+            "@type": "Service",
+            "name": "HomeGenie Local Services",
+            "serviceType": "Home Services Marketplace",
+            "areaServed": { "@type": "Country", "name": "Pakistan" },
+            "provider": { "@type": "Organization", "name": "HomeGenie" }
           }
         }}
       />
       {/* Navigation */}
-      <nav aria-label="Main navigation" className="glass-card sticky top-0 z-50 border-b border-border">
+      <nav aria-label="Main navigation" className="glass-card sticky top-0 z-50 border-b border-border" itemScope itemType="https://schema.org/SiteNavigationElement">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3 group">
