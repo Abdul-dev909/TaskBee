@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "robots.txt"],
       manifest: {
-        name: "Home Genie - Local Service Finder",
-        short_name: "Home Genie",
+        name: "TaskBee - Local Service Finder",
+        short_name: "TaskBee",
         description: "Find trusted local professionals for all your home service needs",
         theme_color: "#D4A574",
         background_color: "#1A1A2E",

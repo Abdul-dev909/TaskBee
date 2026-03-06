@@ -47,13 +47,13 @@ const AuthLayout = ({ children, backgroundImage }: AuthLayoutProps) => {
             <div className="relative group inline-block">
               <img 
                 src={genieLamp} 
-                alt="Home Genie" 
+                alt="TaskBee" 
                 className="w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-2xl rounded-2xl bg-gradient-to-br from-background to-accent/10 p-2 border-2 border-primary/20 group-hover:border-primary/40"
               />
               <div className="absolute inset-0 bg-primary/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-2xl" />
             </div>
             <h1 className="text-3xl font-semibold text-primary">
-              Home Genie
+              TaskBee
             </h1>
           </div>
           <p className="text-muted-foreground text-sm">

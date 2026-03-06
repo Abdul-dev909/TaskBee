@@ -120,7 +120,7 @@ const PWAInstallPrompt = () => {
             {/* Content */}
             <div className="flex-1 pr-6">
               <h3 className="font-semibold text-foreground">
-                Install Home Genie
+                Install TaskBee
               </h3>
               
               {isIOS ? (

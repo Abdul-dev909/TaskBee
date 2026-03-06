@@ -153,7 +153,7 @@ const AIChatWidget: React.FC = () => {
                   <Bot className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Home Genie Assistant</h3>
+                  <h3 className="font-semibold">TaskBee Assistant</h3>
                   <p className="text-xs opacity-80">Ask me anything!</p>
                 </div>
               </div>
@@ -172,7 +172,7 @@ const AIChatWidget: React.FC = () => {
               {messages.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
                   <Bot className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p className="text-sm">Hi! I'm your Home Genie assistant.</p>
+                  <p className="text-sm">Hi! I'm your TaskBee assistant.</p>
                   <p className="text-xs mt-1">How can I help you today?</p>
                 </div>
               )}
