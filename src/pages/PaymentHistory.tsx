@@ -82,7 +82,7 @@ const PaymentHistory = () => {
   const downloadReceipt = (payment: Payment) => {
     const receiptContent = `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          HOME GENIE PAYMENT RECEIPT
+           TASKBEE PAYMENT RECEIPT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Receipt ID: ${payment.id}
@@ -110,7 +110,7 @@ TOTAL PAID:                  Rs. ${payment.total_amount}
 Status: ${payment.status}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-         Thank you for using Home Genie!
+         Thank you for using TaskBee!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     `.trim();
     const blob = new Blob([receiptContent], {
@@ -140,7 +140,7 @@ Status: ${payment.status}
                 Back to Dashboard
               </Button>
               <div className="flex items-center gap-3">
-                <img src={genieLamp} alt="Home Genie" className="h-10 w-10" />
+                <img src={genieLamp} alt="TaskBee" className="h-10 w-10" />
                 <h1 className="text-2xl font-bold text-foreground">Payment History</h1>
               </div>
             </div>

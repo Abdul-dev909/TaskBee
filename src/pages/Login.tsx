@@ -41,7 +41,7 @@ const Login = () => {
       await supabase.auth.signOut();
       toast({
         title: "Account Blocked",
-        description: "Your account has been blocked by Home Genie Administration. Please contact support.",
+        description: "Your account has been blocked by TaskBee Administration. Please contact support.",
         variant: "destructive",
       });
       return;
@@ -102,7 +102,7 @@ const Login = () => {
       if (data.user) {
         toast({
           title: "Login Successful!",
-          description: "Welcome back to Home Genie.",
+          description: "Welcome back to TaskBee.",
         });
 
         await redirectBasedOnRole(data.user.id);
@@ -120,7 +120,7 @@ const Login = () => {
 
   return (
     <AuthLayout backgroundImage={loginBg}>
-      <SEOHead title="Login" description="Sign in to your Home Genie account to post jobs, manage bookings, and connect with local service providers." canonical="/login" />
+      <SEOHead title="Login" description="Sign in to your TaskBee account to post jobs, manage bookings, and connect with local service providers." canonical="/login" />
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

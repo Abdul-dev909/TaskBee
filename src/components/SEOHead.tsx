@@ -10,8 +10,8 @@ interface SEOHeadProps {
   noindex?: boolean;
 }
 
-const SITE_NAME = "HomeGenie";
-const DEFAULT_DESCRIPTION = "HomeGenie is Pakistan's #1 platform to find trusted, verified local service providers for plumbing, electrical, cleaning, painting, handyman & more.";
+const SITE_NAME = "TaskBee";
+const DEFAULT_DESCRIPTION = "TaskBee is Pakistan's #1 platform to find trusted, verified local service providers for plumbing, electrical, cleaning, painting, handyman & more.";
 const DEFAULT_OG_IMAGE = "https://homegenie.lovable.app/pwa-512x512.png";
 const SITE_URL = "https://homegenie.lovable.app";
 
@@ -24,7 +24,7 @@ const SEOHead = ({
   jsonLd,
   noindex = false,
 }: SEOHeadProps) => {
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} - Trusted Local Service Providers | Home Genie Pakistan`;
+  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} - Trusted Local Service Providers | TaskBee Pakistan`;
   const canonicalUrl = canonical ? `${SITE_URL}${canonical}` : undefined;
 
   return (

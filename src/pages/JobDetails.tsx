@@ -208,10 +208,10 @@ const JobDetails = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 group">
                 <div className="relative">
-                  <img src={genieLamp} alt="Home Genie" className="w-14 h-14 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-2xl rounded-2xl bg-gradient-to-br from-background to-accent/10 p-2 border-2 border-primary/20 group-hover:border-primary/40" />
+                  <img src={genieLamp} alt="TaskBee" className="w-14 h-14 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-2xl rounded-2xl bg-gradient-to-br from-background to-accent/10 p-2 border-2 border-primary/20 group-hover:border-primary/40" />
                   <div className="absolute inset-0 bg-primary/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-2xl" />
                 </div>
-                <span className="text-2xl font-semibold text-primary">Home Genie</span>
+                <span className="text-2xl font-semibold text-primary">TaskBee</span>
               </div>
               <Button variant="outline" onClick={() => navigate("/provider-dashboard")}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
