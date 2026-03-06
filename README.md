@@ -1,73 +1,81 @@
-# Welcome to your Lovable project
+# TaskBee 🐝
 
-## Project info
+![Status](https://img.shields.io/badge/status-active-success)
+![Project](https://img.shields.io/badge/project-software%20engineering-blue)
+![Tech](https://img.shields.io/badge/tech-TypeScript%20%7C%20Supabase%20%7C%20PostgreSQL-orange)
+![License](https://img.shields.io/badge/license-academic-lightgrey)
 
-**URL**: https://lovable.dev/projects/2a815c7f-d3bf-4a26-99e5-9a843e4e7772
+## 📌 Overview
 
-## How can I edit this code?
+TaskBee is a **web-based service marketplace** that connects homeowners with trusted local service providers for everyday household tasks such as plumbing, electrical work, cleaning, gardening, and more.
 
-There are several ways of editing your application.
+The platform allows homeowners to **post jobs and receive offers**, while service providers can **discover nearby work opportunities based on their skills and location**.
 
-**Use Lovable**
+This project was developed as part of the **Fundamentals of Software Engineering course**, where we applied Agile development practices to design, build, and test a real-world marketplace platform.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/2a815c7f-d3bf-4a26-99e5-9a843e4e7772) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Key Features
 
-**Use your preferred IDE**
+- **Job Marketplace** – homeowners can post tasks and receive offers from providers  
+- **Smart Job Matching** – providers can browse jobs based on skills and location  
+- **AI Chatbot Assistant** – helps users navigate the platform and post jobs  
+- **Real-Time Chat System** – communication between homeowners and providers  
+- **KYC Verification System** – identity verification for service providers  
+- **Review & Rating System** – feedback after job completion  
+- **Complaint Resolution System** – managed through admin panel  
+- **Admin Analytics Dashboard** – insights on users, jobs, and platform activity  
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🧠 Tech Stack
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
+### Frontend
 - TypeScript
-- React
-- shadcn-ui
 - Tailwind CSS
+- Modern Web Technologies
 
-## How can I deploy this project?
+### Backend / Database
+- Supabase
+- PostgreSQL
 
-Simply open [Lovable](https://lovable.dev/projects/2a815c7f-d3bf-4a26-99e5-9a843e4e7772) and click on Share -> Publish.
+### Architecture
+- Layered System Architecture
+- Row-Level Security (RLS)
 
-## Can I connect a custom domain to my Lovable project?
+### Development Methodology
+- Agile Development
+- Sprint-based workflow
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 👥 Team
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- Ali Miqdad Raza Zaidi  
+- Abdullah Kewan  
+- Abdul Rehman  
+
+---
+
+## 📚 Course
+
+**Fundamentals of Software Engineering**
+
+This project was built as part of the semester coursework focusing on:
+- system design
+- agile development
+- software architecture
+- testing and validation
+
+---
+
+## 💡 Future Improvements
+
+- Real payment gateway integration  
+- Mobile application version  
+- Advanced AI-based job matching  
+- Notification system
+
+---
+
+⭐ If you like the project, feel free to give the repository a star!
