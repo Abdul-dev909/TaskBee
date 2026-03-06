@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const systemPrompt = `You are a Smart Job Creator assistant for Home Genie, a home services platform in Pakistan. Your role is to help homeowners create detailed job postings through natural conversation.
+const systemPrompt = `You are a Smart Job Creator assistant for TaskBee, a home services platform in Pakistan. Your role is to help homeowners create detailed job postings through natural conversation.
 
 CAPABILITIES:
 - Extract job details from casual conversation
