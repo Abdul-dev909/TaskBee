@@ -171,7 +171,7 @@ const ProviderProfile = () => {
             <ArrowLeft className="w-5 h-5 text-primary" />
           </Button>
           <div className="flex items-center gap-2">
-            <img src={genieLamp} alt="Home Genie" className="w-8 h-8 object-contain" />
+            <img src={genieLamp} alt="TaskBee" className="w-8 h-8 object-contain" />
             <span className="font-semibold text-primary">Provider Profile</span>
           </div>
         </div>

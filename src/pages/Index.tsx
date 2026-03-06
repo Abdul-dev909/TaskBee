@@ -743,7 +743,7 @@ const Index = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-              Why Choose Home Genie
+              Why Choose TaskBee
             </h2>
             <p className="text-muted-foreground">
               The smart way to find local home service professionals
@@ -879,7 +879,7 @@ const Index = () => {
               Ready to Find Your Perfect Service Provider?
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Join thousands of homeowners who trust Home Genie for all their home service needs
+              Join thousands of homeowners who trust TaskBee for all their home service needs
             </p>
             <Link to="/signup">
               <Button size="lg" className="bg-primary hover:bg-primary/90 text-white text-lg px-8 py-6">
