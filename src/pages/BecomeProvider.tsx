@@ -211,13 +211,13 @@ const BecomeProvider = () => {
     <div className="min-h-screen">
       <SEOHead 
         title="Become a Service Provider" 
-        description="Join Home Genie as a verified service provider. Earn money by offering plumbing, electrical, cleaning, painting & more services in your city." 
+        description="Join TaskBee as a verified service provider. Earn money by offering plumbing, electrical, cleaning, painting & more services in your city." 
         canonical="/become-provider"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "WebPage",
-          "name": "Become a Service Provider - Home Genie",
-          "description": "Join Home Genie as a verified service provider and start earning."
+          "name": "Become a Service Provider - TaskBee",
+          "description": "Join TaskBee as a verified service provider and start earning."
         }}
       />
       {/* Dark Mode Toggle */}
@@ -250,13 +250,13 @@ const BecomeProvider = () => {
             <div className="relative group inline-block">
               <img 
                 src={genieLamp} 
-                alt="Home Genie" 
+                alt="TaskBee" 
                 className="w-20 h-20 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-2xl rounded-2xl bg-gradient-to-br from-background to-accent/10 p-3 border-2 border-primary/20 group-hover:border-primary/40"
               />
               <div className="absolute inset-0 bg-primary/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-2xl" />
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-primary">
-              Home Genie
+              TaskBee
             </h1>
           </motion.div>
           
@@ -266,7 +266,7 @@ const BecomeProvider = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-4xl md:text-5xl font-bold text-foreground mb-6"
           >
-            Join Home Genie as a Trusted Service Provider
+            Join TaskBee as a Trusted Service Provider
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -304,7 +304,7 @@ const BecomeProvider = () => {
             transition={{ duration: 0.8 }}
             className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
           >
-            Why Join Home Genie?
+            Why Join TaskBee?
           </motion.h2>
           
           <motion.div 

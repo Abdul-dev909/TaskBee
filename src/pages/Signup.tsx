@@ -118,7 +118,7 @@ const Signup = () => {
 
         toast({
           title: "Account Created Successfully!",
-          description: "Welcome to Home Genie. You can now log in.",
+          description: "Welcome to TaskBee. You can now log in.",
         });
 
         navigate("/login");
@@ -144,7 +144,7 @@ const Signup = () => {
 
   return (
     <AuthLayout backgroundImage={signupBg}>
-      <SEOHead title="Sign Up" description="Create your free Home Genie account. Find verified local service providers or become one and start earning today." canonical="/signup" />
+      <SEOHead title="Sign Up" description="Create your free TaskBee account. Find verified local service providers or become one and start earning today." canonical="/signup" />
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -161,7 +161,7 @@ const Signup = () => {
             Create Your Account
           </h2>
           <p className="text-sm text-muted-foreground">
-            Join Home Genie and get started today
+            Join TaskBee and get started today
           </p>
         </motion.div>
 

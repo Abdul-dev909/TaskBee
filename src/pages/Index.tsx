@@ -251,13 +251,13 @@ const Index = () => {
     {
       name: "Sarah Johnson",
       role: "Homeowner",
-      content: "Found an amazing handyman within minutes! Professional, reliable, and reasonably priced. Home Genie made it so easy.",
+      content: "Found an amazing handyman within minutes! Professional, reliable, and reasonably priced. TaskBee made it so easy.",
       rating: 5
     },
     {
       name: "Mike Chen",
       role: "Property Manager",
-      content: "As a property manager, I need reliable help fast. Home Genie has become my go-to platform for trusted local professionals.",
+      content: "As a property manager, I need reliable help fast. TaskBee has become my go-to platform for trusted local professionals.",
       rating: 5
     },
     {
@@ -273,20 +273,20 @@ const Index = () => {
       <SEOHead
         canonical="/"
         title="Find Trusted Local Service Providers"
-        description="HomeGenie (Home Genie) is Pakistan's #1 platform to find verified plumbers, electricians, cleaners, painters & handymen. Post a job and get help today!"
+        description="TaskBee is Pakistan's #1 platform to find verified plumbers, electricians, cleaners, painters & handymen. Post a job and get help today!"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "WebPage",
-          "name": "HomeGenie - Trusted Local Service Providers",
+          "name": "TaskBee - Trusted Local Service Providers",
           "url": "https://homegenie.lovable.app",
           "description": "Find verified local service providers for plumbing, electrical, cleaning, painting, handyman & more in Pakistan.",
-          "isPartOf": { "@type": "WebSite", "name": "HomeGenie", "url": "https://homegenie.lovable.app" },
+          "isPartOf": { "@type": "WebSite", "name": "TaskBee", "url": "https://homegenie.lovable.app" },
           "about": {
             "@type": "Service",
-            "name": "HomeGenie Local Services",
+            "name": "TaskBee Local Services",
             "serviceType": "Home Services Marketplace",
             "areaServed": { "@type": "Country", "name": "Pakistan" },
-            "provider": { "@type": "Organization", "name": "HomeGenie" }
+            "provider": { "@type": "Organization", "name": "TaskBee" }
           }
         }}
       />
@@ -296,10 +296,10 @@ const Index = () => {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3 group">
               <div className="relative">
-                <img src={genieLamp} alt="Home Genie" className="w-14 h-14 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-2xl rounded-2xl bg-gradient-to-br from-background to-accent/10 p-2 border-2 border-primary/20 group-hover:border-primary/40" />
+                <img src={genieLamp} alt="TaskBee" className="w-14 h-14 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-2xl rounded-2xl bg-gradient-to-br from-background to-accent/10 p-2 border-2 border-primary/20 group-hover:border-primary/40" />
                 <div className="absolute inset-0 bg-primary/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-2xl" />
               </div>
-              <span className="text-xl font-bold text-primary">Home Genie</span>
+              <span className="text-xl font-bold text-primary">TaskBee</span>
             </div>
             
             {/* Desktop Navigation */}
@@ -899,10 +899,10 @@ const Index = () => {
             <div>
               <div className="flex items-center gap-2 mb-4 group">
                 <div className="relative inline-block">
-                  <img src={genieLamp} alt="Home Genie" className="w-10 h-10 object-contain transition-transform duration-300 group-hover:scale-110 rounded-xl bg-gradient-to-br from-background to-accent/10 p-1.5 border border-primary/20 group-hover:border-primary/40" />
+                  <img src={genieLamp} alt="TaskBee" className="w-10 h-10 object-contain transition-transform duration-300 group-hover:scale-110 rounded-xl bg-gradient-to-br from-background to-accent/10 p-1.5 border border-primary/20 group-hover:border-primary/40" />
                   <div className="absolute inset-0 bg-primary/10 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-xl" />
                 </div>
-                <span className="text-lg font-bold text-primary">Home Genie</span>
+                <span className="text-lg font-bold text-primary">TaskBee</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 Connecting homeowners with trusted local service professionals.
@@ -933,7 +933,7 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} Home Genie. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} TaskBee. All rights reserved.</p>
           </div>
         </div>
       </footer>
