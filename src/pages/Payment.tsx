@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Platform mobile wallet number
 const PLATFORM_WALLET_NUMBER = "03341421986";
-const PLATFORM_ACCOUNT_TITLE = "Home Genie Services";
+const PLATFORM_ACCOUNT_TITLE = "TaskBee Services";
 
 // Platform bank account details
 const PLATFORM_BANK_NAME = "Meezan Bank - Toba Tek Singh Branch";

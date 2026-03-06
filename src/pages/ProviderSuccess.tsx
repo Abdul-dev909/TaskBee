@@ -42,7 +42,7 @@ const ProviderSuccess = () => {
           >
             <Sparkles className="w-6 h-6 text-primary animate-pulse" />
             <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-              Welcome to Home Genie!
+              Welcome to TaskBee!
             </h1>
             <Sparkles className="w-6 h-6 text-primary animate-pulse delay-500" />
           </motion.div>
@@ -56,7 +56,7 @@ const ProviderSuccess = () => {
             <div className="relative group inline-block">
               <img 
                 src={genieLamp} 
-                alt="Home Genie" 
+                alt="TaskBee" 
                 className="w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-2xl rounded-2xl bg-gradient-to-br from-background to-accent/10 p-2 border-2 border-primary/20 group-hover:border-primary/40"
               />
               <div className="absolute inset-0 bg-primary/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-2xl" />
@@ -72,7 +72,7 @@ const ProviderSuccess = () => {
             transition={{ duration: 0.8, delay: 0.7 }}
             className="text-lg text-muted-foreground mb-8 max-w-lg mx-auto"
           >
-            🎉 Congratulations! You've successfully joined Home Genie as a trusted service provider. 
+            🎉 Congratulations! You've successfully joined TaskBee as a trusted service provider. 
             You can now log in using your registered email and password to access your provider dashboard.
           </motion.p>
 
