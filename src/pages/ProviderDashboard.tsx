@@ -88,7 +88,7 @@ interface JobRequest {
 }
 
 const ProviderDashboard = () => {
-  const { resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
@@ -389,7 +389,6 @@ const ProviderDashboard = () => {
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
                   className="rounded-full"
                 >
                   {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -402,7 +401,6 @@ const ProviderDashboard = () => {
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
                   className="rounded-full"
                 >
                   {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}

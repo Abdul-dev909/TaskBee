@@ -13,7 +13,7 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
-  const { resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -140,7 +140,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
                 className="rounded-full"
               >
                 {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
