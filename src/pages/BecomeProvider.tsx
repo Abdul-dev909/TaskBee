@@ -25,7 +25,7 @@ interface FormErrors {
 }
 
 const BecomeProvider = () => {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: "",
@@ -225,10 +225,9 @@ const BecomeProvider = () => {
         <ShadcnButton
           variant="outline"
           size="icon"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="rounded-full glass-card"
         >
-          {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </ShadcnButton>
       </div>
       

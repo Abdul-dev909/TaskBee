@@ -10,7 +10,7 @@ interface AuthLayoutProps {
 }
 
 const AuthLayout = ({ children, backgroundImage }: AuthLayoutProps) => {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
@@ -19,10 +19,9 @@ const AuthLayout = ({ children, backgroundImage }: AuthLayoutProps) => {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="rounded-full glass-card"
         >
-          {theme === "dark" ? (
+          {resolvedTheme === "dark" ? (
             <Sun className="h-5 w-5" />
           ) : (
             <Moon className="h-5 w-5" />
